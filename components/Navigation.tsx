@@ -19,7 +19,7 @@ export default function Navigation() {
         <div className="flex justify-between items-center h-16">
           <Link href="/" className="flex items-center space-x-3">
             <span className="text-xl font-bold text-gray-900">
-              Ticket app
+              New app
             </span>
           </Link>
 

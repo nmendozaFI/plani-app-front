@@ -20,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ticketing App",
-  description: "Control de gastos en viajes",
+  title: "New app",
+  description: "Authentication demostration",
 };
 
 const isValidUserRole = (role: string | undefined | null): role is UserRole => {
