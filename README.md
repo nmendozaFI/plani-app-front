@@ -18,7 +18,7 @@ Base project template including:
 📦 Installation Clone the repository:
 
 ```bash
-git clone <your-repo-url> new name
+git clone <your-repo-url> your-project-name
 cd your-project-name
 ````
 
