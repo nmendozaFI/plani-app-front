@@ -33,19 +33,23 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require"
 
 # Better Auth
 BETTER_AUTH_SECRET="your-random-secret"
+
 BETTER_AUTH_URL="http://localhost:3000"
 
 # Optional - Google Provider
 GOOGLE_CLIENT_ID=""
+
 GOOGLE_CLIENT_SECRET=""
 
 # Optional - Microsoft Provider
 MICROSOFT_CLIENT_ID=""
+
 MICROSOFT_CLIENT_SECRET=""
 
 🗄 Database Setup (Neon PostgreSQL)
 1️⃣ Create a Neon account
 Go to: [https://neon.tech](https://neon.tech)
+
 Create a new project.
 
 2️⃣ Get your PostgreSQL connection string
