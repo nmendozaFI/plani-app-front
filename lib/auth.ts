@@ -11,18 +11,13 @@ export const auth = betterAuth({
     enabled: true,
   },
   socialProviders: {
-    // google: {
-    //   prompt: "select_account",
-    //   clientId: process.env.GOOGLE_CLIENT_ID as string,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    // },
-    // microsoft: {
-    //   clientId: process.env.MICROSFOT_CLIENT_ID as string,
-    //   clientSecret: process.env.MICROSOFT_CLIENT_SECRET as string,
-    //   tenantId: process.env.MICROSOFT_TENANT_ID as string,
-    //   authority: "https://login.microsoftonline.com",
-    //   prompt: "select_account",
-    // },
+    microsoft: {
+      clientId: process.env.MICROSOFT_CLIENT_ID as string,
+      clientSecret: process.env.MICROSOFT_CLIENT_SECRET as string,
+      tenantId: process.env.MICROSOFT_TENANT_ID as string,
+      authority: "https://login.microsoftonline.com",
+      prompt: "select_account",
+    },
   },
   plugins: [nextCookies()],
   user: {
