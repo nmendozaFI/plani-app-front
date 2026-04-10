@@ -15,3 +15,55 @@ export const UserRole = {
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const Programa = {
+  EF: 'EF',
+  IT: 'IT',
+  AMBAS: 'AMBAS'
+} as const
+
+export type Programa = (typeof Programa)[keyof typeof Programa]
+
+
+export const Semaforo = {
+  VERDE: 'VERDE',
+  AMBAR: 'AMBAR',
+  ROJO: 'ROJO'
+} as const
+
+export type Semaforo = (typeof Semaforo)[keyof typeof Semaforo]
+
+
+export const PrioridadReduccion = {
+  ALTA: 'ALTA',
+  MEDIA: 'MEDIA',
+  BAJA: 'BAJA'
+} as const
+
+export type PrioridadReduccion = (typeof PrioridadReduccion)[keyof typeof PrioridadReduccion]
+
+
+export const TipoRestriccion = {
+  HARD: 'HARD',
+  SOFT: 'SOFT'
+} as const
+
+export type TipoRestriccion = (typeof TipoRestriccion)[keyof typeof TipoRestriccion]
+
+
+export const EstadoTaller = {
+  OK: 'OK',
+  CANCELADO: 'CANCELADO'
+} as const
+
+export type EstadoTaller = (typeof EstadoTaller)[keyof typeof EstadoTaller]
+
+
+export const TipoAsignacion = {
+  BASE: 'BASE',
+  EXTRA: 'EXTRA',
+  CONTINGENCIA: 'CONTINGENCIA'
+} as const
+
+export type TipoAsignacion = (typeof TipoAsignacion)[keyof typeof TipoAsignacion]

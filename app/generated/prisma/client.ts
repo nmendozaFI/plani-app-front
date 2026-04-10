@@ -59,3 +59,53 @@ export type Account = Prisma.AccountModel
  * 
  */
 export type Verification = Prisma.VerificationModel
+/**
+ * Model Empresa
+ * 
+ */
+export type Empresa = Prisma.EmpresaModel
+/**
+ * Model Taller
+ * 
+ */
+export type Taller = Prisma.TallerModel
+/**
+ * Model Ciudad
+ * 
+ */
+export type Ciudad = Prisma.CiudadModel
+/**
+ * Model EmpresaCiudad
+ * 
+ */
+export type EmpresaCiudad = Prisma.EmpresaCiudadModel
+/**
+ * Model Restriccion
+ * 
+ */
+export type Restriccion = Prisma.RestriccionModel
+/**
+ * Model ConfigTrimestral
+ * 
+ */
+export type ConfigTrimestral = Prisma.ConfigTrimestralModel
+/**
+ * Model Frecuencia
+ * 
+ */
+export type Frecuencia = Prisma.FrecuenciaModel
+/**
+ * Model HistoricoTaller
+ * 
+ */
+export type HistoricoTaller = Prisma.HistoricoTallerModel
+/**
+ * Model Planificacion
+ * 
+ */
+export type Planificacion = Prisma.PlanificacionModel
+/**
+ * Model SolverLog
+ * 
+ */
+export type SolverLog = Prisma.SolverLogModel

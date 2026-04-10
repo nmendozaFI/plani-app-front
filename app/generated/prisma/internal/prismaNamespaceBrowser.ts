@@ -54,7 +54,17 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  Empresa: 'Empresa',
+  Taller: 'Taller',
+  Ciudad: 'Ciudad',
+  EmpresaCiudad: 'EmpresaCiudad',
+  Restriccion: 'Restriccion',
+  ConfigTrimestral: 'ConfigTrimestral',
+  Frecuencia: 'Frecuencia',
+  HistoricoTaller: 'HistoricoTaller',
+  Planificacion: 'Planificacion',
+  SolverLog: 'SolverLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -130,6 +140,164 @@ export const VerificationScalarFieldEnum = {
 } as const
 
 export type VerificationScalarFieldEnum = (typeof VerificationScalarFieldEnum)[keyof typeof VerificationScalarFieldEnum]
+
+
+export const EmpresaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  semaforo: 'semaforo',
+  scoreV3: 'scoreV3',
+  fiabilidadReciente: 'fiabilidadReciente',
+  esComodin: 'esComodin',
+  aceptaExtras: 'aceptaExtras',
+  maxExtrasTrimestre: 'maxExtrasTrimestre',
+  prioridadReduccion: 'prioridadReduccion',
+  tieneBolsa: 'tieneBolsa',
+  turnoPreferido: 'turnoPreferido',
+  activa: 'activa',
+  notas: 'notas',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmpresaScalarFieldEnum = (typeof EmpresaScalarFieldEnum)[keyof typeof EmpresaScalarFieldEnum]
+
+
+export const TallerScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  programa: 'programa',
+  diaSemana: 'diaSemana',
+  horario: 'horario',
+  turno: 'turno',
+  esContratante: 'esContratante',
+  descripcion: 'descripcion',
+  activo: 'activo',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TallerScalarFieldEnum = (typeof TallerScalarFieldEnum)[keyof typeof TallerScalarFieldEnum]
+
+
+export const CiudadScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  activa: 'activa',
+  createdAt: 'createdAt'
+} as const
+
+export type CiudadScalarFieldEnum = (typeof CiudadScalarFieldEnum)[keyof typeof CiudadScalarFieldEnum]
+
+
+export const EmpresaCiudadScalarFieldEnum = {
+  empresaId: 'empresaId',
+  ciudadId: 'ciudadId',
+  activaReciente: 'activaReciente'
+} as const
+
+export type EmpresaCiudadScalarFieldEnum = (typeof EmpresaCiudadScalarFieldEnum)[keyof typeof EmpresaCiudadScalarFieldEnum]
+
+
+export const RestriccionScalarFieldEnum = {
+  id: 'id',
+  empresaId: 'empresaId',
+  tipo: 'tipo',
+  clave: 'clave',
+  valor: 'valor',
+  descripcion: 'descripcion',
+  createdAt: 'createdAt'
+} as const
+
+export type RestriccionScalarFieldEnum = (typeof RestriccionScalarFieldEnum)[keyof typeof RestriccionScalarFieldEnum]
+
+
+export const ConfigTrimestralScalarFieldEnum = {
+  id: 'id',
+  empresaId: 'empresaId',
+  trimestre: 'trimestre',
+  tipoParticipacion: 'tipoParticipacion',
+  escuelaPropia: 'escuelaPropia',
+  frecuenciaSolicitada: 'frecuenciaSolicitada',
+  disponibilidadDias: 'disponibilidadDias',
+  turnoPreferido: 'turnoPreferido',
+  voluntariosDisponibles: 'voluntariosDisponibles',
+  preferenciasTaller: 'preferenciasTaller',
+  notas: 'notas',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ConfigTrimestralScalarFieldEnum = (typeof ConfigTrimestralScalarFieldEnum)[keyof typeof ConfigTrimestralScalarFieldEnum]
+
+
+export const FrecuenciaScalarFieldEnum = {
+  id: 'id',
+  configId: 'configId',
+  empresaId: 'empresaId',
+  trimestre: 'trimestre',
+  talleresEF: 'talleresEF',
+  talleresIT: 'talleresIT',
+  totalAsignado: 'totalAsignado',
+  semaforoCalculado: 'semaforoCalculado',
+  scoreCalculado: 'scoreCalculado',
+  ajusteDesempeno: 'ajusteDesempeno',
+  esNueva: 'esNueva',
+  createdAt: 'createdAt'
+} as const
+
+export type FrecuenciaScalarFieldEnum = (typeof FrecuenciaScalarFieldEnum)[keyof typeof FrecuenciaScalarFieldEnum]
+
+
+export const HistoricoTallerScalarFieldEnum = {
+  id: 'id',
+  empresaId: 'empresaId',
+  tallerId: 'tallerId',
+  fecha: 'fecha',
+  estado: 'estado',
+  ciudad: 'ciudad',
+  trimestre: 'trimestre',
+  createdAt: 'createdAt'
+} as const
+
+export type HistoricoTallerScalarFieldEnum = (typeof HistoricoTallerScalarFieldEnum)[keyof typeof HistoricoTallerScalarFieldEnum]
+
+
+export const PlanificacionScalarFieldEnum = {
+  id: 'id',
+  trimestre: 'trimestre',
+  semana: 'semana',
+  dia: 'dia',
+  horario: 'horario',
+  turno: 'turno',
+  empresaId: 'empresaId',
+  tallerId: 'tallerId',
+  ciudadId: 'ciudadId',
+  tipoAsignacion: 'tipoAsignacion',
+  esContingencia: 'esContingencia',
+  version: 'version',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PlanificacionScalarFieldEnum = (typeof PlanificacionScalarFieldEnum)[keyof typeof PlanificacionScalarFieldEnum]
+
+
+export const SolverLogScalarFieldEnum = {
+  id: 'id',
+  trimestre: 'trimestre',
+  version: 'version',
+  status: 'status',
+  tiempoSegundos: 'tiempoSegundos',
+  inviolablesCumplidas: 'inviolablesCumplidas',
+  preferentesCumplidas: 'preferentesCumplidas',
+  warnings: 'warnings',
+  parametros: 'parametros',
+  createdAt: 'createdAt'
+} as const
+
+export type SolverLogScalarFieldEnum = (typeof SolverLogScalarFieldEnum)[keyof typeof SolverLogScalarFieldEnum]
 
 
 export const SortOrder = {

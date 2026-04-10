@@ -75,3 +75,263 @@ model Verification {
   @@map("verification")
   @@index([identifier])
 }
+
+// ═══════════════════════════════════════════════════════════════
+// PLANIFICACIÓN — Datos maestros
+// ═══════════════════════════════════════════════════════════════
+
+enum Programa {
+  EF
+  IT
+  AMBAS
+}
+
+enum Semaforo {
+  VERDE
+  AMBAR
+  ROJO
+}
+
+enum PrioridadReduccion {
+  ALTA      // se recorta primero (Capgemini, Repsol, Santander, Acciona)
+  MEDIA
+  BAJA      // se protege (contratantes, EF propias)
+}
+
+enum TipoRestriccion {
+  HARD      // inviolable
+  SOFT      // preferente o negociable
+}
+
+enum EstadoTaller {
+  OK
+  CANCELADO
+}
+
+enum TipoAsignacion {
+  BASE          // planificación inicial
+  EXTRA         // taller extra aceptado
+  CONTINGENCIA  // sustitución por cancelación
+}
+
+model Empresa {
+  id                  Int                  @id @default(autoincrement())
+  nombre              String               @unique
+  tipo                Programa             @default(AMBAS)
+  semaforo            Semaforo             @default(AMBAR)
+  scoreV3             Float                @default(0)
+  fiabilidadReciente  Float                @default(0)
+  esComodin           Boolean              @default(false)
+  aceptaExtras        Boolean              @default(false)
+  maxExtrasTrimestre  Int                  @default(0)
+  prioridadReduccion  PrioridadReduccion   @default(MEDIA)
+  tieneBolsa          Boolean              @default(false)
+  turnoPreferido      String?              // "mañana" | "tarde" | null
+  activa              Boolean              @default(true)
+  notas               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  // Relaciones
+  ciudades            EmpresaCiudad[]
+  restricciones       Restriccion[]
+  configsTrimestre    ConfigTrimestral[]
+  frecuencias         Frecuencia[]
+  historico           HistoricoTaller[]
+  planificaciones     Planificacion[]
+
+  @@map("empresa")
+}
+
+model Taller {
+  id              Int       @id @default(autoincrement())
+  nombre          String
+  programa        Programa  // EF o IT
+  diaSemana       String?   // L, M, X, J, V (null = flexible)
+  horario         String?   // "09:30-11:30", "12:00-14:00", "15:00-17:00"
+  turno           String?   // "mañana" | "tarde" | null (derivado de horario)
+  esContratante   Boolean   @default(false)
+  descripcion     String?
+  activo          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relaciones
+  historico       HistoricoTaller[]
+  planificaciones Planificacion[]
+
+  @@map("taller")
+}
+
+
+model Ciudad {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @unique
+  activa    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  // Relaciones
+  empresas        EmpresaCiudad[]
+  planificaciones Planificacion[]
+
+  @@map("ciudad")
+}
+
+// Tabla puente: qué empresas están activas en qué ciudades
+model EmpresaCiudad {
+  empresaId      Int
+  ciudadId       Int
+  activaReciente Boolean  @default(true) // actividad en último año
+
+  empresa        Empresa  @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  ciudad         Ciudad   @relation(fields: [ciudadId], references: [id], onDelete: Cascade)
+
+  @@id([empresaId, ciudadId])
+  @@map("empresaCiudad")
+}
+
+// Restricciones parametrizables por empresa
+// Ejemplo: EY → HARD → "solo_dia" → "V"
+// Ejemplo: Santander FxM → HARD → "solo_taller" → "Gestión de ingresos"
+// Ejemplo: Garrigues lab → HARD → "solo_taller" → "D&O"
+model Restriccion {
+  id          Int              @id @default(autoincrement())
+  empresaId   Int
+  tipo        TipoRestriccion
+  clave       String           // "solo_dia", "solo_taller", "no_comodin", "max_extras", etc.
+  valor       String           // "V", "Gestión de ingresos", "D&O", "1", etc.
+  descripcion String?
+  createdAt   DateTime         @default(now())
+
+  empresa     Empresa          @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@map("restriccion")
+  @@index([empresaId])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLANIFICACIÓN — Config por trimestre
+// ═══════════════════════════════════════════════════════════════
+
+model ConfigTrimestral {
+  id                    Int       @id @default(autoincrement())
+  empresaId             Int
+  trimestre             String    // "2025-Q3", "2026-Q1", etc.
+  tipoParticipacion     Programa  @default(AMBAS)
+  escuelaPropia         Boolean   @default(false)
+  frecuenciaSolicitada  Int?      // null = el sistema calcula
+  disponibilidadDias    String    @default("L,M,X,J,V") // CSV de días disponibles
+  turnoPreferido        String?   // "mañana" | "tarde" | null
+  voluntariosDisponibles Int      @default(0)
+  preferenciasTaller    String?   // CSV de IDs de talleres preferidos
+  notas                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  empresa               Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  frecuencias           Frecuencia[]
+
+  @@unique([empresaId, trimestre])
+  @@map("configTrimestral")
+  @@index([trimestre])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLANIFICACIÓN — Output Fase 1 (contrato de frecuencias)
+// ═══════════════════════════════════════════════════════════════
+
+model Frecuencia {
+  id                Int       @id @default(autoincrement())
+  configId          Int
+  empresaId         Int
+  trimestre         String
+  talleresEF        Int       @default(0)
+  talleresIT        Int       @default(0)
+  totalAsignado     Int       @default(0)
+  semaforoCalculado Semaforo  @default(AMBAR)
+  scoreCalculado    Float     @default(0)
+  ajusteDesempeno   Float     @default(0) // -1, 0, +1 vs trimestre anterior
+  esNueva           Boolean   @default(false) // empresa nueva este año
+  createdAt         DateTime  @default(now())
+
+  config            ConfigTrimestral @relation(fields: [configId], references: [id], onDelete: Cascade)
+  empresa           Empresa          @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+
+  @@unique([empresaId, trimestre])
+  @@map("frecuencia")
+  @@index([trimestre])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLANIFICACIÓN — Histórico
+// ═══════════════════════════════════════════════════════════════
+
+model HistoricoTaller {
+  id          Int          @id @default(autoincrement())
+  empresaId   Int
+  tallerId    Int
+  fecha       DateTime     @db.Date
+  estado      EstadoTaller @default(OK)
+  ciudad      String?
+  trimestre   String?      // "2025-Q2"
+  createdAt   DateTime     @default(now())
+
+  empresa     Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  taller      Taller       @relation(fields: [tallerId], references: [id], onDelete: Cascade)
+
+  @@map("historicoTaller")
+  @@index([empresaId])
+  @@index([trimestre])
+  @@index([fecha])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PLANIFICACIÓN — Output Fase 2 (calendario)
+// ═══════════════════════════════════════════════════════════════
+
+model Planificacion {
+  id              Int             @id @default(autoincrement())
+  trimestre       String          // "2025-Q3"
+  semana          Int             // 1..13 dentro del trimestre
+  dia             String          // "L", "M", "X", "J", "V"
+  horario         String?         // "09:30-11:30", "12:00-14:00", "15:00-17:00"
+  turno           String?         // "mañana" | "tarde" (derivado, retrocompat)
+  empresaId       Int
+  tallerId        Int
+  ciudadId        Int?
+  tipoAsignacion  TipoAsignacion  @default(BASE)
+  esContingencia  Boolean         @default(false)
+  version         Int             @default(1) // para guardar iteraciones del solver
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  empresa         Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  taller          Taller          @relation(fields: [tallerId], references: [id], onDelete: Cascade)
+  ciudad          Ciudad?         @relation(fields: [ciudadId], references: [id], onDelete: SetNull)
+
+  @@map("planificacion")
+  @@index([trimestre])
+  @@index([empresaId])
+  @@index([trimestre, semana, dia])
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// PLANIFICACIÓN — Log del solver (debugging + auditoría)
+// ═══════════════════════════════════════════════════════════════
+
+model SolverLog {
+  id                    Int      @id @default(autoincrement())
+  trimestre             String
+  version               Int      @default(1)
+  status                String   // "OPTIMAL", "FEASIBLE", "INFEASIBLE", "TIMEOUT"
+  tiempoSegundos        Float    @default(0)
+  inviolablesCumplidas  Float    @default(0) // porcentaje
+  preferentesCumplidas  Float    @default(0)
+  warnings              String?  // JSON array de warnings
+  parametros            String?  // JSON con config del solver usada
+  createdAt             DateTime @default(now())
+
+  @@map("solverLog")
+  @@index([trimestre])
+}
