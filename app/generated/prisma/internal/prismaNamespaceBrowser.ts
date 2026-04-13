@@ -61,6 +61,7 @@ export const ModelName = {
   EmpresaCiudad: 'EmpresaCiudad',
   Restriccion: 'Restriccion',
   ConfigTrimestral: 'ConfigTrimestral',
+  SemanaExcluida: 'SemanaExcluida',
   Frecuencia: 'Frecuencia',
   HistoricoTaller: 'HistoricoTaller',
   Planificacion: 'Planificacion',
@@ -169,13 +170,13 @@ export const TallerScalarFieldEnum = {
   nombre: 'nombre',
   programa: 'programa',
   diaSemana: 'diaSemana',
-  horario: 'horario',
   turno: 'turno',
   esContratante: 'esContratante',
   descripcion: 'descripcion',
   activo: 'activo',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  horario: 'horario'
 } as const
 
 export type TallerScalarFieldEnum = (typeof TallerScalarFieldEnum)[keyof typeof TallerScalarFieldEnum]
@@ -232,6 +233,17 @@ export const ConfigTrimestralScalarFieldEnum = {
 export type ConfigTrimestralScalarFieldEnum = (typeof ConfigTrimestralScalarFieldEnum)[keyof typeof ConfigTrimestralScalarFieldEnum]
 
 
+export const SemanaExcluidaScalarFieldEnum = {
+  id: 'id',
+  trimestre: 'trimestre',
+  semana: 'semana',
+  motivo: 'motivo',
+  createdAt: 'createdAt'
+} as const
+
+export type SemanaExcluidaScalarFieldEnum = (typeof SemanaExcluidaScalarFieldEnum)[keyof typeof SemanaExcluidaScalarFieldEnum]
+
+
 export const FrecuenciaScalarFieldEnum = {
   id: 'id',
   configId: 'configId',
@@ -269,7 +281,6 @@ export const PlanificacionScalarFieldEnum = {
   trimestre: 'trimestre',
   semana: 'semana',
   dia: 'dia',
-  horario: 'horario',
   turno: 'turno',
   empresaId: 'empresaId',
   tallerId: 'tallerId',
@@ -278,7 +289,8 @@ export const PlanificacionScalarFieldEnum = {
   esContingencia: 'esContingencia',
   version: 'version',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  horario: 'horario'
 } as const
 
 export type PlanificacionScalarFieldEnum = (typeof PlanificacionScalarFieldEnum)[keyof typeof PlanificacionScalarFieldEnum]

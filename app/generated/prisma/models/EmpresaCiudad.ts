@@ -204,16 +204,16 @@ export type EmpresaCiudadWhereInput = {
   empresaId?: Prisma.IntFilter<"EmpresaCiudad"> | number
   ciudadId?: Prisma.IntFilter<"EmpresaCiudad"> | number
   activaReciente?: Prisma.BoolFilter<"EmpresaCiudad"> | boolean
-  empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
   ciudad?: Prisma.XOR<Prisma.CiudadScalarRelationFilter, Prisma.CiudadWhereInput>
+  empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
 }
 
 export type EmpresaCiudadOrderByWithRelationInput = {
   empresaId?: Prisma.SortOrder
   ciudadId?: Prisma.SortOrder
   activaReciente?: Prisma.SortOrder
-  empresa?: Prisma.EmpresaOrderByWithRelationInput
   ciudad?: Prisma.CiudadOrderByWithRelationInput
+  empresa?: Prisma.EmpresaOrderByWithRelationInput
 }
 
 export type EmpresaCiudadWhereUniqueInput = Prisma.AtLeast<{
@@ -224,8 +224,8 @@ export type EmpresaCiudadWhereUniqueInput = Prisma.AtLeast<{
   empresaId?: Prisma.IntFilter<"EmpresaCiudad"> | number
   ciudadId?: Prisma.IntFilter<"EmpresaCiudad"> | number
   activaReciente?: Prisma.BoolFilter<"EmpresaCiudad"> | boolean
-  empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
   ciudad?: Prisma.XOR<Prisma.CiudadScalarRelationFilter, Prisma.CiudadWhereInput>
+  empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
 }, "empresaId_ciudadId">
 
 export type EmpresaCiudadOrderByWithAggregationInput = {
@@ -250,8 +250,8 @@ export type EmpresaCiudadScalarWhereWithAggregatesInput = {
 
 export type EmpresaCiudadCreateInput = {
   activaReciente?: boolean
-  empresa: Prisma.EmpresaCreateNestedOneWithoutCiudadesInput
   ciudad: Prisma.CiudadCreateNestedOneWithoutEmpresasInput
+  empresa: Prisma.EmpresaCreateNestedOneWithoutCiudadesInput
 }
 
 export type EmpresaCiudadUncheckedCreateInput = {
@@ -262,8 +262,8 @@ export type EmpresaCiudadUncheckedCreateInput = {
 
 export type EmpresaCiudadUpdateInput = {
   activaReciente?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  empresa?: Prisma.EmpresaUpdateOneRequiredWithoutCiudadesNestedInput
   ciudad?: Prisma.CiudadUpdateOneRequiredWithoutEmpresasNestedInput
+  empresa?: Prisma.EmpresaUpdateOneRequiredWithoutCiudadesNestedInput
 }
 
 export type EmpresaCiudadUncheckedUpdateInput = {
@@ -542,24 +542,24 @@ export type EmpresaCiudadSelect<ExtArgs extends runtime.Types.Extensions.Interna
   empresaId?: boolean
   ciudadId?: boolean
   activaReciente?: boolean
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   ciudad?: boolean | Prisma.CiudadDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["empresaCiudad"]>
 
 export type EmpresaCiudadSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   empresaId?: boolean
   ciudadId?: boolean
   activaReciente?: boolean
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   ciudad?: boolean | Prisma.CiudadDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["empresaCiudad"]>
 
 export type EmpresaCiudadSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   empresaId?: boolean
   ciudadId?: boolean
   activaReciente?: boolean
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   ciudad?: boolean | Prisma.CiudadDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["empresaCiudad"]>
 
 export type EmpresaCiudadSelectScalar = {
@@ -570,23 +570,23 @@ export type EmpresaCiudadSelectScalar = {
 
 export type EmpresaCiudadOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"empresaId" | "ciudadId" | "activaReciente", ExtArgs["result"]["empresaCiudad"]>
 export type EmpresaCiudadInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   ciudad?: boolean | Prisma.CiudadDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
 }
 export type EmpresaCiudadIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   ciudad?: boolean | Prisma.CiudadDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
 }
 export type EmpresaCiudadIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   ciudad?: boolean | Prisma.CiudadDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
 }
 
 export type $EmpresaCiudadPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EmpresaCiudad"
   objects: {
-    empresa: Prisma.$EmpresaPayload<ExtArgs>
     ciudad: Prisma.$CiudadPayload<ExtArgs>
+    empresa: Prisma.$EmpresaPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     empresaId: number
@@ -986,8 +986,8 @@ readonly fields: EmpresaCiudadFieldRefs;
  */
 export interface Prisma__EmpresaCiudadClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  empresa<T extends Prisma.EmpresaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EmpresaDefaultArgs<ExtArgs>>): Prisma.Prisma__EmpresaClient<runtime.Types.Result.GetResult<Prisma.$EmpresaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   ciudad<T extends Prisma.CiudadDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CiudadDefaultArgs<ExtArgs>>): Prisma.Prisma__CiudadClient<runtime.Types.Result.GetResult<Prisma.$CiudadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  empresa<T extends Prisma.EmpresaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EmpresaDefaultArgs<ExtArgs>>): Prisma.Prisma__EmpresaClient<runtime.Types.Result.GetResult<Prisma.$EmpresaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

@@ -90,6 +90,11 @@ export type Restriccion = Prisma.RestriccionModel
  */
 export type ConfigTrimestral = Prisma.ConfigTrimestralModel
 /**
+ * Model SemanaExcluida
+ * 
+ */
+export type SemanaExcluida = Prisma.SemanaExcluidaModel
+/**
  * Model Frecuencia
  * 
  */

@@ -39,13 +39,13 @@ export type TallerMinAggregateOutputType = {
   nombre: string | null
   programa: $Enums.Programa | null
   diaSemana: string | null
-  horario: string | null
   turno: string | null
   esContratante: boolean | null
   descripcion: string | null
   activo: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  horario: string | null
 }
 
 export type TallerMaxAggregateOutputType = {
@@ -53,13 +53,13 @@ export type TallerMaxAggregateOutputType = {
   nombre: string | null
   programa: $Enums.Programa | null
   diaSemana: string | null
-  horario: string | null
   turno: string | null
   esContratante: boolean | null
   descripcion: string | null
   activo: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
+  horario: string | null
 }
 
 export type TallerCountAggregateOutputType = {
@@ -67,13 +67,13 @@ export type TallerCountAggregateOutputType = {
   nombre: number
   programa: number
   diaSemana: number
-  horario: number
   turno: number
   esContratante: number
   descripcion: number
   activo: number
   createdAt: number
   updatedAt: number
+  horario: number
   _all: number
 }
 
@@ -91,13 +91,13 @@ export type TallerMinAggregateInputType = {
   nombre?: true
   programa?: true
   diaSemana?: true
-  horario?: true
   turno?: true
   esContratante?: true
   descripcion?: true
   activo?: true
   createdAt?: true
   updatedAt?: true
+  horario?: true
 }
 
 export type TallerMaxAggregateInputType = {
@@ -105,13 +105,13 @@ export type TallerMaxAggregateInputType = {
   nombre?: true
   programa?: true
   diaSemana?: true
-  horario?: true
   turno?: true
   esContratante?: true
   descripcion?: true
   activo?: true
   createdAt?: true
   updatedAt?: true
+  horario?: true
 }
 
 export type TallerCountAggregateInputType = {
@@ -119,13 +119,13 @@ export type TallerCountAggregateInputType = {
   nombre?: true
   programa?: true
   diaSemana?: true
-  horario?: true
   turno?: true
   esContratante?: true
   descripcion?: true
   activo?: true
   createdAt?: true
   updatedAt?: true
+  horario?: true
   _all?: true
 }
 
@@ -220,13 +220,13 @@ export type TallerGroupByOutputType = {
   nombre: string
   programa: $Enums.Programa
   diaSemana: string | null
-  horario: string | null
   turno: string | null
   esContratante: boolean
   descripcion: string | null
   activo: boolean
   createdAt: Date
   updatedAt: Date
+  horario: string | null
   _count: TallerCountAggregateOutputType | null
   _avg: TallerAvgAggregateOutputType | null
   _sum: TallerSumAggregateOutputType | null
@@ -257,13 +257,13 @@ export type TallerWhereInput = {
   nombre?: Prisma.StringFilter<"Taller"> | string
   programa?: Prisma.EnumProgramaFilter<"Taller"> | $Enums.Programa
   diaSemana?: Prisma.StringNullableFilter<"Taller"> | string | null
-  horario?: Prisma.StringNullableFilter<"Taller"> | string | null
   turno?: Prisma.StringNullableFilter<"Taller"> | string | null
   esContratante?: Prisma.BoolFilter<"Taller"> | boolean
   descripcion?: Prisma.StringNullableFilter<"Taller"> | string | null
   activo?: Prisma.BoolFilter<"Taller"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Taller"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Taller"> | Date | string
+  horario?: Prisma.StringNullableFilter<"Taller"> | string | null
   historico?: Prisma.HistoricoTallerListRelationFilter
   planificaciones?: Prisma.PlanificacionListRelationFilter
 }
@@ -273,13 +273,13 @@ export type TallerOrderByWithRelationInput = {
   nombre?: Prisma.SortOrder
   programa?: Prisma.SortOrder
   diaSemana?: Prisma.SortOrderInput | Prisma.SortOrder
-  horario?: Prisma.SortOrderInput | Prisma.SortOrder
   turno?: Prisma.SortOrderInput | Prisma.SortOrder
   esContratante?: Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   activo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  horario?: Prisma.SortOrderInput | Prisma.SortOrder
   historico?: Prisma.HistoricoTallerOrderByRelationAggregateInput
   planificaciones?: Prisma.PlanificacionOrderByRelationAggregateInput
 }
@@ -292,13 +292,13 @@ export type TallerWhereUniqueInput = Prisma.AtLeast<{
   nombre?: Prisma.StringFilter<"Taller"> | string
   programa?: Prisma.EnumProgramaFilter<"Taller"> | $Enums.Programa
   diaSemana?: Prisma.StringNullableFilter<"Taller"> | string | null
-  horario?: Prisma.StringNullableFilter<"Taller"> | string | null
   turno?: Prisma.StringNullableFilter<"Taller"> | string | null
   esContratante?: Prisma.BoolFilter<"Taller"> | boolean
   descripcion?: Prisma.StringNullableFilter<"Taller"> | string | null
   activo?: Prisma.BoolFilter<"Taller"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Taller"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Taller"> | Date | string
+  horario?: Prisma.StringNullableFilter<"Taller"> | string | null
   historico?: Prisma.HistoricoTallerListRelationFilter
   planificaciones?: Prisma.PlanificacionListRelationFilter
 }, "id">
@@ -308,13 +308,13 @@ export type TallerOrderByWithAggregationInput = {
   nombre?: Prisma.SortOrder
   programa?: Prisma.SortOrder
   diaSemana?: Prisma.SortOrderInput | Prisma.SortOrder
-  horario?: Prisma.SortOrderInput | Prisma.SortOrder
   turno?: Prisma.SortOrderInput | Prisma.SortOrder
   esContratante?: Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   activo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  horario?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TallerCountOrderByAggregateInput
   _avg?: Prisma.TallerAvgOrderByAggregateInput
   _max?: Prisma.TallerMaxOrderByAggregateInput
@@ -330,26 +330,26 @@ export type TallerScalarWhereWithAggregatesInput = {
   nombre?: Prisma.StringWithAggregatesFilter<"Taller"> | string
   programa?: Prisma.EnumProgramaWithAggregatesFilter<"Taller"> | $Enums.Programa
   diaSemana?: Prisma.StringNullableWithAggregatesFilter<"Taller"> | string | null
-  horario?: Prisma.StringNullableWithAggregatesFilter<"Taller"> | string | null
   turno?: Prisma.StringNullableWithAggregatesFilter<"Taller"> | string | null
   esContratante?: Prisma.BoolWithAggregatesFilter<"Taller"> | boolean
   descripcion?: Prisma.StringNullableWithAggregatesFilter<"Taller"> | string | null
   activo?: Prisma.BoolWithAggregatesFilter<"Taller"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Taller"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Taller"> | Date | string
+  horario?: Prisma.StringNullableWithAggregatesFilter<"Taller"> | string | null
 }
 
 export type TallerCreateInput = {
   nombre: string
   programa: $Enums.Programa
   diaSemana?: string | null
-  horario?: string | null
   turno?: string | null
   esContratante?: boolean
   descripcion?: string | null
   activo?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  horario?: string | null
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutTallerInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutTallerInput
 }
@@ -359,13 +359,13 @@ export type TallerUncheckedCreateInput = {
   nombre: string
   programa: $Enums.Programa
   diaSemana?: string | null
-  horario?: string | null
   turno?: string | null
   esContratante?: boolean
   descripcion?: string | null
   activo?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  horario?: string | null
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutTallerInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutTallerInput
 }
@@ -374,13 +374,13 @@ export type TallerUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUpdateManyWithoutTallerNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutTallerNestedInput
 }
@@ -390,13 +390,13 @@ export type TallerUncheckedUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutTallerNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutTallerNestedInput
 }
@@ -406,26 +406,26 @@ export type TallerCreateManyInput = {
   nombre: string
   programa: $Enums.Programa
   diaSemana?: string | null
-  horario?: string | null
   turno?: string | null
   esContratante?: boolean
   descripcion?: string | null
   activo?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  horario?: string | null
 }
 
 export type TallerUpdateManyMutationInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TallerUncheckedUpdateManyInput = {
@@ -433,13 +433,13 @@ export type TallerUncheckedUpdateManyInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TallerCountOrderByAggregateInput = {
@@ -447,13 +447,13 @@ export type TallerCountOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   programa?: Prisma.SortOrder
   diaSemana?: Prisma.SortOrder
-  horario?: Prisma.SortOrder
   turno?: Prisma.SortOrder
   esContratante?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  horario?: Prisma.SortOrder
 }
 
 export type TallerAvgOrderByAggregateInput = {
@@ -465,13 +465,13 @@ export type TallerMaxOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   programa?: Prisma.SortOrder
   diaSemana?: Prisma.SortOrder
-  horario?: Prisma.SortOrder
   turno?: Prisma.SortOrder
   esContratante?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  horario?: Prisma.SortOrder
 }
 
 export type TallerMinOrderByAggregateInput = {
@@ -479,13 +479,13 @@ export type TallerMinOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   programa?: Prisma.SortOrder
   diaSemana?: Prisma.SortOrder
-  horario?: Prisma.SortOrder
   turno?: Prisma.SortOrder
   esContratante?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  horario?: Prisma.SortOrder
 }
 
 export type TallerSumOrderByAggregateInput = {
@@ -529,13 +529,13 @@ export type TallerCreateWithoutHistoricoInput = {
   nombre: string
   programa: $Enums.Programa
   diaSemana?: string | null
-  horario?: string | null
   turno?: string | null
   esContratante?: boolean
   descripcion?: string | null
   activo?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  horario?: string | null
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutTallerInput
 }
 
@@ -544,13 +544,13 @@ export type TallerUncheckedCreateWithoutHistoricoInput = {
   nombre: string
   programa: $Enums.Programa
   diaSemana?: string | null
-  horario?: string | null
   turno?: string | null
   esContratante?: boolean
   descripcion?: string | null
   activo?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  horario?: string | null
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutTallerInput
 }
 
@@ -574,13 +574,13 @@ export type TallerUpdateWithoutHistoricoInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutTallerNestedInput
 }
 
@@ -589,13 +589,13 @@ export type TallerUncheckedUpdateWithoutHistoricoInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutTallerNestedInput
 }
 
@@ -603,13 +603,13 @@ export type TallerCreateWithoutPlanificacionesInput = {
   nombre: string
   programa: $Enums.Programa
   diaSemana?: string | null
-  horario?: string | null
   turno?: string | null
   esContratante?: boolean
   descripcion?: string | null
   activo?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  horario?: string | null
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutTallerInput
 }
 
@@ -618,13 +618,13 @@ export type TallerUncheckedCreateWithoutPlanificacionesInput = {
   nombre: string
   programa: $Enums.Programa
   diaSemana?: string | null
-  horario?: string | null
   turno?: string | null
   esContratante?: boolean
   descripcion?: string | null
   activo?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  horario?: string | null
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutTallerInput
 }
 
@@ -648,13 +648,13 @@ export type TallerUpdateWithoutPlanificacionesInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUpdateManyWithoutTallerNestedInput
 }
 
@@ -663,13 +663,13 @@ export type TallerUncheckedUpdateWithoutPlanificacionesInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutTallerNestedInput
 }
 
@@ -718,13 +718,13 @@ export type TallerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   nombre?: boolean
   programa?: boolean
   diaSemana?: boolean
-  horario?: boolean
   turno?: boolean
   esContratante?: boolean
   descripcion?: boolean
   activo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  horario?: boolean
   historico?: boolean | Prisma.Taller$historicoArgs<ExtArgs>
   planificaciones?: boolean | Prisma.Taller$planificacionesArgs<ExtArgs>
   _count?: boolean | Prisma.TallerCountOutputTypeDefaultArgs<ExtArgs>
@@ -735,13 +735,13 @@ export type TallerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   nombre?: boolean
   programa?: boolean
   diaSemana?: boolean
-  horario?: boolean
   turno?: boolean
   esContratante?: boolean
   descripcion?: boolean
   activo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  horario?: boolean
 }, ExtArgs["result"]["taller"]>
 
 export type TallerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -749,13 +749,13 @@ export type TallerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   nombre?: boolean
   programa?: boolean
   diaSemana?: boolean
-  horario?: boolean
   turno?: boolean
   esContratante?: boolean
   descripcion?: boolean
   activo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  horario?: boolean
 }, ExtArgs["result"]["taller"]>
 
 export type TallerSelectScalar = {
@@ -763,16 +763,16 @@ export type TallerSelectScalar = {
   nombre?: boolean
   programa?: boolean
   diaSemana?: boolean
-  horario?: boolean
   turno?: boolean
   esContratante?: boolean
   descripcion?: boolean
   activo?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  horario?: boolean
 }
 
-export type TallerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "programa" | "diaSemana" | "horario" | "turno" | "esContratante" | "descripcion" | "activo" | "createdAt" | "updatedAt", ExtArgs["result"]["taller"]>
+export type TallerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "programa" | "diaSemana" | "turno" | "esContratante" | "descripcion" | "activo" | "createdAt" | "updatedAt" | "horario", ExtArgs["result"]["taller"]>
 export type TallerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   historico?: boolean | Prisma.Taller$historicoArgs<ExtArgs>
   planificaciones?: boolean | Prisma.Taller$planificacionesArgs<ExtArgs>
@@ -792,13 +792,13 @@ export type $TallerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     nombre: string
     programa: $Enums.Programa
     diaSemana: string | null
-    horario: string | null
     turno: string | null
     esContratante: boolean
     descripcion: string | null
     activo: boolean
     createdAt: Date
     updatedAt: Date
+    horario: string | null
   }, ExtArgs["result"]["taller"]>
   composites: {}
 }
@@ -1228,13 +1228,13 @@ export interface TallerFieldRefs {
   readonly nombre: Prisma.FieldRef<"Taller", 'String'>
   readonly programa: Prisma.FieldRef<"Taller", 'Programa'>
   readonly diaSemana: Prisma.FieldRef<"Taller", 'String'>
-  readonly horario: Prisma.FieldRef<"Taller", 'String'>
   readonly turno: Prisma.FieldRef<"Taller", 'String'>
   readonly esContratante: Prisma.FieldRef<"Taller", 'Boolean'>
   readonly descripcion: Prisma.FieldRef<"Taller", 'String'>
   readonly activo: Prisma.FieldRef<"Taller", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Taller", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Taller", 'DateTime'>
+  readonly horario: Prisma.FieldRef<"Taller", 'String'>
 }
     
 

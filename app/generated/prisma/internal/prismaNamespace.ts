@@ -394,6 +394,7 @@ export const ModelName = {
   EmpresaCiudad: 'EmpresaCiudad',
   Restriccion: 'Restriccion',
   ConfigTrimestral: 'ConfigTrimestral',
+  SemanaExcluida: 'SemanaExcluida',
   Frecuencia: 'Frecuencia',
   HistoricoTaller: 'HistoricoTaller',
   Planificacion: 'Planificacion',
@@ -413,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "empresa" | "taller" | "ciudad" | "empresaCiudad" | "restriccion" | "configTrimestral" | "frecuencia" | "historicoTaller" | "planificacion" | "solverLog"
+    modelProps: "user" | "session" | "account" | "verification" | "empresa" | "taller" | "ciudad" | "empresaCiudad" | "restriccion" | "configTrimestral" | "semanaExcluida" | "frecuencia" | "historicoTaller" | "planificacion" | "solverLog"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1157,6 +1158,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SemanaExcluida: {
+      payload: Prisma.$SemanaExcluidaPayload<ExtArgs>
+      fields: Prisma.SemanaExcluidaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SemanaExcluidaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SemanaExcluidaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+        }
+        findFirst: {
+          args: Prisma.SemanaExcluidaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SemanaExcluidaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+        }
+        findMany: {
+          args: Prisma.SemanaExcluidaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>[]
+        }
+        create: {
+          args: Prisma.SemanaExcluidaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+        }
+        createMany: {
+          args: Prisma.SemanaExcluidaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SemanaExcluidaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>[]
+        }
+        delete: {
+          args: Prisma.SemanaExcluidaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+        }
+        update: {
+          args: Prisma.SemanaExcluidaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+        }
+        deleteMany: {
+          args: Prisma.SemanaExcluidaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SemanaExcluidaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SemanaExcluidaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>[]
+        }
+        upsert: {
+          args: Prisma.SemanaExcluidaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+        }
+        aggregate: {
+          args: Prisma.SemanaExcluidaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSemanaExcluida>
+        }
+        groupBy: {
+          args: Prisma.SemanaExcluidaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SemanaExcluidaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SemanaExcluidaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SemanaExcluidaCountAggregateOutputType> | number
+        }
+      }
+    }
     Frecuencia: {
       payload: Prisma.$FrecuenciaPayload<ExtArgs>
       fields: Prisma.FrecuenciaFieldRefs
@@ -1578,13 +1653,13 @@ export const TallerScalarFieldEnum = {
   nombre: 'nombre',
   programa: 'programa',
   diaSemana: 'diaSemana',
-  horario: 'horario',
   turno: 'turno',
   esContratante: 'esContratante',
   descripcion: 'descripcion',
   activo: 'activo',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  horario: 'horario'
 } as const
 
 export type TallerScalarFieldEnum = (typeof TallerScalarFieldEnum)[keyof typeof TallerScalarFieldEnum]
@@ -1641,6 +1716,17 @@ export const ConfigTrimestralScalarFieldEnum = {
 export type ConfigTrimestralScalarFieldEnum = (typeof ConfigTrimestralScalarFieldEnum)[keyof typeof ConfigTrimestralScalarFieldEnum]
 
 
+export const SemanaExcluidaScalarFieldEnum = {
+  id: 'id',
+  trimestre: 'trimestre',
+  semana: 'semana',
+  motivo: 'motivo',
+  createdAt: 'createdAt'
+} as const
+
+export type SemanaExcluidaScalarFieldEnum = (typeof SemanaExcluidaScalarFieldEnum)[keyof typeof SemanaExcluidaScalarFieldEnum]
+
+
 export const FrecuenciaScalarFieldEnum = {
   id: 'id',
   configId: 'configId',
@@ -1678,7 +1764,6 @@ export const PlanificacionScalarFieldEnum = {
   trimestre: 'trimestre',
   semana: 'semana',
   dia: 'dia',
-  horario: 'horario',
   turno: 'turno',
   empresaId: 'empresaId',
   tallerId: 'tallerId',
@@ -1687,7 +1772,8 @@ export const PlanificacionScalarFieldEnum = {
   esContingencia: 'esContingencia',
   version: 'version',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  horario: 'horario'
 } as const
 
 export type PlanificacionScalarFieldEnum = (typeof PlanificacionScalarFieldEnum)[keyof typeof PlanificacionScalarFieldEnum]
@@ -2004,6 +2090,7 @@ export type GlobalOmitConfig = {
   empresaCiudad?: Prisma.EmpresaCiudadOmit
   restriccion?: Prisma.RestriccionOmit
   configTrimestral?: Prisma.ConfigTrimestralOmit
+  semanaExcluida?: Prisma.SemanaExcluidaOmit
   frecuencia?: Prisma.FrecuenciaOmit
   historicoTaller?: Prisma.HistoricoTallerOmit
   planificacion?: Prisma.PlanificacionOmit

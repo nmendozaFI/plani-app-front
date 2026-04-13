@@ -316,12 +316,12 @@ export type EmpresaWhereInput = {
   notas?: Prisma.StringNullableFilter<"Empresa"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
-  ciudades?: Prisma.EmpresaCiudadListRelationFilter
-  restricciones?: Prisma.RestriccionListRelationFilter
   configsTrimestre?: Prisma.ConfigTrimestralListRelationFilter
+  ciudades?: Prisma.EmpresaCiudadListRelationFilter
   frecuencias?: Prisma.FrecuenciaListRelationFilter
   historico?: Prisma.HistoricoTallerListRelationFilter
   planificaciones?: Prisma.PlanificacionListRelationFilter
+  restricciones?: Prisma.RestriccionListRelationFilter
 }
 
 export type EmpresaOrderByWithRelationInput = {
@@ -341,12 +341,12 @@ export type EmpresaOrderByWithRelationInput = {
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  ciudades?: Prisma.EmpresaCiudadOrderByRelationAggregateInput
-  restricciones?: Prisma.RestriccionOrderByRelationAggregateInput
   configsTrimestre?: Prisma.ConfigTrimestralOrderByRelationAggregateInput
+  ciudades?: Prisma.EmpresaCiudadOrderByRelationAggregateInput
   frecuencias?: Prisma.FrecuenciaOrderByRelationAggregateInput
   historico?: Prisma.HistoricoTallerOrderByRelationAggregateInput
   planificaciones?: Prisma.PlanificacionOrderByRelationAggregateInput
+  restricciones?: Prisma.RestriccionOrderByRelationAggregateInput
 }
 
 export type EmpresaWhereUniqueInput = Prisma.AtLeast<{
@@ -369,12 +369,12 @@ export type EmpresaWhereUniqueInput = Prisma.AtLeast<{
   notas?: Prisma.StringNullableFilter<"Empresa"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
-  ciudades?: Prisma.EmpresaCiudadListRelationFilter
-  restricciones?: Prisma.RestriccionListRelationFilter
   configsTrimestre?: Prisma.ConfigTrimestralListRelationFilter
+  ciudades?: Prisma.EmpresaCiudadListRelationFilter
   frecuencias?: Prisma.FrecuenciaListRelationFilter
   historico?: Prisma.HistoricoTallerListRelationFilter
   planificaciones?: Prisma.PlanificacionListRelationFilter
+  restricciones?: Prisma.RestriccionListRelationFilter
 }, "id" | "nombre">
 
 export type EmpresaOrderByWithAggregationInput = {
@@ -439,12 +439,12 @@ export type EmpresaCreateInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaUncheckedCreateInput = {
@@ -464,12 +464,12 @@ export type EmpresaUncheckedCreateInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaUncheckedCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaUpdateInput = {
@@ -488,12 +488,12 @@ export type EmpresaUpdateInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaUncheckedUpdateInput = {
@@ -513,12 +513,12 @@ export type EmpresaUncheckedUpdateInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUncheckedUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaCreateManyInput = {
@@ -781,11 +781,11 @@ export type EmpresaCreateWithoutCiudadesInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaUncheckedCreateWithoutCiudadesInput = {
@@ -805,11 +805,11 @@ export type EmpresaUncheckedCreateWithoutCiudadesInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaUncheckedCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaCreateOrConnectWithoutCiudadesInput = {
@@ -844,11 +844,11 @@ export type EmpresaUpdateWithoutCiudadesInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaUncheckedUpdateWithoutCiudadesInput = {
@@ -868,11 +868,11 @@ export type EmpresaUncheckedUpdateWithoutCiudadesInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUncheckedUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaCreateWithoutRestriccionesInput = {
@@ -891,8 +891,8 @@ export type EmpresaCreateWithoutRestriccionesInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutEmpresaInput
@@ -915,8 +915,8 @@ export type EmpresaUncheckedCreateWithoutRestriccionesInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaUncheckedCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutEmpresaInput
@@ -954,8 +954,8 @@ export type EmpresaUpdateWithoutRestriccionesInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutEmpresaNestedInput
@@ -978,8 +978,8 @@ export type EmpresaUncheckedUpdateWithoutRestriccionesInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUncheckedUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutEmpresaNestedInput
@@ -1002,10 +1002,10 @@ export type EmpresaCreateWithoutConfigsTrimestreInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaUncheckedCreateWithoutConfigsTrimestreInput = {
@@ -1026,10 +1026,10 @@ export type EmpresaUncheckedCreateWithoutConfigsTrimestreInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaUncheckedCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaCreateOrConnectWithoutConfigsTrimestreInput = {
@@ -1065,10 +1065,10 @@ export type EmpresaUpdateWithoutConfigsTrimestreInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaUncheckedUpdateWithoutConfigsTrimestreInput = {
@@ -1089,10 +1089,10 @@ export type EmpresaUncheckedUpdateWithoutConfigsTrimestreInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUncheckedUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaCreateWithoutFrecuenciasInput = {
@@ -1111,11 +1111,11 @@ export type EmpresaCreateWithoutFrecuenciasInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaUncheckedCreateWithoutFrecuenciasInput = {
@@ -1135,11 +1135,11 @@ export type EmpresaUncheckedCreateWithoutFrecuenciasInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaCreateOrConnectWithoutFrecuenciasInput = {
@@ -1174,11 +1174,11 @@ export type EmpresaUpdateWithoutFrecuenciasInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaUncheckedUpdateWithoutFrecuenciasInput = {
@@ -1198,11 +1198,11 @@ export type EmpresaUncheckedUpdateWithoutFrecuenciasInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaCreateWithoutHistoricoInput = {
@@ -1221,11 +1221,11 @@ export type EmpresaCreateWithoutHistoricoInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaUncheckedCreateWithoutHistoricoInput = {
@@ -1245,11 +1245,11 @@ export type EmpresaUncheckedCreateWithoutHistoricoInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaUncheckedCreateNestedManyWithoutEmpresaInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaCreateOrConnectWithoutHistoricoInput = {
@@ -1284,11 +1284,11 @@ export type EmpresaUpdateWithoutHistoricoInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaUncheckedUpdateWithoutHistoricoInput = {
@@ -1308,11 +1308,11 @@ export type EmpresaUncheckedUpdateWithoutHistoricoInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUncheckedUpdateManyWithoutEmpresaNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaCreateWithoutPlanificacionesInput = {
@@ -1331,11 +1331,11 @@ export type EmpresaCreateWithoutPlanificacionesInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaUncheckedCreateWithoutPlanificacionesInput = {
@@ -1355,11 +1355,11 @@ export type EmpresaUncheckedCreateWithoutPlanificacionesInput = {
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
-  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedCreateNestedManyWithoutEmpresaInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedCreateNestedManyWithoutEmpresaInput
   frecuencias?: Prisma.FrecuenciaUncheckedCreateNestedManyWithoutEmpresaInput
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutEmpresaInput
+  restricciones?: Prisma.RestriccionUncheckedCreateNestedManyWithoutEmpresaInput
 }
 
 export type EmpresaCreateOrConnectWithoutPlanificacionesInput = {
@@ -1394,11 +1394,11 @@ export type EmpresaUpdateWithoutPlanificacionesInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUpdateManyWithoutEmpresaNestedInput
 }
 
 export type EmpresaUncheckedUpdateWithoutPlanificacionesInput = {
@@ -1418,11 +1418,11 @@ export type EmpresaUncheckedUpdateWithoutPlanificacionesInput = {
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
-  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
   configsTrimestre?: Prisma.ConfigTrimestralUncheckedUpdateManyWithoutEmpresaNestedInput
+  ciudades?: Prisma.EmpresaCiudadUncheckedUpdateManyWithoutEmpresaNestedInput
   frecuencias?: Prisma.FrecuenciaUncheckedUpdateManyWithoutEmpresaNestedInput
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutEmpresaNestedInput
+  restricciones?: Prisma.RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput
 }
 
 
@@ -1431,21 +1431,21 @@ export type EmpresaUncheckedUpdateWithoutPlanificacionesInput = {
  */
 
 export type EmpresaCountOutputType = {
-  ciudades: number
-  restricciones: number
   configsTrimestre: number
+  ciudades: number
   frecuencias: number
   historico: number
   planificaciones: number
+  restricciones: number
 }
 
 export type EmpresaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  ciudades?: boolean | EmpresaCountOutputTypeCountCiudadesArgs
-  restricciones?: boolean | EmpresaCountOutputTypeCountRestriccionesArgs
   configsTrimestre?: boolean | EmpresaCountOutputTypeCountConfigsTrimestreArgs
+  ciudades?: boolean | EmpresaCountOutputTypeCountCiudadesArgs
   frecuencias?: boolean | EmpresaCountOutputTypeCountFrecuenciasArgs
   historico?: boolean | EmpresaCountOutputTypeCountHistoricoArgs
   planificaciones?: boolean | EmpresaCountOutputTypeCountPlanificacionesArgs
+  restricciones?: boolean | EmpresaCountOutputTypeCountRestriccionesArgs
 }
 
 /**
@@ -1461,22 +1461,15 @@ export type EmpresaCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
 /**
  * EmpresaCountOutputType without action
  */
-export type EmpresaCountOutputTypeCountCiudadesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.EmpresaCiudadWhereInput
-}
-
-/**
- * EmpresaCountOutputType without action
- */
-export type EmpresaCountOutputTypeCountRestriccionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.RestriccionWhereInput
-}
-
-/**
- * EmpresaCountOutputType without action
- */
 export type EmpresaCountOutputTypeCountConfigsTrimestreArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ConfigTrimestralWhereInput
+}
+
+/**
+ * EmpresaCountOutputType without action
+ */
+export type EmpresaCountOutputTypeCountCiudadesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EmpresaCiudadWhereInput
 }
 
 /**
@@ -1500,6 +1493,13 @@ export type EmpresaCountOutputTypeCountPlanificacionesArgs<ExtArgs extends runti
   where?: Prisma.PlanificacionWhereInput
 }
 
+/**
+ * EmpresaCountOutputType without action
+ */
+export type EmpresaCountOutputTypeCountRestriccionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RestriccionWhereInput
+}
+
 
 export type EmpresaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1518,12 +1518,12 @@ export type EmpresaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  ciudades?: boolean | Prisma.Empresa$ciudadesArgs<ExtArgs>
-  restricciones?: boolean | Prisma.Empresa$restriccionesArgs<ExtArgs>
   configsTrimestre?: boolean | Prisma.Empresa$configsTrimestreArgs<ExtArgs>
+  ciudades?: boolean | Prisma.Empresa$ciudadesArgs<ExtArgs>
   frecuencias?: boolean | Prisma.Empresa$frecuenciasArgs<ExtArgs>
   historico?: boolean | Prisma.Empresa$historicoArgs<ExtArgs>
   planificaciones?: boolean | Prisma.Empresa$planificacionesArgs<ExtArgs>
+  restricciones?: boolean | Prisma.Empresa$restriccionesArgs<ExtArgs>
   _count?: boolean | Prisma.EmpresaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["empresa"]>
 
@@ -1586,12 +1586,12 @@ export type EmpresaSelectScalar = {
 
 export type EmpresaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "tipo" | "semaforo" | "scoreV3" | "fiabilidadReciente" | "esComodin" | "aceptaExtras" | "maxExtrasTrimestre" | "prioridadReduccion" | "tieneBolsa" | "turnoPreferido" | "activa" | "notas" | "createdAt" | "updatedAt", ExtArgs["result"]["empresa"]>
 export type EmpresaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  ciudades?: boolean | Prisma.Empresa$ciudadesArgs<ExtArgs>
-  restricciones?: boolean | Prisma.Empresa$restriccionesArgs<ExtArgs>
   configsTrimestre?: boolean | Prisma.Empresa$configsTrimestreArgs<ExtArgs>
+  ciudades?: boolean | Prisma.Empresa$ciudadesArgs<ExtArgs>
   frecuencias?: boolean | Prisma.Empresa$frecuenciasArgs<ExtArgs>
   historico?: boolean | Prisma.Empresa$historicoArgs<ExtArgs>
   planificaciones?: boolean | Prisma.Empresa$planificacionesArgs<ExtArgs>
+  restricciones?: boolean | Prisma.Empresa$restriccionesArgs<ExtArgs>
   _count?: boolean | Prisma.EmpresaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type EmpresaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1600,12 +1600,12 @@ export type EmpresaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
 export type $EmpresaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Empresa"
   objects: {
-    ciudades: Prisma.$EmpresaCiudadPayload<ExtArgs>[]
-    restricciones: Prisma.$RestriccionPayload<ExtArgs>[]
     configsTrimestre: Prisma.$ConfigTrimestralPayload<ExtArgs>[]
+    ciudades: Prisma.$EmpresaCiudadPayload<ExtArgs>[]
     frecuencias: Prisma.$FrecuenciaPayload<ExtArgs>[]
     historico: Prisma.$HistoricoTallerPayload<ExtArgs>[]
     planificaciones: Prisma.$PlanificacionPayload<ExtArgs>[]
+    restricciones: Prisma.$RestriccionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2018,12 +2018,12 @@ readonly fields: EmpresaFieldRefs;
  */
 export interface Prisma__EmpresaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  ciudades<T extends Prisma.Empresa$ciudadesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$ciudadesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmpresaCiudadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  restricciones<T extends Prisma.Empresa$restriccionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$restriccionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RestriccionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   configsTrimestre<T extends Prisma.Empresa$configsTrimestreArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$configsTrimestreArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConfigTrimestralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  ciudades<T extends Prisma.Empresa$ciudadesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$ciudadesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmpresaCiudadPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   frecuencias<T extends Prisma.Empresa$frecuenciasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$frecuenciasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$FrecuenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   historico<T extends Prisma.Empresa$historicoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$historicoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HistoricoTallerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   planificaciones<T extends Prisma.Empresa$planificacionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$planificacionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlanificacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  restricciones<T extends Prisma.Empresa$restriccionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Empresa$restriccionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RestriccionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2457,54 +2457,6 @@ export type EmpresaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
- * Empresa.ciudades
- */
-export type Empresa$ciudadesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the EmpresaCiudad
-   */
-  select?: Prisma.EmpresaCiudadSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the EmpresaCiudad
-   */
-  omit?: Prisma.EmpresaCiudadOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.EmpresaCiudadInclude<ExtArgs> | null
-  where?: Prisma.EmpresaCiudadWhereInput
-  orderBy?: Prisma.EmpresaCiudadOrderByWithRelationInput | Prisma.EmpresaCiudadOrderByWithRelationInput[]
-  cursor?: Prisma.EmpresaCiudadWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.EmpresaCiudadScalarFieldEnum | Prisma.EmpresaCiudadScalarFieldEnum[]
-}
-
-/**
- * Empresa.restricciones
- */
-export type Empresa$restriccionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Restriccion
-   */
-  select?: Prisma.RestriccionSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Restriccion
-   */
-  omit?: Prisma.RestriccionOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.RestriccionInclude<ExtArgs> | null
-  where?: Prisma.RestriccionWhereInput
-  orderBy?: Prisma.RestriccionOrderByWithRelationInput | Prisma.RestriccionOrderByWithRelationInput[]
-  cursor?: Prisma.RestriccionWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.RestriccionScalarFieldEnum | Prisma.RestriccionScalarFieldEnum[]
-}
-
-/**
  * Empresa.configsTrimestre
  */
 export type Empresa$configsTrimestreArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2526,6 +2478,30 @@ export type Empresa$configsTrimestreArgs<ExtArgs extends runtime.Types.Extension
   take?: number
   skip?: number
   distinct?: Prisma.ConfigTrimestralScalarFieldEnum | Prisma.ConfigTrimestralScalarFieldEnum[]
+}
+
+/**
+ * Empresa.ciudades
+ */
+export type Empresa$ciudadesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EmpresaCiudad
+   */
+  select?: Prisma.EmpresaCiudadSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EmpresaCiudad
+   */
+  omit?: Prisma.EmpresaCiudadOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmpresaCiudadInclude<ExtArgs> | null
+  where?: Prisma.EmpresaCiudadWhereInput
+  orderBy?: Prisma.EmpresaCiudadOrderByWithRelationInput | Prisma.EmpresaCiudadOrderByWithRelationInput[]
+  cursor?: Prisma.EmpresaCiudadWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EmpresaCiudadScalarFieldEnum | Prisma.EmpresaCiudadScalarFieldEnum[]
 }
 
 /**
@@ -2598,6 +2574,30 @@ export type Empresa$planificacionesArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.PlanificacionScalarFieldEnum | Prisma.PlanificacionScalarFieldEnum[]
+}
+
+/**
+ * Empresa.restricciones
+ */
+export type Empresa$restriccionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Restriccion
+   */
+  select?: Prisma.RestriccionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Restriccion
+   */
+  omit?: Prisma.RestriccionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RestriccionInclude<ExtArgs> | null
+  where?: Prisma.RestriccionWhereInput
+  orderBy?: Prisma.RestriccionOrderByWithRelationInput | Prisma.RestriccionOrderByWithRelationInput[]
+  cursor?: Prisma.RestriccionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RestriccionScalarFieldEnum | Prisma.RestriccionScalarFieldEnum[]
 }
 
 /**
