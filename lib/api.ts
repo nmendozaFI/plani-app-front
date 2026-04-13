@@ -4,135 +4,81 @@
  * Centraliza todas las llamadas HTTP con manejo de errores.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { apiFetch, apiFetchBlob, apiUpload } from "./api-client";
 
-// ── Types ────────────────────────────────────────────────────
+// ── Re-export types from canonical source ────────────────────
+export type {
+  FrecuenciaEmpresa,
+  RecorteDetalle,
+  FrecuenciaOutput,
+  ConfirmarEmpresa,
+  ConfirmarOutput,
+} from "@/types/frecuencia";
 
-export interface FrecuenciaEmpresa {
-  empresa_id: number;
-  nombre: string;
-  talleres_ef: number;
-  talleres_it: number;
-  total: number;
-  semaforo: string;
-  score: number;
-  ajuste_desempeno: number;
-  es_nueva: boolean;
-  es_comodin: boolean;
-  prioridad_reduccion: string;
-  ciudades_activas: string[];
-  restricciones: { tipo: string; clave: string; valor: string }[];
-}
+export type {
+  SugerenciaContingencia,
+  SlotCalendario,
+  CalendarioOutput,
+} from "@/types/calendario";
 
-export interface RecorteDetalle {
-  empresa_id: number;
-  nombre: string;
-  ef_original: number;
-  it_original: number;
-  ef_recortado: number;
-  it_recortado: number;
-  ef_delta: number;
-  it_delta: number;
-  motivo: string;
-}
+export type {
+  ImportEmpresasResult,
+  ImportHistoricoResult,
+  EstadoImportacion,
+  ClonarTrimestreResult,
+} from "@/types/importacion";
 
-export interface FrecuenciaOutput {
-  trimestre: string;
-  total_ef: number;
-  total_it: number;
-  max_ef: number;
-  max_it: number;
-  semanas_disponibles: number;
-  max_ef_trimestre: number;
-  max_it_trimestre: number;
-  exceso_ef: number;
-  exceso_it: number;
-  empresas: FrecuenciaEmpresa[];
-  recortes: RecorteDetalle[];
-  warnings: string[];
-  status: string;
-}
+export type {
+  Restriccion,
+} from "@/types/restriccion";
 
-export interface ConfirmarEmpresa {
-  empresa_id: number;
-  talleres_ef: number;
-  talleres_it: number;
-}
+export type {
+  TallerOut,
+  TallerCreate,
+  TallerUpdate,
+} from "@/types/taller";
 
-export interface ConfirmarOutput {
-  status: string;
-  trimestre: string;
-  total_ef: number;
-  total_it: number;
-  empresas: {
-    empresa_id: number;
-    nombre: string;
-    talleres_ef: number;
-    talleres_it: number;
-    total: number;
-  }[];
-}
+export type {
+  Empresa,
+  EmpresaFull,
+  EmpresaCreateInput,
+  EmpresaUpdateInput,
+  EmpresaSimple,
+} from "@/types/empresa";
 
-export interface SugerenciaContingencia {
-  empresa_id: number;
-  empresa_nombre: string;
-  motivo: string;
-  prioridad: number;
-}
+// Import types for use in this file
+import type {
+  FrecuenciaOutput,
+  ConfirmarEmpresa,
+  ConfirmarOutput,
+} from "@/types/frecuencia";
 
-export interface SlotCalendario {
-  semana: number;
-  dia: string;
-  horario: string;
-  turno: string;
-  empresa_id: number;
-  empresa_nombre: string;
-  programa: string;
-  taller_id: number;
-  taller_nombre: string;
-  ciudad_id: number | null;
-  ciudad: string | null;
-  tipo_asignacion: string;
-  sugerencias: SugerenciaContingencia[] | null;
-}
+import type {
+  CalendarioOutput,
+  SlotCalendario,
+} from "@/types/calendario";
 
-export interface CalendarioOutput {
-  trimestre: string;
-  status: string;
-  tiempo_segundos: number;
-  total_slots: number;
-  total_ef: number;
-  total_it: number;
-  slots: SlotCalendario[];
-  inviolables_pct: number;
-  preferentes_pct: number;
-  warnings: string[];
-}
+import type {
+  ImportEmpresasResult,
+  ImportHistoricoResult,
+  EstadoImportacion,
+  ClonarTrimestreResult,
+} from "@/types/importacion";
 
-// ── Fetch helper ─────────────────────────────────────────────
+import type { Restriccion } from "@/types/restriccion";
 
-async function apiFetch<T>(
-  path: string,
-  options?: RequestInit
-): Promise<T> {
-  const url = `${API_BASE}${path}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
+import type {
+  TallerOut,
+  TallerCreate,
+  TallerUpdate,
+} from "@/types/taller";
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(
-      body.detail || `API error ${res.status}: ${res.statusText}`
-    );
-  }
-
-  return res.json();
-}
+import type {
+  EmpresaFull,
+  EmpresaCreateInput,
+  EmpresaUpdateInput,
+  EmpresaSimple,
+} from "@/types/empresa";
 
 // ── Frecuencias (Fase 1) ─────────────────────────────────────
 
@@ -183,17 +129,10 @@ export async function obtenerCalendario(trimestre: string) {
 }
 
 export async function exportarExcel(trimestre: string): Promise<Blob> {
-  const url = `${API_BASE}/api/calendario/${trimestre}/exportar-excel`;
-  const res = await fetch(url, { method: "POST" });
-  if (!res.ok) throw new Error("Error al exportar Excel");
-  return res.blob();
+  return apiFetchBlob(`/api/calendario/${trimestre}/exportar-excel`, { method: "POST" });
 }
 
 // ── Empresas ─────────────────────────────────────────────────
-interface EmpresaSimple {
-  id: number;
-  nombre: string;
-}
 
 export async function obtenerEmpresas(): Promise<EmpresaSimple[]> {
   const res = await apiFetch<{ empresas: EmpresaSimple[] }>("/api/empresas");
@@ -202,42 +141,6 @@ export async function obtenerEmpresas(): Promise<EmpresaSimple[]> {
 
 // ── Importación masiva ───────────────────────────────────────
 
-export interface ImportEmpresasResult {
-  total_empresas: number;
-  creadas: number;
-  actualizadas: number;
-  ciudades_creadas: string[];
-  empresa_ciudad_links: number;
-  config_trimestral_creadas: number;
-  semanas_excluidas: number;
-  warnings: string[];
-}
-
-export interface ImportHistoricoResult {
-  trimestre: string;
-  total_filas: number;
-  importadas_ok: number;
-  importadas_cancelado: number;
-  vacantes_ignoradas: number;
-  empresas_no_encontradas: string[];
-  talleres_no_encontrados: string[];
-  warnings: string[];
-}
-
-export interface EstadoImportacion {
-  trimestre: string;
-  empresas_activas: number;
-  config_trimestral: number;
-  frecuencias: number;
-  historico: number;
-  restricciones: number;
-  ciudades: number;
-  empresa_ciudad: number;
-  semanas_excluidas: number;
-  listo_fase_1: boolean;
-  listo_fase_2: boolean;
-}
-
 export async function importarEmpresas(
   file: File,
   trimestre: string
@@ -245,18 +148,7 @@ export async function importarEmpresas(
   const formData = new FormData();
   formData.append("file", file);
   formData.append("trimestre", trimestre);
-
-  const url = `${API_BASE}/api/importar/empresas`;
-  const res = await fetch(url, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Error ${res.status}: ${res.statusText}`);
-  }
-  return res.json();
+  return apiUpload<ImportEmpresasResult>("/api/importar/empresas", formData);
 }
 
 export async function importarHistorico(
@@ -266,18 +158,7 @@ export async function importarHistorico(
   const formData = new FormData();
   formData.append("file", file);
   formData.append("trimestre", trimestre);
-
-  const url = `${API_BASE}/api/importar/historico`;
-  const res = await fetch(url, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Error ${res.status}: ${res.statusText}`);
-  }
-  return res.json();
+  return apiUpload<ImportHistoricoResult>("/api/importar/historico", formData);
 }
 
 export async function obtenerEstadoImportacion(
@@ -288,15 +169,6 @@ export async function obtenerEstadoImportacion(
 
 // ── Clonación de trimestre ────────────────────────────────────
 
-export interface ClonarTrimestreResult {
-  trimestre_origen: string;
-  trimestre_destino: string;
-  configs_clonadas: number;
-  configs_ya_existentes: number;
-  empresas_saltadas: string[];
-  warnings: string[];
-}
-
 export async function clonarTrimestre(
   trimestreOrigen: string,
   trimestreDestino: string
@@ -304,31 +176,10 @@ export async function clonarTrimestre(
   const formData = new FormData();
   formData.append("trimestre_origen", trimestreOrigen);
   formData.append("trimestre_destino", trimestreDestino);
-
-  const url = `${API_BASE}/api/importar/clonar-trimestre`;
-  const res = await fetch(url, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Error ${res.status}: ${res.statusText}`);
-  }
-  return res.json();
+  return apiUpload<ClonarTrimestreResult>("/api/importar/clonar-trimestre", formData);
 }
 
 // ── Restricciones ─────────────────────────────────────────────
-
-export interface Restriccion {
-  id: number;
-  empresa_id: number;
-  empresa_nombre: string;
-  tipo: "HARD" | "SOFT";
-  clave: "solo_dia" | "solo_taller" | "no_comodin" | "max_extras";
-  valor: string;
-  descripcion: string | null;
-}
 
 export async function obtenerRestricciones(empresaId?: number): Promise<Restriccion[]> {
   const path = empresaId ? `/api/restricciones/${empresaId}` : "/api/restricciones";
@@ -336,40 +187,6 @@ export async function obtenerRestricciones(empresaId?: number): Promise<Restricc
 }
 
 // ── Talleres ──────────────────────────────────────────────────
-
-export interface TallerOut {
-  id: number;
-  nombre: string;
-  programa: string;
-  dia_semana: string | null;
-  horario: string | null;
-  turno: string | null;
-  es_contratante: boolean;
-  descripcion: string | null;
-  activo: boolean;
-}
-
-export interface TallerCreate {
-  nombre: string;
-  programa: string;
-  dia_semana?: string | null;
-  horario?: string | null;
-  turno?: string | null;
-  es_contratante?: boolean;
-  descripcion?: string | null;
-  activo?: boolean;
-}
-
-export interface TallerUpdate {
-  nombre?: string | null;
-  programa?: string | null;
-  dia_semana?: string | null;
-  horario?: string | null;
-  turno?: string | null;
-  es_contratante?: boolean | null;
-  descripcion?: string | null;
-  activo?: boolean | null;
-}
 
 export async function obtenerTalleres(
   programa?: string,
@@ -401,54 +218,7 @@ export async function eliminarTallerApi(id: number): Promise<void> {
 }
 
 // ── Empresas (CRUD) ──────────────────────────────────────────
- 
-export interface EmpresaFull {
-  id: number;
-  nombre: string;
-  tipo: "EF" | "IT" | "AMBAS";
-  semaforo: "VERDE" | "AMBAR" | "ROJO";
-  scoreV3: number;
-  fiabilidadReciente: number;
-  esComodin: boolean;
-  aceptaExtras: boolean;
-  maxExtrasTrimestre: number;
-  prioridadReduccion: "ALTA" | "MEDIA" | "BAJA";
-  tieneBolsa: boolean;
-  turnoPreferido: string | null;
-  activa: boolean;
-  notas: string | null;
-}
- 
-export interface EmpresaCreateInput {
-  nombre: string;
-  tipo?: string;
-  semaforo?: string;
-  scoreV3?: number;
-  fiabilidadReciente?: number;
-  esComodin?: boolean;
-  aceptaExtras?: boolean;
-  maxExtrasTrimestre?: number;
-  prioridadReduccion?: string;
-  tieneBolsa?: boolean;
-  turnoPreferido?: string | null;
-  notas?: string | null;
-}
- 
-export interface EmpresaUpdateInput {
-  nombre?: string;
-  tipo?: string;
-  semaforo?: string;
-  scoreV3?: number;
-  fiabilidadReciente?: number;
-  esComodin?: boolean;
-  aceptaExtras?: boolean;
-  maxExtrasTrimestre?: number;
-  prioridadReduccion?: string;
-  tieneBolsa?: boolean;
-  turnoPreferido?: string | null;
-  notas?: string | null;
-}
- 
+
 export async function obtenerEmpresasFull(filters?: {
   activa?: boolean;
   tipo?: string;

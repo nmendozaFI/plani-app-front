@@ -75,10 +75,9 @@ export function CalendarioWizard() {
   const handleGenerar = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const { data, error: err } = await actionGenerarCalendario(trimestre);
-      if (err) throw new Error(err);
-      if (!data) throw new Error("Sin respuesta");
-      setCalendario(data); setPaso("resultado");
+      const result = await actionGenerarCalendario(trimestre);
+      if (!result.ok) throw new Error(result.error);
+      setCalendario(result.data); setPaso("resultado");
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   }, [trimestre]);
@@ -86,8 +85,9 @@ export function CalendarioWizard() {
   const handleCargar = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const { data, error: err } = await actionObtenerCalendario(trimestre);
-      if (err) throw new Error(err);
+      const result = await actionObtenerCalendario(trimestre);
+      if (!result.ok) throw new Error(result.error);
+      const data = result.data;
       if (!data || data.total_slots === 0) throw new Error("No hay calendario para este trimestre");
       setCalendario({
         trimestre: data.trimestre, status: "CARGADO", tiempo_segundos: 0,

@@ -1,113 +1,26 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { apiFetchServer } from "@/lib/api-client";
+import type { ActionResult } from "@/types/actions";
+import type {
+  Empresa,
+  EmpresaCreateInput,
+  EmpresaUpdateInput,
+  EmpresaDetalleCompleto,
+} from "@/types/empresa";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-
-// ── Types ────────────────────────────────────────────────────
-
-export interface Empresa {
-  id: number;
-  nombre: string;
-  tipo: "EF" | "IT" | "AMBAS";
-  semaforo: "VERDE" | "AMBAR" | "ROJO";
-  scoreV3: number;
-  fiabilidadReciente: number;
-  esComodin: boolean;
-  aceptaExtras: boolean;
-  maxExtrasTrimestre: number;
-  prioridadReduccion: "ALTA" | "MEDIA" | "BAJA";
-  tieneBolsa: boolean;
-  turnoPreferido: string | null;
-  activa: boolean;
-  notas: string | null;
-}
-
-export interface EmpresaDetalle extends Empresa {
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface EmpresaInput {
-  nombre: string;
-  tipo?: string;
-  semaforo?: string;
-  scoreV3?: number;
-  fiabilidadReciente?: number;
-  esComodin?: boolean;
-  aceptaExtras?: boolean;
-  maxExtrasTrimestre?: number;
-  prioridadReduccion?: string;
-  tieneBolsa?: boolean;
-  turnoPreferido?: string | null;
-  notas?: string | null;
-}
-
-export interface EmpresaUpdateInput {
-  nombre?: string;
-  tipo?: string;
-  semaforo?: string;
-  scoreV3?: number;
-  fiabilidadReciente?: number;
-  esComodin?: boolean;
-  aceptaExtras?: boolean;
-  maxExtrasTrimestre?: number;
-  prioridadReduccion?: string;
-  tieneBolsa?: boolean;
-  turnoPreferido?: string | null;
-  notas?: string | null;
-}
-
-export interface RestriccionResumen {
-  id: number;
-  tipo: string;
-  clave: string;
-  valor: string;
-  descripcion: string | null;
-}
-
-export interface CiudadResumen {
-  id: number;
-  nombre: string;
-  activaReciente: boolean;
-}
-
-export interface HistoricoResumen {
-  trimestre: string;
-  total: number;
-  ok: number;
-  cancelados: number;
-}
-
-export interface EmpresaDetalleCompleto {
-  empresa: EmpresaDetalle;
-  restricciones: RestriccionResumen[];
-  ciudades: CiudadResumen[];
-  historico_reciente: HistoricoResumen[];
-}
-
-type ActionResult<T = void> =
-  | { ok: true; data: T }
-  | { ok: false; error: string };
-
-// ── Fetch helper ─────────────────────────────────────────────
-
-async function apiFetch<T>(
-  path: string,
-  options?: RequestInit
-): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail || `Error ${res.status}`);
-  }
-  if (res.status === 204) return undefined as T;
-  return res.json();
-}
+// Re-export types for backwards compatibility
+export type {
+  Empresa,
+  EmpresaDetalle,
+  EmpresaInput,
+  EmpresaUpdateInput,
+  RestriccionResumen,
+  CiudadResumen,
+  HistoricoResumen,
+  EmpresaDetalleCompleto,
+} from "@/types/empresa";
 
 // ── Read actions ─────────────────────────────────────────────
 
@@ -123,7 +36,7 @@ export async function getEmpresas(filters?: {
   if (filters?.semaforo) params.set("semaforo", filters.semaforo);
   if (filters?.search) params.set("search", filters.search);
   const qs = params.toString();
-  const res = await apiFetch<{ empresas: Empresa[] }>(
+  const res = await apiFetchServer<{ empresas: Empresa[] }>(
     `/api/empresas${qs ? `?${qs}` : ""}`
   );
   return res.empresas;
@@ -132,16 +45,16 @@ export async function getEmpresas(filters?: {
 export async function getEmpresaDetalle(
   empresaId: number
 ): Promise<EmpresaDetalleCompleto> {
-  return apiFetch<EmpresaDetalleCompleto>(`/api/empresas/${empresaId}`);
+  return apiFetchServer<EmpresaDetalleCompleto>(`/api/empresas/${empresaId}`);
 }
 
 // ── Mutation actions ─────────────────────────────────────────
 
 export async function crearEmpresa(
-  data: EmpresaInput
+  data: EmpresaCreateInput
 ): Promise<ActionResult<Empresa>> {
   try {
-    const result = await apiFetch<{ empresa: Empresa }>("/api/empresas", {
+    const result = await apiFetchServer<{ empresa: Empresa }>("/api/empresas", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -157,7 +70,7 @@ export async function editarEmpresa(
   data: EmpresaUpdateInput
 ): Promise<ActionResult<Empresa>> {
   try {
-    const result = await apiFetch<{ empresa: Empresa }>(
+    const result = await apiFetchServer<{ empresa: Empresa }>(
       `/api/empresas/${empresaId}`,
       { method: "PUT", body: JSON.stringify(data) }
     );
@@ -172,7 +85,7 @@ export async function toggleEmpresaActiva(
   empresaId: number
 ): Promise<ActionResult<{ id: number; activa: boolean }>> {
   try {
-    const result = await apiFetch<{ id: number; activa: boolean }>(
+    const result = await apiFetchServer<{ id: number; activa: boolean }>(
       `/api/empresas/${empresaId}/toggle`,
       { method: "PATCH" }
     );

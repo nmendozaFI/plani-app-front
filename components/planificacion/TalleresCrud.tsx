@@ -37,12 +37,12 @@ export function TalleresCrud() {
   const cargar = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const { data, error: err } = await actionObtenerTalleres(
+    const result = await actionObtenerTalleres(
       filtroPrograma || undefined,
       !mostrarInactivos
     );
-    if (err) setError(err);
-    else setTalleres(data ?? []);
+    if (!result.ok) setError(result.error);
+    else setTalleres(result.data);
     setLoading(false);
   }, [filtroPrograma, mostrarInactivos]);
 
@@ -90,12 +90,12 @@ export function TalleresCrud() {
     }
 
     if (editando) {
-      const { error: err } = await actionEditarTaller(editando.id, formData);
-      if (err) setError(err);
+      const result = await actionEditarTaller(editando.id, formData);
+      if (!result.ok) setError(result.error);
       else handleCancelar();
     } else {
-      const { error: err } = await actionCrearTaller(formData);
-      if (err) setError(err);
+      const result = await actionCrearTaller(formData);
+      if (!result.ok) setError(result.error);
       else handleCancelar();
     }
     setSaving(false);
@@ -103,8 +103,8 @@ export function TalleresCrud() {
   };
 
   const handleEliminar = async (id: number) => {
-    const { error: err } = await actionEliminarTaller(id);
-    if (err) setError(err);
+    const result = await actionEliminarTaller(id);
+    if (!result.ok) setError(result.error);
     setConfirmDelete(null);
     cargar();
   };

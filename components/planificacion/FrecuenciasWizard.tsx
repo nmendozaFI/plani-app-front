@@ -48,16 +48,12 @@ export function FrecuenciasWizard() {
     setError(null);
     try {
       const trimestreAnt = getTrimestreAnterior(trimestre);
-      const { data, error: err } = await actionCalcularFrecuencias(
-        trimestre,
-        trimestreAnt
-      );
-      if (err) throw new Error(err);
-      if (!data) throw new Error("Sin respuesta del servidor");
+      const result = await actionCalcularFrecuencias(trimestre, trimestreAnt);
+      if (!result.ok) throw new Error(result.error);
 
-      setPropuesta(data);
+      setPropuesta(result.data);
       setEmpresasEdit(
-        data.empresas.map((e) => ({
+        result.data.empresas.map((e) => ({
           ...e,
           talleres_ef_edit: e.talleres_ef,
           talleres_it_edit: e.talleres_it,
@@ -114,14 +110,10 @@ export function FrecuenciasWizard() {
         talleres_ef: e.talleres_ef_edit,
         talleres_it: e.talleres_it_edit,
       }));
-      const { data, error: err } = await actionConfirmarFrecuencias(
-        trimestre,
-        empresas
-      );
-      if (err) throw new Error(err);
-      if (!data) throw new Error("Sin respuesta del servidor");
+      const result = await actionConfirmarFrecuencias(trimestre, empresas);
+      if (!result.ok) throw new Error(result.error);
 
-      setConfirmacion(data);
+      setConfirmacion(result.data);
       setPaso("confirmado");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
