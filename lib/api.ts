@@ -19,6 +19,12 @@ export type {
   SugerenciaContingencia,
   SlotCalendario,
   CalendarioOutput,
+  CalendarioResumen,
+  CalendarioGetResponse,
+  SlotUpdateInput,
+  SlotBatchUpdateItem,
+  EmpresaCambiada,
+  ImportarExcelResult,
 } from "@/types/calendario";
 
 export type {
@@ -46,6 +52,22 @@ export type {
   EmpresaSimple,
 } from "@/types/empresa";
 
+export type {
+  ConfigTrimestralOut,
+  ConfigTrimestralUpdate,
+  ConfigBatchUpdateItem,
+  ConfigTrimestralListResponse,
+  ConfigTrimestralResumen,
+  InicializarConfigResult,
+  CerrarTrimestreResult,
+} from "@/types/config-trimestral";
+
+export type {
+  AppSettings,
+  AppSettingsUpdate,
+  PromoverResult,
+} from "@/types/settings";
+
 // Import types for use in this file
 import type {
   FrecuenciaOutput,
@@ -56,6 +78,11 @@ import type {
 import type {
   CalendarioOutput,
   SlotCalendario,
+  CalendarioResumen,
+  CalendarioGetResponse,
+  SlotUpdateInput,
+  SlotBatchUpdateItem,
+  ImportarExcelResult,
 } from "@/types/calendario";
 
 import type {
@@ -79,6 +106,22 @@ import type {
   EmpresaUpdateInput,
   EmpresaSimple,
 } from "@/types/empresa";
+
+import type {
+  ConfigTrimestralOut,
+  ConfigTrimestralUpdate,
+  ConfigBatchUpdateItem,
+  ConfigTrimestralListResponse,
+  ConfigTrimestralResumen,
+  InicializarConfigResult,
+  CerrarTrimestreResult,
+} from "@/types/config-trimestral";
+
+import type {
+  AppSettings,
+  AppSettingsUpdate,
+  PromoverResult,
+} from "@/types/settings";
 
 // ── Frecuencias (Fase 1) ─────────────────────────────────────
 
@@ -123,13 +166,63 @@ export async function generarCalendario(
 }
 
 export async function obtenerCalendario(trimestre: string) {
-  return apiFetch<{ trimestre: string; total_slots: number; slots: SlotCalendario[] }>(
+  return apiFetch<CalendarioGetResponse>(
     `/api/calendario/${trimestre}`
   );
 }
 
 export async function exportarExcel(trimestre: string): Promise<Blob> {
   return apiFetchBlob(`/api/calendario/${trimestre}/exportar-excel`, { method: "POST" });
+}
+
+// ── Operación (Fase 3) ───────────────────────────────────────
+
+export async function actualizarSlot(
+  trimestre: string,
+  slotId: number,
+  data: SlotUpdateInput
+): Promise<{ slot: SlotCalendario }> {
+  return apiFetch<{ slot: SlotCalendario }>(
+    `/api/calendario/${trimestre}/slots/${slotId}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }
+  );
+}
+
+export async function actualizarSlotsBatch(
+  trimestre: string,
+  updates: SlotBatchUpdateItem[]
+): Promise<{ updated: number; errors: string[] }> {
+  return apiFetch<{ updated: number; errors: string[] }>(
+    `/api/calendario/${trimestre}/slots-batch`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({ updates }),
+    }
+  );
+}
+
+export async function obtenerResumenOperacion(
+  trimestre: string
+): Promise<CalendarioResumen> {
+  return apiFetch<CalendarioResumen>(
+    `/api/calendario/${trimestre}/resumen`
+  );
+}
+
+export async function importarExcelCalendario(
+  trimestre: string,
+  file: File,
+  dryRun: boolean = false
+): Promise<ImportarExcelResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  return apiUpload<ImportarExcelResult>(
+    `/api/calendario/${trimestre}/importar-excel-file?dry_run=${dryRun}`,
+    formData
+  );
 }
 
 // ── Empresas ─────────────────────────────────────────────────
@@ -266,4 +359,139 @@ export async function toggleEmpresaApi(id: number): Promise<{ id: number; activa
   return apiFetch<{ id: number; activa: boolean }>(`/api/empresas/${id}/toggle`, {
     method: "PATCH",
   });
+}
+
+// ── Config Trimestral ────────────────────────────────────────
+
+export async function obtenerConfigsTrimestre(
+  trimestre: string
+): Promise<ConfigTrimestralListResponse> {
+  return apiFetch<ConfigTrimestralListResponse>(
+    `/api/config-trimestral/${trimestre}`
+  );
+}
+
+export async function obtenerConfigResumen(
+  trimestre: string
+): Promise<ConfigTrimestralResumen> {
+  return apiFetch<ConfigTrimestralResumen>(
+    `/api/config-trimestral/${trimestre}/resumen`
+  );
+}
+
+export async function actualizarConfigTrimestral(
+  trimestre: string,
+  empresaId: number,
+  data: ConfigTrimestralUpdate
+): Promise<{ config: ConfigTrimestralOut }> {
+  return apiFetch<{ config: ConfigTrimestralOut }>(
+    `/api/config-trimestral/${trimestre}/${empresaId}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }
+  );
+}
+
+export async function actualizarConfigsBatch(
+  trimestre: string,
+  updates: ConfigBatchUpdateItem[]
+): Promise<{ updated: number; errors: string[] }> {
+  return apiFetch<{ updated: number; errors: string[] }>(
+    `/api/config-trimestral/${trimestre}/batch`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ updates }),
+    }
+  );
+}
+
+export async function inicializarConfigTrimestral(
+  trimestre: string,
+  origenTrimestre?: string
+): Promise<InicializarConfigResult> {
+  return apiFetch<InicializarConfigResult>(
+    `/api/config-trimestral/${trimestre}/inicializar`,
+    {
+      method: "POST",
+      body: JSON.stringify({ origen_trimestre: origenTrimestre || null }),
+    }
+  );
+}
+
+// ── Cerrar Trimestre ─────────────────────────────────────────
+
+export async function cerrarTrimestre(
+  trimestre: string,
+  confirmar: boolean
+): Promise<CerrarTrimestreResult> {
+  return apiFetch<CerrarTrimestreResult>(
+    `/api/calendario/${trimestre}/cerrar`,
+    {
+      method: "POST",
+      body: JSON.stringify({ confirmar }),
+    }
+  );
+}
+
+// ── Settings (App Settings) ──────────────────────────────────
+
+export async function obtenerSettings(): Promise<AppSettings> {
+  return apiFetch<AppSettings>("/api/settings/");
+}
+
+export async function actualizarSettings(
+  data: AppSettingsUpdate
+): Promise<AppSettings> {
+  return apiFetch<AppSettings>("/api/settings/", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function promoverTrimestre(): Promise<PromoverResult> {
+  return apiFetch<PromoverResult>("/api/settings/promover", {
+    method: "POST",
+  });
+}
+
+// ── Histórico ────────────────────────────────────────────────
+
+export interface HistoricoRegistro {
+  id: number;
+  empresa_id: number;
+  empresa_nombre: string;
+  taller_id: number;
+  taller_nombre: string;
+  programa: string;
+  dia: string;
+  turno: string;
+  horario: string;
+  fecha: string;
+  estado: string;
+  ciudad: string | null;
+  trimestre: string;
+  semana_abs: number;
+}
+
+export interface HistoricoTrimestreResponse {
+  trimestre: string;
+  total: number;
+  ok: number;
+  cancelados: number;
+  registros: HistoricoRegistro[];
+}
+
+export async function obtenerTrimestresHistorico(): Promise<{ trimestres: string[] }> {
+  return apiFetch<{ trimestres: string[] }>("/api/historico/trimestres");
+}
+
+export async function obtenerHistoricoTrimestre(
+  trimestre: string
+): Promise<HistoricoTrimestreResponse> {
+  return apiFetch<HistoricoTrimestreResponse>(`/api/historico/${trimestre}`);
+}
+
+export async function exportarHistoricoExcel(trimestre: string): Promise<Blob> {
+  return apiFetchBlob(`/api/historico/${trimestre}/exportar-excel`, { method: "POST" });
 }

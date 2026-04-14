@@ -90,10 +90,10 @@ export type Restriccion = Prisma.RestriccionModel
  */
 export type ConfigTrimestral = Prisma.ConfigTrimestralModel
 /**
- * Model SemanaExcluida
+ * Model Festivo
  * 
  */
-export type SemanaExcluida = Prisma.SemanaExcluidaModel
+export type Festivo = Prisma.FestivoModel
 /**
  * Model Frecuencia
  * 
@@ -114,3 +114,8 @@ export type Planificacion = Prisma.PlanificacionModel
  * 
  */
 export type SolverLog = Prisma.SolverLogModel
+/**
+ * Model AppSettings
+ * 
+ */
+export type AppSettings = Prisma.AppSettingsModel

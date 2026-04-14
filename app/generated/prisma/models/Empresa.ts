@@ -653,6 +653,11 @@ export type EmpresaScalarRelationFilter = {
   isNot?: Prisma.EmpresaWhereInput
 }
 
+export type EmpresaNullableScalarRelationFilter = {
+  is?: Prisma.EmpresaWhereInput | null
+  isNot?: Prisma.EmpresaWhereInput | null
+}
+
 export type EnumProgramaFieldUpdateOperationsInput = {
   set?: $Enums.Programa
 }
@@ -757,10 +762,12 @@ export type EmpresaCreateNestedOneWithoutPlanificacionesInput = {
   connect?: Prisma.EmpresaWhereUniqueInput
 }
 
-export type EmpresaUpdateOneRequiredWithoutPlanificacionesNestedInput = {
+export type EmpresaUpdateOneWithoutPlanificacionesNestedInput = {
   create?: Prisma.XOR<Prisma.EmpresaCreateWithoutPlanificacionesInput, Prisma.EmpresaUncheckedCreateWithoutPlanificacionesInput>
   connectOrCreate?: Prisma.EmpresaCreateOrConnectWithoutPlanificacionesInput
   upsert?: Prisma.EmpresaUpsertWithoutPlanificacionesInput
+  disconnect?: Prisma.EmpresaWhereInput | boolean
+  delete?: Prisma.EmpresaWhereInput | boolean
   connect?: Prisma.EmpresaWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.EmpresaUpdateToOneWithWhereWithoutPlanificacionesInput, Prisma.EmpresaUpdateWithoutPlanificacionesInput>, Prisma.EmpresaUncheckedUpdateWithoutPlanificacionesInput>
 }

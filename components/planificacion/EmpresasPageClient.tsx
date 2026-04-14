@@ -182,7 +182,7 @@ export function EmpresasPageClient() {
   // ── Render ─────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

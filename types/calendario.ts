@@ -11,19 +11,23 @@ export interface SugerenciaContingencia {
 }
 
 export interface SlotCalendario {
+  id: number;
   semana: number;
   dia: string;
   horario: string;
   turno: string;
-  empresa_id: number;
-  empresa_nombre: string;
+  empresa_id: number | null;
+  empresa_nombre: string | null;
   programa: string;
   taller_id: number;
   taller_nombre: string;
   ciudad_id: number | null;
   ciudad: string | null;
   tipo_asignacion: string;
-  sugerencias: SugerenciaContingencia[] | null;
+  estado: string;  // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
+  confirmado: boolean;
+  notas: string | null;
+  sugerencias?: SugerenciaContingencia[] | null;
 }
 
 export interface CalendarioOutput {
@@ -36,5 +40,92 @@ export interface CalendarioOutput {
   slots: SlotCalendario[];
   inviolables_pct: number;
   preferentes_pct: number;
+  warnings: string[];
+}
+
+// Phase 3: Operacion types
+export interface CalendarioResumen {
+  trimestre: string;
+  total_slots: number;
+  asignados: number;
+  vacantes: number;
+  confirmados: number;
+  ok: number;
+  cancelados: number;
+  progress_pct: number;
+  by_week: {
+    semana: number;
+    total: number;
+    asignados: number;
+    vacantes: number;
+    confirmados: number;
+    ok: number;
+    cancelados: number;
+  }[];
+  by_company: {
+    empresa: string;
+    total: number;
+    confirmados: number;
+    ok: number;
+    cancelados: number;
+  }[];
+}
+
+export interface SlotUpdateInput {
+  estado?: string;
+  confirmado?: boolean;
+  empresa_id?: number | null;
+  notas?: string | null;
+}
+
+export interface SlotBatchUpdateItem {
+  slot_id: number;
+  estado?: string;
+  confirmado?: boolean;
+  empresa_id?: number | null;
+  notas?: string | null;
+}
+
+export interface CalendarioGetResponse {
+  trimestre: string;
+  total_slots: number;
+  asignados: number;
+  vacantes: number;
+  confirmados: number;
+  ok: number;
+  cancelados: number;
+  slots: SlotCalendario[];
+}
+
+// ── Import Excel types ─────────────────────────────────────
+
+export interface EmpresaCambiada {
+  slot_id: number;
+  semana: number;
+  dia: string;
+  taller_nombre: string;
+  empresa_anterior: string | null;
+  empresa_nueva: string;
+}
+
+export interface CambioDetalle {
+  slot_id: number;
+  semana: number;
+  dia: string;
+  taller_nombre: string;
+  empresa_nombre: string | null;
+  campo: "estado" | "confirmado" | "empresa";
+  valor_anterior: string;
+  valor_nuevo: string;
+}
+
+export interface ImportarExcelResult {
+  trimestre: string;
+  total_procesados: number;
+  actualizados: number;
+  sin_cambios: number;
+  errores: number;
+  empresas_cambiadas: EmpresaCambiada[];
+  cambios_detalle: CambioDetalle[];
   warnings: string[];
 }

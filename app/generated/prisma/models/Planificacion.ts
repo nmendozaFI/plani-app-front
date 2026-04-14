@@ -59,6 +59,9 @@ export type PlanificacionMinAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   horario: string | null
+  estado: string | null
+  confirmado: boolean | null
+  notas: string | null
 }
 
 export type PlanificacionMaxAggregateOutputType = {
@@ -76,6 +79,9 @@ export type PlanificacionMaxAggregateOutputType = {
   createdAt: Date | null
   updatedAt: Date | null
   horario: string | null
+  estado: string | null
+  confirmado: boolean | null
+  notas: string | null
 }
 
 export type PlanificacionCountAggregateOutputType = {
@@ -93,6 +99,9 @@ export type PlanificacionCountAggregateOutputType = {
   createdAt: number
   updatedAt: number
   horario: number
+  estado: number
+  confirmado: number
+  notas: number
   _all: number
 }
 
@@ -130,6 +139,9 @@ export type PlanificacionMinAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   horario?: true
+  estado?: true
+  confirmado?: true
+  notas?: true
 }
 
 export type PlanificacionMaxAggregateInputType = {
@@ -147,6 +159,9 @@ export type PlanificacionMaxAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   horario?: true
+  estado?: true
+  confirmado?: true
+  notas?: true
 }
 
 export type PlanificacionCountAggregateInputType = {
@@ -164,6 +179,9 @@ export type PlanificacionCountAggregateInputType = {
   createdAt?: true
   updatedAt?: true
   horario?: true
+  estado?: true
+  confirmado?: true
+  notas?: true
   _all?: true
 }
 
@@ -259,7 +277,7 @@ export type PlanificacionGroupByOutputType = {
   semana: number
   dia: string
   turno: string | null
-  empresaId: number
+  empresaId: number | null
   tallerId: number
   ciudadId: number | null
   tipoAsignacion: $Enums.TipoAsignacion
@@ -268,6 +286,9 @@ export type PlanificacionGroupByOutputType = {
   createdAt: Date
   updatedAt: Date
   horario: string | null
+  estado: string
+  confirmado: boolean
+  notas: string | null
   _count: PlanificacionCountAggregateOutputType | null
   _avg: PlanificacionAvgAggregateOutputType | null
   _sum: PlanificacionSumAggregateOutputType | null
@@ -299,7 +320,7 @@ export type PlanificacionWhereInput = {
   semana?: Prisma.IntFilter<"Planificacion"> | number
   dia?: Prisma.StringFilter<"Planificacion"> | string
   turno?: Prisma.StringNullableFilter<"Planificacion"> | string | null
-  empresaId?: Prisma.IntFilter<"Planificacion"> | number
+  empresaId?: Prisma.IntNullableFilter<"Planificacion"> | number | null
   tallerId?: Prisma.IntFilter<"Planificacion"> | number
   ciudadId?: Prisma.IntNullableFilter<"Planificacion"> | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionFilter<"Planificacion"> | $Enums.TipoAsignacion
@@ -308,8 +329,11 @@ export type PlanificacionWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Planificacion"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Planificacion"> | Date | string
   horario?: Prisma.StringNullableFilter<"Planificacion"> | string | null
+  estado?: Prisma.StringFilter<"Planificacion"> | string
+  confirmado?: Prisma.BoolFilter<"Planificacion"> | boolean
+  notas?: Prisma.StringNullableFilter<"Planificacion"> | string | null
   ciudad?: Prisma.XOR<Prisma.CiudadNullableScalarRelationFilter, Prisma.CiudadWhereInput> | null
-  empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
+  empresa?: Prisma.XOR<Prisma.EmpresaNullableScalarRelationFilter, Prisma.EmpresaWhereInput> | null
   taller?: Prisma.XOR<Prisma.TallerScalarRelationFilter, Prisma.TallerWhereInput>
 }
 
@@ -319,7 +343,7 @@ export type PlanificacionOrderByWithRelationInput = {
   semana?: Prisma.SortOrder
   dia?: Prisma.SortOrder
   turno?: Prisma.SortOrderInput | Prisma.SortOrder
-  empresaId?: Prisma.SortOrder
+  empresaId?: Prisma.SortOrderInput | Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   ciudadId?: Prisma.SortOrderInput | Prisma.SortOrder
   tipoAsignacion?: Prisma.SortOrder
@@ -328,6 +352,9 @@ export type PlanificacionOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   horario?: Prisma.SortOrderInput | Prisma.SortOrder
+  estado?: Prisma.SortOrder
+  confirmado?: Prisma.SortOrder
+  notas?: Prisma.SortOrderInput | Prisma.SortOrder
   ciudad?: Prisma.CiudadOrderByWithRelationInput
   empresa?: Prisma.EmpresaOrderByWithRelationInput
   taller?: Prisma.TallerOrderByWithRelationInput
@@ -342,7 +369,7 @@ export type PlanificacionWhereUniqueInput = Prisma.AtLeast<{
   semana?: Prisma.IntFilter<"Planificacion"> | number
   dia?: Prisma.StringFilter<"Planificacion"> | string
   turno?: Prisma.StringNullableFilter<"Planificacion"> | string | null
-  empresaId?: Prisma.IntFilter<"Planificacion"> | number
+  empresaId?: Prisma.IntNullableFilter<"Planificacion"> | number | null
   tallerId?: Prisma.IntFilter<"Planificacion"> | number
   ciudadId?: Prisma.IntNullableFilter<"Planificacion"> | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionFilter<"Planificacion"> | $Enums.TipoAsignacion
@@ -351,8 +378,11 @@ export type PlanificacionWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Planificacion"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Planificacion"> | Date | string
   horario?: Prisma.StringNullableFilter<"Planificacion"> | string | null
+  estado?: Prisma.StringFilter<"Planificacion"> | string
+  confirmado?: Prisma.BoolFilter<"Planificacion"> | boolean
+  notas?: Prisma.StringNullableFilter<"Planificacion"> | string | null
   ciudad?: Prisma.XOR<Prisma.CiudadNullableScalarRelationFilter, Prisma.CiudadWhereInput> | null
-  empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
+  empresa?: Prisma.XOR<Prisma.EmpresaNullableScalarRelationFilter, Prisma.EmpresaWhereInput> | null
   taller?: Prisma.XOR<Prisma.TallerScalarRelationFilter, Prisma.TallerWhereInput>
 }, "id">
 
@@ -362,7 +392,7 @@ export type PlanificacionOrderByWithAggregationInput = {
   semana?: Prisma.SortOrder
   dia?: Prisma.SortOrder
   turno?: Prisma.SortOrderInput | Prisma.SortOrder
-  empresaId?: Prisma.SortOrder
+  empresaId?: Prisma.SortOrderInput | Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   ciudadId?: Prisma.SortOrderInput | Prisma.SortOrder
   tipoAsignacion?: Prisma.SortOrder
@@ -371,6 +401,9 @@ export type PlanificacionOrderByWithAggregationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   horario?: Prisma.SortOrderInput | Prisma.SortOrder
+  estado?: Prisma.SortOrder
+  confirmado?: Prisma.SortOrder
+  notas?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PlanificacionCountOrderByAggregateInput
   _avg?: Prisma.PlanificacionAvgOrderByAggregateInput
   _max?: Prisma.PlanificacionMaxOrderByAggregateInput
@@ -387,7 +420,7 @@ export type PlanificacionScalarWhereWithAggregatesInput = {
   semana?: Prisma.IntWithAggregatesFilter<"Planificacion"> | number
   dia?: Prisma.StringWithAggregatesFilter<"Planificacion"> | string
   turno?: Prisma.StringNullableWithAggregatesFilter<"Planificacion"> | string | null
-  empresaId?: Prisma.IntWithAggregatesFilter<"Planificacion"> | number
+  empresaId?: Prisma.IntNullableWithAggregatesFilter<"Planificacion"> | number | null
   tallerId?: Prisma.IntWithAggregatesFilter<"Planificacion"> | number
   ciudadId?: Prisma.IntNullableWithAggregatesFilter<"Planificacion"> | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionWithAggregatesFilter<"Planificacion"> | $Enums.TipoAsignacion
@@ -396,6 +429,9 @@ export type PlanificacionScalarWhereWithAggregatesInput = {
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Planificacion"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Planificacion"> | Date | string
   horario?: Prisma.StringNullableWithAggregatesFilter<"Planificacion"> | string | null
+  estado?: Prisma.StringWithAggregatesFilter<"Planificacion"> | string
+  confirmado?: Prisma.BoolWithAggregatesFilter<"Planificacion"> | boolean
+  notas?: Prisma.StringNullableWithAggregatesFilter<"Planificacion"> | string | null
 }
 
 export type PlanificacionCreateInput = {
@@ -409,8 +445,11 @@ export type PlanificacionCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
   ciudad?: Prisma.CiudadCreateNestedOneWithoutPlanificacionesInput
-  empresa: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
+  empresa?: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
   taller: Prisma.TallerCreateNestedOneWithoutPlanificacionesInput
 }
 
@@ -420,7 +459,7 @@ export type PlanificacionUncheckedCreateInput = {
   semana: number
   dia: string
   turno?: string | null
-  empresaId: number
+  empresaId?: number | null
   tallerId: number
   ciudadId?: number | null
   tipoAsignacion?: $Enums.TipoAsignacion
@@ -429,6 +468,9 @@ export type PlanificacionUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionUpdateInput = {
@@ -442,8 +484,11 @@ export type PlanificacionUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ciudad?: Prisma.CiudadUpdateOneWithoutPlanificacionesNestedInput
-  empresa?: Prisma.EmpresaUpdateOneRequiredWithoutPlanificacionesNestedInput
+  empresa?: Prisma.EmpresaUpdateOneWithoutPlanificacionesNestedInput
   taller?: Prisma.TallerUpdateOneRequiredWithoutPlanificacionesNestedInput
 }
 
@@ -453,7 +498,7 @@ export type PlanificacionUncheckedUpdateInput = {
   semana?: Prisma.IntFieldUpdateOperationsInput | number
   dia?: Prisma.StringFieldUpdateOperationsInput | string
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   ciudadId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionFieldUpdateOperationsInput | $Enums.TipoAsignacion
@@ -462,6 +507,9 @@ export type PlanificacionUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionCreateManyInput = {
@@ -470,7 +518,7 @@ export type PlanificacionCreateManyInput = {
   semana: number
   dia: string
   turno?: string | null
-  empresaId: number
+  empresaId?: number | null
   tallerId: number
   ciudadId?: number | null
   tipoAsignacion?: $Enums.TipoAsignacion
@@ -479,6 +527,9 @@ export type PlanificacionCreateManyInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionUpdateManyMutationInput = {
@@ -492,6 +543,9 @@ export type PlanificacionUpdateManyMutationInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyInput = {
@@ -500,7 +554,7 @@ export type PlanificacionUncheckedUpdateManyInput = {
   semana?: Prisma.IntFieldUpdateOperationsInput | number
   dia?: Prisma.StringFieldUpdateOperationsInput | string
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   ciudadId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionFieldUpdateOperationsInput | $Enums.TipoAsignacion
@@ -509,6 +563,9 @@ export type PlanificacionUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionListRelationFilter = {
@@ -536,6 +593,9 @@ export type PlanificacionCountOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   horario?: Prisma.SortOrder
+  estado?: Prisma.SortOrder
+  confirmado?: Prisma.SortOrder
+  notas?: Prisma.SortOrder
 }
 
 export type PlanificacionAvgOrderByAggregateInput = {
@@ -562,6 +622,9 @@ export type PlanificacionMaxOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   horario?: Prisma.SortOrder
+  estado?: Prisma.SortOrder
+  confirmado?: Prisma.SortOrder
+  notas?: Prisma.SortOrder
 }
 
 export type PlanificacionMinOrderByAggregateInput = {
@@ -579,6 +642,9 @@ export type PlanificacionMinOrderByAggregateInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   horario?: Prisma.SortOrder
+  estado?: Prisma.SortOrder
+  confirmado?: Prisma.SortOrder
+  notas?: Prisma.SortOrder
 }
 
 export type PlanificacionSumOrderByAggregateInput = {
@@ -731,6 +797,9 @@ export type PlanificacionCreateWithoutEmpresaInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
   ciudad?: Prisma.CiudadCreateNestedOneWithoutPlanificacionesInput
   taller: Prisma.TallerCreateNestedOneWithoutPlanificacionesInput
 }
@@ -749,6 +818,9 @@ export type PlanificacionUncheckedCreateWithoutEmpresaInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionCreateOrConnectWithoutEmpresaInput = {
@@ -786,7 +858,7 @@ export type PlanificacionScalarWhereInput = {
   semana?: Prisma.IntFilter<"Planificacion"> | number
   dia?: Prisma.StringFilter<"Planificacion"> | string
   turno?: Prisma.StringNullableFilter<"Planificacion"> | string | null
-  empresaId?: Prisma.IntFilter<"Planificacion"> | number
+  empresaId?: Prisma.IntNullableFilter<"Planificacion"> | number | null
   tallerId?: Prisma.IntFilter<"Planificacion"> | number
   ciudadId?: Prisma.IntNullableFilter<"Planificacion"> | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionFilter<"Planificacion"> | $Enums.TipoAsignacion
@@ -795,6 +867,9 @@ export type PlanificacionScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Planificacion"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Planificacion"> | Date | string
   horario?: Prisma.StringNullableFilter<"Planificacion"> | string | null
+  estado?: Prisma.StringFilter<"Planificacion"> | string
+  confirmado?: Prisma.BoolFilter<"Planificacion"> | boolean
+  notas?: Prisma.StringNullableFilter<"Planificacion"> | string | null
 }
 
 export type PlanificacionCreateWithoutTallerInput = {
@@ -808,8 +883,11 @@ export type PlanificacionCreateWithoutTallerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
   ciudad?: Prisma.CiudadCreateNestedOneWithoutPlanificacionesInput
-  empresa: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
+  empresa?: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
 }
 
 export type PlanificacionUncheckedCreateWithoutTallerInput = {
@@ -818,7 +896,7 @@ export type PlanificacionUncheckedCreateWithoutTallerInput = {
   semana: number
   dia: string
   turno?: string | null
-  empresaId: number
+  empresaId?: number | null
   ciudadId?: number | null
   tipoAsignacion?: $Enums.TipoAsignacion
   esContingencia?: boolean
@@ -826,6 +904,9 @@ export type PlanificacionUncheckedCreateWithoutTallerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionCreateOrConnectWithoutTallerInput = {
@@ -865,7 +946,10 @@ export type PlanificacionCreateWithoutCiudadInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
-  empresa: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
+  empresa?: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
   taller: Prisma.TallerCreateNestedOneWithoutPlanificacionesInput
 }
 
@@ -875,7 +959,7 @@ export type PlanificacionUncheckedCreateWithoutCiudadInput = {
   semana: number
   dia: string
   turno?: string | null
-  empresaId: number
+  empresaId?: number | null
   tallerId: number
   tipoAsignacion?: $Enums.TipoAsignacion
   esContingencia?: boolean
@@ -883,6 +967,9 @@ export type PlanificacionUncheckedCreateWithoutCiudadInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionCreateOrConnectWithoutCiudadInput = {
@@ -925,6 +1012,9 @@ export type PlanificacionCreateManyEmpresaInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionUpdateWithoutEmpresaInput = {
@@ -938,6 +1028,9 @@ export type PlanificacionUpdateWithoutEmpresaInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ciudad?: Prisma.CiudadUpdateOneWithoutPlanificacionesNestedInput
   taller?: Prisma.TallerUpdateOneRequiredWithoutPlanificacionesNestedInput
 }
@@ -956,6 +1049,9 @@ export type PlanificacionUncheckedUpdateWithoutEmpresaInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyWithoutEmpresaInput = {
@@ -972,6 +1068,9 @@ export type PlanificacionUncheckedUpdateManyWithoutEmpresaInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionCreateManyTallerInput = {
@@ -980,7 +1079,7 @@ export type PlanificacionCreateManyTallerInput = {
   semana: number
   dia: string
   turno?: string | null
-  empresaId: number
+  empresaId?: number | null
   ciudadId?: number | null
   tipoAsignacion?: $Enums.TipoAsignacion
   esContingencia?: boolean
@@ -988,6 +1087,9 @@ export type PlanificacionCreateManyTallerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionUpdateWithoutTallerInput = {
@@ -1001,8 +1103,11 @@ export type PlanificacionUpdateWithoutTallerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ciudad?: Prisma.CiudadUpdateOneWithoutPlanificacionesNestedInput
-  empresa?: Prisma.EmpresaUpdateOneRequiredWithoutPlanificacionesNestedInput
+  empresa?: Prisma.EmpresaUpdateOneWithoutPlanificacionesNestedInput
 }
 
 export type PlanificacionUncheckedUpdateWithoutTallerInput = {
@@ -1011,7 +1116,7 @@ export type PlanificacionUncheckedUpdateWithoutTallerInput = {
   semana?: Prisma.IntFieldUpdateOperationsInput | number
   dia?: Prisma.StringFieldUpdateOperationsInput | string
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ciudadId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionFieldUpdateOperationsInput | $Enums.TipoAsignacion
   esContingencia?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1019,6 +1124,9 @@ export type PlanificacionUncheckedUpdateWithoutTallerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyWithoutTallerInput = {
@@ -1027,7 +1135,7 @@ export type PlanificacionUncheckedUpdateManyWithoutTallerInput = {
   semana?: Prisma.IntFieldUpdateOperationsInput | number
   dia?: Prisma.StringFieldUpdateOperationsInput | string
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   ciudadId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tipoAsignacion?: Prisma.EnumTipoAsignacionFieldUpdateOperationsInput | $Enums.TipoAsignacion
   esContingencia?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1035,6 +1143,9 @@ export type PlanificacionUncheckedUpdateManyWithoutTallerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionCreateManyCiudadInput = {
@@ -1043,7 +1154,7 @@ export type PlanificacionCreateManyCiudadInput = {
   semana: number
   dia: string
   turno?: string | null
-  empresaId: number
+  empresaId?: number | null
   tallerId: number
   tipoAsignacion?: $Enums.TipoAsignacion
   esContingencia?: boolean
@@ -1051,6 +1162,9 @@ export type PlanificacionCreateManyCiudadInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   horario?: string | null
+  estado?: string
+  confirmado?: boolean
+  notas?: string | null
 }
 
 export type PlanificacionUpdateWithoutCiudadInput = {
@@ -1064,7 +1178,10 @@ export type PlanificacionUpdateWithoutCiudadInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  empresa?: Prisma.EmpresaUpdateOneRequiredWithoutPlanificacionesNestedInput
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  empresa?: Prisma.EmpresaUpdateOneWithoutPlanificacionesNestedInput
   taller?: Prisma.TallerUpdateOneRequiredWithoutPlanificacionesNestedInput
 }
 
@@ -1074,7 +1191,7 @@ export type PlanificacionUncheckedUpdateWithoutCiudadInput = {
   semana?: Prisma.IntFieldUpdateOperationsInput | number
   dia?: Prisma.StringFieldUpdateOperationsInput | string
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   tipoAsignacion?: Prisma.EnumTipoAsignacionFieldUpdateOperationsInput | $Enums.TipoAsignacion
   esContingencia?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1082,6 +1199,9 @@ export type PlanificacionUncheckedUpdateWithoutCiudadInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyWithoutCiudadInput = {
@@ -1090,7 +1210,7 @@ export type PlanificacionUncheckedUpdateManyWithoutCiudadInput = {
   semana?: Prisma.IntFieldUpdateOperationsInput | number
   dia?: Prisma.StringFieldUpdateOperationsInput | string
   turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   tipoAsignacion?: Prisma.EnumTipoAsignacionFieldUpdateOperationsInput | $Enums.TipoAsignacion
   esContingencia?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1098,6 +1218,9 @@ export type PlanificacionUncheckedUpdateManyWithoutCiudadInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estado?: Prisma.StringFieldUpdateOperationsInput | string
+  confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1117,8 +1240,11 @@ export type PlanificacionSelect<ExtArgs extends runtime.Types.Extensions.Interna
   createdAt?: boolean
   updatedAt?: boolean
   horario?: boolean
+  estado?: boolean
+  confirmado?: boolean
+  notas?: boolean
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["planificacion"]>
 
@@ -1137,8 +1263,11 @@ export type PlanificacionSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   createdAt?: boolean
   updatedAt?: boolean
   horario?: boolean
+  estado?: boolean
+  confirmado?: boolean
+  notas?: boolean
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["planificacion"]>
 
@@ -1157,8 +1286,11 @@ export type PlanificacionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   createdAt?: boolean
   updatedAt?: boolean
   horario?: boolean
+  estado?: boolean
+  confirmado?: boolean
+  notas?: boolean
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["planificacion"]>
 
@@ -1177,22 +1309,25 @@ export type PlanificacionSelectScalar = {
   createdAt?: boolean
   updatedAt?: boolean
   horario?: boolean
+  estado?: boolean
+  confirmado?: boolean
+  notas?: boolean
 }
 
-export type PlanificacionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "trimestre" | "semana" | "dia" | "turno" | "empresaId" | "tallerId" | "ciudadId" | "tipoAsignacion" | "esContingencia" | "version" | "createdAt" | "updatedAt" | "horario", ExtArgs["result"]["planificacion"]>
+export type PlanificacionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "trimestre" | "semana" | "dia" | "turno" | "empresaId" | "tallerId" | "ciudadId" | "tipoAsignacion" | "esContingencia" | "version" | "createdAt" | "updatedAt" | "horario" | "estado" | "confirmado" | "notas", ExtArgs["result"]["planificacion"]>
 export type PlanificacionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
 }
 export type PlanificacionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
 }
 export type PlanificacionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
-  empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
 }
 
@@ -1200,7 +1335,7 @@ export type $PlanificacionPayload<ExtArgs extends runtime.Types.Extensions.Inter
   name: "Planificacion"
   objects: {
     ciudad: Prisma.$CiudadPayload<ExtArgs> | null
-    empresa: Prisma.$EmpresaPayload<ExtArgs>
+    empresa: Prisma.$EmpresaPayload<ExtArgs> | null
     taller: Prisma.$TallerPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1209,7 +1344,7 @@ export type $PlanificacionPayload<ExtArgs extends runtime.Types.Extensions.Inter
     semana: number
     dia: string
     turno: string | null
-    empresaId: number
+    empresaId: number | null
     tallerId: number
     ciudadId: number | null
     tipoAsignacion: $Enums.TipoAsignacion
@@ -1218,6 +1353,9 @@ export type $PlanificacionPayload<ExtArgs extends runtime.Types.Extensions.Inter
     createdAt: Date
     updatedAt: Date
     horario: string | null
+    estado: string
+    confirmado: boolean
+    notas: string | null
   }, ExtArgs["result"]["planificacion"]>
   composites: {}
 }
@@ -1613,7 +1751,7 @@ readonly fields: PlanificacionFieldRefs;
 export interface Prisma__PlanificacionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   ciudad<T extends Prisma.Planificacion$ciudadArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Planificacion$ciudadArgs<ExtArgs>>): Prisma.Prisma__CiudadClient<runtime.Types.Result.GetResult<Prisma.$CiudadPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  empresa<T extends Prisma.EmpresaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EmpresaDefaultArgs<ExtArgs>>): Prisma.Prisma__EmpresaClient<runtime.Types.Result.GetResult<Prisma.$EmpresaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  empresa<T extends Prisma.Planificacion$empresaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Planificacion$empresaArgs<ExtArgs>>): Prisma.Prisma__EmpresaClient<runtime.Types.Result.GetResult<Prisma.$EmpresaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   taller<T extends Prisma.TallerDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TallerDefaultArgs<ExtArgs>>): Prisma.Prisma__TallerClient<runtime.Types.Result.GetResult<Prisma.$TallerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1658,6 +1796,9 @@ export interface PlanificacionFieldRefs {
   readonly createdAt: Prisma.FieldRef<"Planificacion", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Planificacion", 'DateTime'>
   readonly horario: Prisma.FieldRef<"Planificacion", 'String'>
+  readonly estado: Prisma.FieldRef<"Planificacion", 'String'>
+  readonly confirmado: Prisma.FieldRef<"Planificacion", 'Boolean'>
+  readonly notas: Prisma.FieldRef<"Planificacion", 'String'>
 }
     
 
@@ -2070,6 +2211,25 @@ export type Planificacion$ciudadArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   include?: Prisma.CiudadInclude<ExtArgs> | null
   where?: Prisma.CiudadWhereInput
+}
+
+/**
+ * Planificacion.empresa
+ */
+export type Planificacion$empresaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Empresa
+   */
+  select?: Prisma.EmpresaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Empresa
+   */
+  omit?: Prisma.EmpresaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmpresaInclude<ExtArgs> | null
+  where?: Prisma.EmpresaWhereInput
 }
 
 /**

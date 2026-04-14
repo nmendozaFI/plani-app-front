@@ -17,3 +17,5 @@ export * from "./frecuencia";
 export * from "./calendario";
 export * from "./importacion";
 export * from "./taller";
+export * from "./config-trimestral";
+export * from "./settings";

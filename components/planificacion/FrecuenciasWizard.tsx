@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { getTrimestres, getTrimestreActual, getTrimestreAnterior } from "@/utils/trimestres";
+import { getTrimestreAnterior } from "@/utils/trimestres";
 import {
   actionCalcularFrecuencias,
   actionConfirmarFrecuencias,
 } from "@/actions/frecuencias-actions";
+import { useSettings } from "@/hooks/use-settings";
 import type {
   FrecuenciaOutput,
   FrecuenciaEmpresa,
@@ -29,8 +30,10 @@ type Paso = "config" | "revision" | "confirmado";
 // ── Component ────────────────────────────────────────────────
 
 export function FrecuenciasWizard() {
+  const { settings, loading: loadingSettings } = useSettings();
+  const trimestre = settings?.trimestre_siguiente || null;
+
   const [paso, setPaso] = useState<Paso>("config");
-  const [trimestre, setTrimestre] = useState(() => getTrimestreActual());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +47,7 @@ export function FrecuenciasWizard() {
   // ── Paso 1: Calcular ────────────────────────────────────────
 
   const handleCalcular = useCallback(async () => {
+    if (!trimestre) return;
     setLoading(true);
     setError(null);
     try {
@@ -102,6 +106,7 @@ export function FrecuenciasWizard() {
   // ── Paso 3: Confirmar ───────────────────────────────────────
 
   const handleConfirmar = useCallback(async () => {
+    if (!trimestre) return;
     setLoading(true);
     setError(null);
     try {
@@ -199,47 +204,62 @@ export function FrecuenciasWizard() {
       {/* ── PASO 1: Configurar ───────────────────────────────── */}
       {paso === "config" && (
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4">
-            Selecciona el trimestre
-          </h2>
-          <div className="flex items-end gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">
-                Trimestre a planificar
-              </label>
-              <select
-                value={trimestre}
-                onChange={(e) => setTrimestre(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+          {loadingSettings ? (
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Cargando configuracion...
+            </div>
+          ) : trimestre ? (
+            <>
+              <h2 className="text-sm font-semibold text-slate-700 mb-4">
+                Trimestre a Planificar
+              </h2>
+              <div className="flex items-end gap-4">
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+                  <span className="text-lg font-bold text-blue-800">{trimestre}</span>
+                  <span className="ml-2 text-xs text-blue-600">(siguiente)</span>
+                </div>
+                <div className="text-xs text-slate-400">
+                  vs. trimestre anterior: {getTrimestreAnterior(trimestre)}
+                </div>
+              </div>
+              <button
+                onClick={handleCalcular}
+                disabled={loading}
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-slate-800 disabled:opacity-50"
               >
-                {getTrimestres().map((t) => (
-                  <option key={t.value} value={t.value}>
-                    {t.label}
-                  </option>
-                ))}
-              </select>
+                {loading ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Calculando...
+                  </>
+                ) : (
+                  "Calcular frecuencias"
+                )}
+              </button>
+            </>
+          ) : (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <h3 className="text-sm font-semibold text-amber-800 mb-2">
+                No hay trimestre siguiente configurado
+              </h3>
+              <p className="text-sm text-amber-700">
+                Configura el trimestre siguiente desde el Dashboard para poder calcular frecuencias.
+              </p>
+              <a
+                href="/dashboard"
+                className="mt-3 inline-block text-sm font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900"
+              >
+                Ir al Dashboard
+              </a>
             </div>
-            <div className="text-xs text-slate-400">
-              vs. trimestre anterior: {getTrimestreAnterior(trimestre)}
-            </div>
-          </div>
-          <button
-            onClick={handleCalcular}
-            disabled={loading}
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-slate-800 disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Calculando...
-              </>
-            ) : (
-              "Calcular frecuencias"
-            )}
-          </button>
+          )}
         </div>
       )}
 

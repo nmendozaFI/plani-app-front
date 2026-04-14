@@ -1,16 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
-import { getTrimestres, getTrimestreActual, getTrimestreAnterior } from "@/utils/trimestres";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { getTrimestreAnterior } from "@/utils/trimestres";
 import {
   importarEmpresas,
   importarHistorico,
   obtenerEstadoImportacion,
+  cerrarTrimestre,
   type ImportEmpresasResult,
   type ImportHistoricoResult,
   type EstadoImportacion,
+  type CerrarTrimestreResult,
 } from "@/lib/api";
+import { useSettings } from "@/hooks/use-settings";
 
 // ── Estado badge ────────────────────────────────────────────
 
@@ -245,7 +248,9 @@ function ResultPanel({
 // ══════════════════════════════════════════════════════════════
 
 export default function ImportacionWizard() {
-  const [trimestre, setTrimestre] = useState(() => getTrimestreActual());
+  const { settings, loading: loadingSettings } = useSettings();
+
+  const [trimestre, setTrimestre] = useState<string | null>(null);
   const [estado, setEstado] = useState<EstadoImportacion | null>(null);
   const [loadingEstado, setLoadingEstado] = useState(true);
 
@@ -258,15 +263,40 @@ export default function ImportacionWizard() {
   const [resultEmpresas, setResultEmpresas] = useState<ImportEmpresasResult | null>(null);
   const [errorEmpresas, setErrorEmpresas] = useState<string | null>(null);
 
-  // Histórico
+  // Historico
   const [fileHistorico, setFileHistorico] = useState<File | null>(null);
-  const [trimestreHist, setTrimestreHist] = useState(() => getTrimestreAnterior(getTrimestreActual()));
+  const [trimestreHist, setTrimestreHist] = useState<string | null>(null);
   const [loadingHistorico, setLoadingHistorico] = useState(false);
   const [resultHistorico, setResultHistorico] = useState<ImportHistoricoResult | null>(null);
   const [errorHistorico, setErrorHistorico] = useState<string | null>(null);
 
+  // Auto-close (new)
+  const [loadingAutoCerrar, setLoadingAutoCerrar] = useState(false);
+  const [autoCerrarPreview, setAutoCerrarPreview] = useState<CerrarTrimestreResult | null>(null);
+  const [autoCerrarResult, setAutoCerrarResult] = useState<CerrarTrimestreResult | null>(null);
+  const [errorAutoCerrar, setErrorAutoCerrar] = useState<string | null>(null);
+
+  // Set trimestre when settings load
+  useEffect(() => {
+    if (settings && !trimestre) {
+      setTrimestre(settings.trimestre_activo);
+      setTrimestreHist(getTrimestreAnterior(settings.trimestre_activo));
+    }
+  }, [settings, trimestre]);
+
+  // Build trimestre options from settings
+  const trimestreOptions = useMemo(() => {
+    if (!settings) return [];
+    const options = [{ value: settings.trimestre_activo, label: `${settings.trimestre_activo} (Activo)` }];
+    if (settings.trimestre_siguiente) {
+      options.push({ value: settings.trimestre_siguiente, label: `${settings.trimestre_siguiente} (Siguiente)` });
+    }
+    return options;
+  }, [settings]);
+
   // ── Cargar estado ─────────────────────────────────────────
   const cargarEstado = useCallback(async () => {
+    if (!trimestre) return;
     setLoadingEstado(true);
     try {
       const data = await obtenerEstadoImportacion(trimestre);
@@ -279,12 +309,14 @@ export default function ImportacionWizard() {
   }, [trimestre]);
 
   useEffect(() => {
-    cargarEstado();
-  }, [cargarEstado]);
+    if (trimestre) {
+      cargarEstado();
+    }
+  }, [cargarEstado, trimestre]);
 
   // ── Importar empresas ─────────────────────────────────────
   const handleImportarEmpresas = async () => {
-    if (!fileEmpresas) return;
+    if (!fileEmpresas || !trimestre) return;
     setLoadingEmpresas(true);
     setErrorEmpresas(null);
     setResultEmpresas(null);
@@ -301,7 +333,7 @@ export default function ImportacionWizard() {
 
   // ── Importar histórico ────────────────────────────────────
   const handleImportarHistorico = async () => {
-    if (!fileHistorico) return;
+    if (!fileHistorico || !trimestreHist) return;
     setLoadingHistorico(true);
     setErrorHistorico(null);
     setResultHistorico(null);
@@ -315,6 +347,58 @@ export default function ImportacionWizard() {
       setLoadingHistorico(false);
     }
   };
+
+  // ── Auto-cerrar trimestre ─────────────────────────────────
+  const handleAutoCerrarPreview = async () => {
+    if (!trimestreHist) return;
+    setLoadingAutoCerrar(true);
+    setErrorAutoCerrar(null);
+    setAutoCerrarPreview(null);
+    setAutoCerrarResult(null);
+    try {
+      const result = await cerrarTrimestre(trimestreHist, false);
+      setAutoCerrarPreview(result);
+    } catch (e: any) {
+      setErrorAutoCerrar(e.message);
+    } finally {
+      setLoadingAutoCerrar(false);
+    }
+  };
+
+  const handleAutoCerrarConfirm = async () => {
+    if (!trimestreHist) return;
+    setLoadingAutoCerrar(true);
+    setErrorAutoCerrar(null);
+    try {
+      const result = await cerrarTrimestre(trimestreHist, true);
+      setAutoCerrarResult(result);
+      setAutoCerrarPreview(null);
+      cargarEstado();
+    } catch (e: any) {
+      setErrorAutoCerrar(e.message);
+    } finally {
+      setLoadingAutoCerrar(false);
+    }
+  };
+
+  if (loadingSettings) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <svg className="animate-spin w-8 h-8 text-slate-400" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      </div>
+    );
+  }
+
+  if (!settings || !trimestre) {
+    return (
+      <div className="text-center py-12 text-red-600">
+        No se pudo cargar la configuración del trimestre activo
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -330,17 +414,23 @@ export default function ImportacionWizard() {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-slate-600">Trimestre:</label>
-          <select
-            value={trimestre}
-            onChange={(e) => setTrimestre(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm
-                       bg-white text-slate-800 focus:ring-2 focus:ring-blue-500
-                       focus:border-blue-500 outline-none"
-          >
-            {getTrimestres().map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
+          {trimestreOptions.length > 1 ? (
+            <select
+              value={trimestre}
+              onChange={(e) => setTrimestre(e.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm
+                         bg-white text-slate-800 focus:ring-2 focus:ring-blue-500
+                         focus:border-blue-500 outline-none"
+            >
+              {trimestreOptions.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          ) : (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
+              <span className="text-sm font-semibold text-slate-700">{trimestre}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -469,50 +559,136 @@ export default function ImportacionWizard() {
               Cerrar calendario trimestral
             </h2>
             <p className="text-sm text-slate-500">
-              Sube el Excel del calendario exportado y completado. El sistema importa
-              las filas con estado OK y CANCELADO como histórico. Las vacantes sin
-              empresa se ignoran.
-            </p>
-          </div>
-
-          {/* Flujo visual */}
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
-            <p className="text-xs font-semibold text-slate-600 mb-3">Flujo de cierre</p>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="flex items-center gap-1.5 rounded-full bg-blue-100 text-blue-700 px-2.5 py-1 font-medium">
-                1. Exportar
-              </span>
-              <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="flex items-center gap-1.5 rounded-full bg-amber-100 text-amber-700 px-2.5 py-1 font-medium">
-                2. Completar
-              </span>
-              <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-1 font-medium">
-                3. Importar aquí
-              </span>
-            </div>
-            <p className="mt-3 text-[11px] text-slate-400">
-              Desde Calendario → Exportar Excel → completar vacantes y marcar OK/CANCELADO → subir aquí para cerrar el trimestre.
+              Copia el estado actual de la planificacion al historico del trimestre.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <label className="text-sm text-slate-600">Trimestre a cerrar:</label>
-            <select
-              value={trimestreHist}
-              onChange={(e) => setTrimestreHist(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm
-                         bg-white text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none"
-            >
-              {getTrimestres().map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
-              ))}
-            </select>
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
+              <span className="text-sm font-semibold text-slate-700">
+                {trimestreHist || "Cargando..."}
+              </span>
+              <span className="ml-2 text-xs text-slate-500">(anterior al activo)</span>
+            </div>
           </div>
+
+          {/* Opcion 1: Cierre automatico */}
+          <div className="rounded-xl border-2 border-blue-200 bg-blue-50 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">1</span>
+              <h3 className="font-semibold text-blue-900">Cierre automatico (recomendado)</h3>
+            </div>
+            <p className="text-sm text-blue-800">
+              Copia el estado actual de la planificacion al historico. Solo se incluyen
+              slots con estado OK o CANCELADO (los demas se ignoran).
+            </p>
+
+            {errorAutoCerrar && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-700">{errorAutoCerrar}</p>
+              </div>
+            )}
+
+            {autoCerrarResult && (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="font-semibold text-emerald-800">Trimestre {autoCerrarResult.trimestre} cerrado</span>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <p className="text-xl font-bold text-emerald-600">{autoCerrarResult.total_ok}</p>
+                    <p className="text-xs text-slate-500">OK</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <p className="text-xl font-bold text-red-500">{autoCerrarResult.total_cancelado}</p>
+                    <p className="text-xs text-slate-500">Cancelados</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <p className="text-xl font-bold text-slate-400">{autoCerrarResult.total_ignorado}</p>
+                    <p className="text-xs text-slate-500">Ignorados</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {autoCerrarPreview && !autoCerrarResult && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+                <p className="text-sm font-medium text-amber-800">Vista previa del cierre:</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <p className="text-xl font-bold text-emerald-600">{autoCerrarPreview.total_ok}</p>
+                    <p className="text-xs text-slate-500">OK</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <p className="text-xl font-bold text-red-500">{autoCerrarPreview.total_cancelado}</p>
+                    <p className="text-xs text-slate-500">Cancelados</p>
+                  </div>
+                  <div className="bg-white rounded-lg p-3 text-center">
+                    <p className="text-xl font-bold text-slate-400">{autoCerrarPreview.total_ignorado}</p>
+                    <p className="text-xs text-slate-500">Ignorados</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleAutoCerrarConfirm}
+                  disabled={loadingAutoCerrar}
+                  className="w-full px-4 py-2.5 rounded-lg text-sm font-medium
+                             bg-emerald-600 text-white hover:bg-emerald-700
+                             disabled:bg-slate-300 disabled:cursor-not-allowed
+                             transition-all duration-200"
+                >
+                  {loadingAutoCerrar ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Cerrando...
+                    </span>
+                  ) : (
+                    "Confirmar cierre"
+                  )}
+                </button>
+              </div>
+            )}
+
+            {!autoCerrarPreview && !autoCerrarResult && (
+              <button
+                onClick={handleAutoCerrarPreview}
+                disabled={loadingAutoCerrar}
+                className="px-5 py-2.5 rounded-lg text-sm font-medium
+                           bg-blue-600 text-white hover:bg-blue-700
+                           disabled:bg-slate-300 disabled:cursor-not-allowed
+                           transition-all duration-200"
+              >
+                {loadingAutoCerrar ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Cargando...
+                  </span>
+                ) : (
+                  "Vista previa"
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Opcion 2: Subir Excel (alternativa) */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-slate-400 text-white text-xs font-bold">2</span>
+              <h3 className="font-medium text-slate-700">Subir Excel completado (alternativa)</h3>
+            </div>
+            <p className="text-sm text-slate-500">
+              Si tienes un Excel con el calendario completado manualmente, puedes subirlo aqui.
+              El sistema importa las filas con estado OK y CANCELADO.
+            </p>
 
           <FileDropZone
             onFile={setFileHistorico}
@@ -559,6 +735,7 @@ export default function ImportacionWizard() {
           )}
 
           {resultHistorico && <ResultPanel result={resultHistorico} type="historico" />}
+          </div>
         </div>
       )}
 

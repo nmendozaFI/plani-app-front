@@ -61,11 +61,12 @@ export const ModelName = {
   EmpresaCiudad: 'EmpresaCiudad',
   Restriccion: 'Restriccion',
   ConfigTrimestral: 'ConfigTrimestral',
-  SemanaExcluida: 'SemanaExcluida',
+  Festivo: 'Festivo',
   Frecuencia: 'Frecuencia',
   HistoricoTaller: 'HistoricoTaller',
   Planificacion: 'Planificacion',
-  SolverLog: 'SolverLog'
+  SolverLog: 'SolverLog',
+  AppSettings: 'AppSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -233,15 +234,17 @@ export const ConfigTrimestralScalarFieldEnum = {
 export type ConfigTrimestralScalarFieldEnum = (typeof ConfigTrimestralScalarFieldEnum)[keyof typeof ConfigTrimestralScalarFieldEnum]
 
 
-export const SemanaExcluidaScalarFieldEnum = {
+export const FestivoScalarFieldEnum = {
   id: 'id',
+  fecha: 'fecha',
+  dia: 'dia',
   trimestre: 'trimestre',
   semana: 'semana',
   motivo: 'motivo',
   createdAt: 'createdAt'
 } as const
 
-export type SemanaExcluidaScalarFieldEnum = (typeof SemanaExcluidaScalarFieldEnum)[keyof typeof SemanaExcluidaScalarFieldEnum]
+export type FestivoScalarFieldEnum = (typeof FestivoScalarFieldEnum)[keyof typeof FestivoScalarFieldEnum]
 
 
 export const FrecuenciaScalarFieldEnum = {
@@ -290,7 +293,10 @@ export const PlanificacionScalarFieldEnum = {
   version: 'version',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  horario: 'horario'
+  horario: 'horario',
+  estado: 'estado',
+  confirmado: 'confirmado',
+  notas: 'notas'
 } as const
 
 export type PlanificacionScalarFieldEnum = (typeof PlanificacionScalarFieldEnum)[keyof typeof PlanificacionScalarFieldEnum]
@@ -310,6 +316,16 @@ export const SolverLogScalarFieldEnum = {
 } as const
 
 export type SolverLogScalarFieldEnum = (typeof SolverLogScalarFieldEnum)[keyof typeof SolverLogScalarFieldEnum]
+
+
+export const AppSettingsScalarFieldEnum = {
+  id: 'id',
+  trimestreActivo: 'trimestreActivo',
+  trimestreSiguiente: 'trimestreSiguiente',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppSettingsScalarFieldEnum = (typeof AppSettingsScalarFieldEnum)[keyof typeof AppSettingsScalarFieldEnum]
 
 
 export const SortOrder = {

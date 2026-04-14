@@ -394,11 +394,12 @@ export const ModelName = {
   EmpresaCiudad: 'EmpresaCiudad',
   Restriccion: 'Restriccion',
   ConfigTrimestral: 'ConfigTrimestral',
-  SemanaExcluida: 'SemanaExcluida',
+  Festivo: 'Festivo',
   Frecuencia: 'Frecuencia',
   HistoricoTaller: 'HistoricoTaller',
   Planificacion: 'Planificacion',
-  SolverLog: 'SolverLog'
+  SolverLog: 'SolverLog',
+  AppSettings: 'AppSettings'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -414,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "empresa" | "taller" | "ciudad" | "empresaCiudad" | "restriccion" | "configTrimestral" | "semanaExcluida" | "frecuencia" | "historicoTaller" | "planificacion" | "solverLog"
+    modelProps: "user" | "session" | "account" | "verification" | "empresa" | "taller" | "ciudad" | "empresaCiudad" | "restriccion" | "configTrimestral" | "festivo" | "frecuencia" | "historicoTaller" | "planificacion" | "solverLog" | "appSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1158,77 +1159,77 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    SemanaExcluida: {
-      payload: Prisma.$SemanaExcluidaPayload<ExtArgs>
-      fields: Prisma.SemanaExcluidaFieldRefs
+    Festivo: {
+      payload: Prisma.$FestivoPayload<ExtArgs>
+      fields: Prisma.FestivoFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.SemanaExcluidaFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload> | null
+          args: Prisma.FestivoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.SemanaExcluidaFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+          args: Prisma.FestivoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>
         }
         findFirst: {
-          args: Prisma.SemanaExcluidaFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload> | null
+          args: Prisma.FestivoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.SemanaExcluidaFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+          args: Prisma.FestivoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>
         }
         findMany: {
-          args: Prisma.SemanaExcluidaFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>[]
+          args: Prisma.FestivoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>[]
         }
         create: {
-          args: Prisma.SemanaExcluidaCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+          args: Prisma.FestivoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>
         }
         createMany: {
-          args: Prisma.SemanaExcluidaCreateManyArgs<ExtArgs>
+          args: Prisma.FestivoCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.SemanaExcluidaCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>[]
+          args: Prisma.FestivoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>[]
         }
         delete: {
-          args: Prisma.SemanaExcluidaDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+          args: Prisma.FestivoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>
         }
         update: {
-          args: Prisma.SemanaExcluidaUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+          args: Prisma.FestivoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>
         }
         deleteMany: {
-          args: Prisma.SemanaExcluidaDeleteManyArgs<ExtArgs>
+          args: Prisma.FestivoDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.SemanaExcluidaUpdateManyArgs<ExtArgs>
+          args: Prisma.FestivoUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.SemanaExcluidaUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>[]
+          args: Prisma.FestivoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>[]
         }
         upsert: {
-          args: Prisma.SemanaExcluidaUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExcluidaPayload>
+          args: Prisma.FestivoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FestivoPayload>
         }
         aggregate: {
-          args: Prisma.SemanaExcluidaAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateSemanaExcluida>
+          args: Prisma.FestivoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFestivo>
         }
         groupBy: {
-          args: Prisma.SemanaExcluidaGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SemanaExcluidaGroupByOutputType>[]
+          args: Prisma.FestivoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FestivoGroupByOutputType>[]
         }
         count: {
-          args: Prisma.SemanaExcluidaCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.SemanaExcluidaCountAggregateOutputType> | number
+          args: Prisma.FestivoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FestivoCountAggregateOutputType> | number
         }
       }
     }
@@ -1528,6 +1529,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AppSettings: {
+      payload: Prisma.$AppSettingsPayload<ExtArgs>
+      fields: Prisma.AppSettingsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AppSettingsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AppSettingsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>
+        }
+        findFirst: {
+          args: Prisma.AppSettingsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AppSettingsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>
+        }
+        findMany: {
+          args: Prisma.AppSettingsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>[]
+        }
+        create: {
+          args: Prisma.AppSettingsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>
+        }
+        createMany: {
+          args: Prisma.AppSettingsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AppSettingsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>[]
+        }
+        delete: {
+          args: Prisma.AppSettingsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>
+        }
+        update: {
+          args: Prisma.AppSettingsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>
+        }
+        deleteMany: {
+          args: Prisma.AppSettingsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AppSettingsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AppSettingsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>[]
+        }
+        upsert: {
+          args: Prisma.AppSettingsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AppSettingsPayload>
+        }
+        aggregate: {
+          args: Prisma.AppSettingsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAppSettings>
+        }
+        groupBy: {
+          args: Prisma.AppSettingsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppSettingsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AppSettingsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AppSettingsCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1716,15 +1791,17 @@ export const ConfigTrimestralScalarFieldEnum = {
 export type ConfigTrimestralScalarFieldEnum = (typeof ConfigTrimestralScalarFieldEnum)[keyof typeof ConfigTrimestralScalarFieldEnum]
 
 
-export const SemanaExcluidaScalarFieldEnum = {
+export const FestivoScalarFieldEnum = {
   id: 'id',
+  fecha: 'fecha',
+  dia: 'dia',
   trimestre: 'trimestre',
   semana: 'semana',
   motivo: 'motivo',
   createdAt: 'createdAt'
 } as const
 
-export type SemanaExcluidaScalarFieldEnum = (typeof SemanaExcluidaScalarFieldEnum)[keyof typeof SemanaExcluidaScalarFieldEnum]
+export type FestivoScalarFieldEnum = (typeof FestivoScalarFieldEnum)[keyof typeof FestivoScalarFieldEnum]
 
 
 export const FrecuenciaScalarFieldEnum = {
@@ -1773,7 +1850,10 @@ export const PlanificacionScalarFieldEnum = {
   version: 'version',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  horario: 'horario'
+  horario: 'horario',
+  estado: 'estado',
+  confirmado: 'confirmado',
+  notas: 'notas'
 } as const
 
 export type PlanificacionScalarFieldEnum = (typeof PlanificacionScalarFieldEnum)[keyof typeof PlanificacionScalarFieldEnum]
@@ -1793,6 +1873,16 @@ export const SolverLogScalarFieldEnum = {
 } as const
 
 export type SolverLogScalarFieldEnum = (typeof SolverLogScalarFieldEnum)[keyof typeof SolverLogScalarFieldEnum]
+
+
+export const AppSettingsScalarFieldEnum = {
+  id: 'id',
+  trimestreActivo: 'trimestreActivo',
+  trimestreSiguiente: 'trimestreSiguiente',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AppSettingsScalarFieldEnum = (typeof AppSettingsScalarFieldEnum)[keyof typeof AppSettingsScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2090,11 +2180,12 @@ export type GlobalOmitConfig = {
   empresaCiudad?: Prisma.EmpresaCiudadOmit
   restriccion?: Prisma.RestriccionOmit
   configTrimestral?: Prisma.ConfigTrimestralOmit
-  semanaExcluida?: Prisma.SemanaExcluidaOmit
+  festivo?: Prisma.FestivoOmit
   frecuencia?: Prisma.FrecuenciaOmit
   historicoTaller?: Prisma.HistoricoTallerOmit
   planificacion?: Prisma.PlanificacionOmit
   solverLog?: Prisma.SolverLogOmit
+  appSettings?: Prisma.AppSettingsOmit
 }
 
 /* Types for Logging */

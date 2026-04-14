@@ -2,12 +2,13 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { getTrimestres, getTrimestreActual } from "@/utils/trimestres";
 import {
   actionGenerarCalendario,
   actionObtenerCalendario,
+  actionImportarExcelCalendario,
 } from "@/actions/calendario-actions";
-import type { CalendarioOutput, SlotCalendario } from "@/lib/api";
+import { useSettings } from "@/hooks/use-settings";
+import type { CalendarioOutput, SlotCalendario, ImportarExcelResult } from "@/lib/api";
 import { WarningsPanel } from "./WarningsPanel";
 
 // ── Constants ────────────────────────────────────────────────
@@ -38,16 +39,16 @@ const EMPRESA_COLORS: Record<number, { bg: string; border: string; text: string;
   10: { bg: "bg-teal-50",    border: "border-teal-200",    text: "text-teal-800",    dot: "bg-teal-500" },
 };
 
-function getColor(id: number) {
-  if (id === 0) return { bg: "bg-amber-50/80", border: "border-dashed border-amber-300", text: "text-amber-600", dot: "bg-amber-400" };
+function getColor(id: number | null) {
+  if (id === 0 || id === null) return { bg: "bg-amber-50/80", border: "border-dashed border-amber-300", text: "text-amber-600", dot: "bg-amber-400" };
   return EMPRESA_COLORS[id % 10 || 10] ?? { bg: "bg-slate-50", border: "border-slate-200", text: "text-slate-700", dot: "bg-slate-400" };
 }
 
 // ── Helpers ──────────────────────────────────────────────────
 
-/** Normaliza: el solver manda empresa_id=0 con tipo "BASE", lo marcamos VACANTE */
+/** Normaliza: vacantes tienen empresa_id=null o 0, o estado VACANTE */
 function isVacante(slot: SlotCalendario): boolean {
-  return slot.empresa_id === 0 || slot.tipo_asignacion === "VACANTE";
+  return slot.empresa_id === 0 || slot.empresa_id === null || slot.estado === "VACANTE";
 }
 
 // ── Types ────────────────────────────────────────────────────
@@ -62,8 +63,10 @@ type FiltroVacante = "todas" | "asignadas" | "vacantes";
 // ══════════════════════════════════════════════════════════════
 
 export function CalendarioWizard() {
+  const { settings, loading: loadingSettings } = useSettings();
+  const trimestre = settings?.trimestre_siguiente || null;
+
   const [paso, setPaso] = useState<Paso>("config");
-  const [trimestre, setTrimestre] = useState(() => getTrimestreActual());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [vista, setVista] = useState<Vista>("semanal");
@@ -72,7 +75,13 @@ export function CalendarioWizard() {
   const [filtroVacante, setFiltroVacante] = useState<FiltroVacante>("todas");
   const [semanaSeleccionada, setSemanaSeleccionada] = useState<number | null>(null);
 
+  // Import Excel
+  const [showImport, setShowImport] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportarExcelResult | null>(null);
+
   const handleGenerar = useCallback(async () => {
+    if (!trimestre) return;
     setLoading(true); setError(null);
     try {
       const result = await actionGenerarCalendario(trimestre);
@@ -83,6 +92,7 @@ export function CalendarioWizard() {
   }, [trimestre]);
 
   const handleCargar = useCallback(async () => {
+    if (!trimestre) return;
     setLoading(true); setError(null);
     try {
       const result = await actionObtenerCalendario(trimestre);
@@ -114,6 +124,35 @@ export function CalendarioWizard() {
     } catch (e: any) { setError(e.message); }
   }, [trimestre]);
 
+  const handleImportFile = useCallback(async (file: File) => {
+    if (!trimestre) return;
+    setImporting(true);
+    setImportResult(null);
+    setError(null);
+    try {
+      const result = await actionImportarExcelCalendario(trimestre, file, false);
+      if (!result.ok) throw new Error(result.error);
+      setImportResult(result.data);
+      // Reload calendario after import
+      if (result.data.actualizados > 0) {
+        const calResult = await actionObtenerCalendario(trimestre);
+        if (calResult.ok) {
+          setCalendario({
+            trimestre: calResult.data.trimestre, status: "IMPORTADO", tiempo_segundos: 0,
+            total_slots: calResult.data.total_slots,
+            total_ef: calResult.data.slots.filter((s: any) => s.programa === "EF").length,
+            total_it: calResult.data.slots.filter((s: any) => s.programa === "IT").length,
+            slots: calResult.data.slots, inviolables_pct: 100, preferentes_pct: 100, warnings: [],
+          });
+        }
+      }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setImporting(false);
+    }
+  }, [trimestre]);
+
   // ── Stats ───────────────────────────────────────────────────
 
   const stats = useMemo(() => {
@@ -125,12 +164,13 @@ export function CalendarioWizard() {
 
     const porEmpresa: Record<number, { nombre: string; ef: number; it: number; ciudades: Set<string> }> = {};
     for (const s of slots) {
-      if (isVacante(s)) continue; // No contar vacantes como "empresa"
-      if (!porEmpresa[s.empresa_id])
-        porEmpresa[s.empresa_id] = { nombre: s.empresa_nombre, ef: 0, it: 0, ciudades: new Set() };
-      if (s.programa === "EF") porEmpresa[s.empresa_id].ef++;
-      else porEmpresa[s.empresa_id].it++;
-      if (s.ciudad) porEmpresa[s.empresa_id].ciudades.add(s.ciudad);
+      if (isVacante(s) || s.empresa_id === null) continue; // No contar vacantes como "empresa"
+      const eid = s.empresa_id;
+      if (!porEmpresa[eid])
+        porEmpresa[eid] = { nombre: s.empresa_nombre ?? "", ef: 0, it: 0, ciudades: new Set() };
+      if (s.programa === "EF") porEmpresa[eid].ef++;
+      else porEmpresa[eid].it++;
+      if (s.ciudad) porEmpresa[eid].ciudades.add(s.ciudad);
     }
 
     // Vacantes por semana para el mini-mapa
@@ -200,27 +240,51 @@ export function CalendarioWizard() {
       {/* ═══ CONFIG ═══ */}
       {paso === "config" && (
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-semibold text-slate-700 mb-4">Generar calendario</h2>
-          <div className="flex items-end gap-4">
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">Trimestre</label>
-              <select value={trimestre} onChange={(e) => setTrimestre(e.target.value)}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-slate-500">
-                {getTrimestres().map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
+          {loadingSettings ? (
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <Spinner />
+              Cargando configuracion...
             </div>
-          </div>
-          <p className="mt-3 text-xs text-slate-400">Requiere frecuencias confirmadas (Fase 1). Cada semana genera 20 slots fijos.</p>
-          <div className="mt-5 flex gap-3">
-            <button onClick={handleGenerar} disabled={loading}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50">
-              {loading ? <><Spinner />Generando...</> : "Generar calendario"}
-            </button>
-            <button onClick={handleCargar} disabled={loading}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50">
-              Cargar existente
-            </button>
-          </div>
+          ) : trimestre ? (
+            <>
+              <h2 className="text-sm font-semibold text-slate-700 mb-4">Generar calendario</h2>
+              <div className="flex items-end gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Trimestre a Planificar</label>
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
+                    <span className="text-lg font-bold text-blue-800">{trimestre}</span>
+                    <span className="ml-2 text-xs text-blue-600">(siguiente)</span>
+                  </div>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-slate-400">Requiere frecuencias confirmadas (Fase 1). Cada semana genera 20 slots fijos.</p>
+              <div className="mt-5 flex gap-3">
+                <button onClick={handleGenerar} disabled={loading}
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50">
+                  {loading ? <><Spinner />Generando...</> : "Generar calendario"}
+                </button>
+                <button onClick={handleCargar} disabled={loading}
+                  className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50">
+                  Cargar existente
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <h3 className="text-sm font-semibold text-amber-800 mb-2">
+                No hay trimestre siguiente configurado
+              </h3>
+              <p className="text-sm text-amber-700">
+                Configura el trimestre siguiente desde el Dashboard para poder generar el calendario.
+              </p>
+              <a
+                href="/dashboard"
+                className="mt-3 inline-block text-sm font-medium text-amber-800 underline underline-offset-2 hover:text-amber-900"
+              >
+                Ir al Dashboard
+              </a>
+            </div>
+          )}
         </div>
       )}
 
@@ -348,6 +412,23 @@ export function CalendarioWizard() {
               )}
             </div>
 
+            <label className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 cursor-pointer">
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImportFile(file);
+                  e.target.value = "";
+                }}
+                disabled={importing}
+              />
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+              </svg>
+              {importing ? "Importando..." : "Importar Excel"}
+            </label>
             <button onClick={handleExport}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50">
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -356,6 +437,37 @@ export function CalendarioWizard() {
               Exportar Excel
             </button>
           </div>
+
+          {/* Import Result Toast */}
+          {importResult && (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 flex items-start justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-blue-800 mb-1">
+                  {importResult.actualizados > 0 ? `${importResult.actualizados} slots actualizados` : "Sin cambios"}
+                </h4>
+                <p className="text-xs text-blue-600">
+                  {importResult.total_procesados} filas procesadas
+                  {importResult.errores > 0 && `, ${importResult.errores} errores`}
+                  {importResult.empresas_cambiadas.length > 0 && `, ${importResult.empresas_cambiadas.length} empresas cambiadas`}
+                </p>
+                {importResult.warnings.length > 0 && (
+                  <details className="mt-2">
+                    <summary className="text-xs text-amber-700 cursor-pointer">
+                      {importResult.warnings.length} advertencias
+                    </summary>
+                    <ul className="mt-1 text-xs text-amber-600 pl-4 list-disc">
+                      {importResult.warnings.slice(0, 5).map((w, i) => <li key={i}>{w}</li>)}
+                    </ul>
+                  </details>
+                )}
+              </div>
+              <button onClick={() => setImportResult(null)} className="text-blue-400 hover:text-blue-600">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
 
           {/* ═══ VISTA SEMANAL ═══ */}
           {vista === "semanal" && (

@@ -172,16 +172,20 @@ model ConfigTrimestral {
   @@map("configTrimestral")
 }
 
-// Semanas excluidas de la planificación (feriados, vacaciones, etc.)
-model SemanaExcluida {
+// Días festivos / no laborables para la planificación
+// Se sube una vez al año con todas las fechas festivas
+// El solver excluye solo los slots cuyo día coincide con un festivo
+model Festivo {
   id        Int      @id @default(autoincrement())
-  trimestre String
-  semana    Int      // absolute week number (1-52)
-  motivo    String?
+  fecha     DateTime @db.Date            // the actual date (2026-04-02)
+  dia       String                        // day letter: L, M, X, J, V (derived from fecha)
+  trimestre String                        // which quarter this falls in (2026-Q2)
+  semana    Int                           // relative week within quarter (1-13)
+  motivo    String?                       // "Jueves Santo", "Navidad", etc.
   createdAt DateTime @default(now())
 
-  @@unique([trimestre, semana])
-  @@map("semanaExcluida")
+  @@unique([fecha])                       // one entry per date
+  @@map("festivo")
   @@index([trimestre])
 }
 
@@ -230,7 +234,7 @@ model Planificacion {
   semana         Int
   dia            String
   turno          String?
-  empresaId      Int
+  empresaId      Int?           // nullable: null = vacancy
   tallerId       Int
   ciudadId       Int?
   tipoAsignacion TipoAsignacion @default(BASE)
@@ -239,8 +243,11 @@ model Planificacion {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   horario        String?
+  estado         String         @default("PLANIFICADO") // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
+  confirmado     Boolean        @default(false)
+  notas          String?
   ciudad         Ciudad?        @relation(fields: [ciudadId], references: [id])
-  empresa        Empresa        @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  empresa        Empresa?       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   taller         Taller         @relation(fields: [tallerId], references: [id], onDelete: Cascade)
 
   @@index([trimestre])
@@ -302,4 +309,14 @@ enum TipoAsignacion {
   BASE
   EXTRA
   CONTINGENCIA
+}
+
+// Global application settings (singleton table with id=1)
+model AppSettings {
+  id                 Int      @id @default(1)
+  trimestreActivo    String   // e.g., "2026-Q2" — the quarter being operated
+  trimestreSiguiente String?  // e.g., "2026-Q3" — the quarter being prepared (nullable)
+  updatedAt          DateTime @updatedAt
+
+  @@map("appSettings")
 }
