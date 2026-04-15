@@ -10,7 +10,9 @@ export interface ImportEmpresasResult {
   ciudades_creadas: string[];
   empresa_ciudad_links: number;
   config_trimestral_creadas: number;
-  semanas_excluidas: number;
+  configs_actualizadas: number;      // NEW: how many configs were updated vs created
+  trimestre_target: string;          // NEW: which trimestre was targeted
+  festivos_importados: number;
   warnings: string[];
 }
 

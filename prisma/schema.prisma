@@ -157,6 +157,8 @@ model ConfigTrimestral {
   tipoParticipacion      Programa     @default(AMBAS)
   escuelaPropia          Boolean      @default(false)
   frecuenciaSolicitada   Int?
+  frecuenciaEF           Int?         // Explicit EF workshops requested (from master import)
+  frecuenciaIT           Int?         // Explicit IT workshops requested (from master import)
   disponibilidadDias     String       @default("L,M,X,J,V")
   turnoPreferido         String?
   voluntariosDisponibles Int          @default(0)
