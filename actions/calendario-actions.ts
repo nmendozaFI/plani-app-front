@@ -5,6 +5,7 @@ import {
   obtenerCalendario,
   actualizarSlot,
   actualizarSlotsBatch,
+  validarAsignacion,
   obtenerResumenOperacion,
   obtenerAnalisis,
   cerrarTrimestre,
@@ -18,6 +19,7 @@ import type {
   SlotUpdateInput,
   SlotBatchUpdateItem,
   ImportarExcelResult,
+  ValidarAsignacionResult,
 } from "@/types/calendario";
 import type { AnalisisResponse } from "@/types/analisis";
 import type { ActionResult } from "@/types/actions";
@@ -76,6 +78,20 @@ export async function actionActualizarSlotsBatch(
   }
 }
 
+export async function actionValidarAsignacion(
+  trimestre: string,
+  slotId: number,
+  empresaId: number
+): Promise<ActionResult<ValidarAsignacionResult>> {
+  try {
+    const data = await validarAsignacion(trimestre, slotId, empresaId);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al validar asignacion";
+    return { ok: false, error: msg };
+  }
+}
+
 export async function actionObtenerResumen(
   trimestre: string
 ): Promise<ActionResult<CalendarioResumen>> {
@@ -129,6 +145,41 @@ export async function actionObtenerAnalisis(
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al obtener analisis";
+    return { ok: false, error: msg };
+  }
+}
+
+// ── Recalcular Scores ────────────────────────────────────────
+
+export interface RecalcularScoresResult {
+  empresas_actualizadas: number;
+  detalle: Array<{
+    empresa_id: number;
+    empresa_nombre: string;
+    score_v3: number;
+    semaforo: string;
+    fiabilidad_reciente: number;
+    total_asignado: number;
+    cumplidos: number;
+    cancelados_empresa: number;
+  }>;
+  warnings: string[];
+}
+
+export async function actionRecalcularScores(): Promise<ActionResult<RecalcularScoresResult>> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendario/recalcular-scores`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.detail || `Error ${response.status}`);
+    }
+    const data = await response.json();
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al recalcular scores";
     return { ok: false, error: msg };
   }
 }

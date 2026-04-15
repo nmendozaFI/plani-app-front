@@ -7,6 +7,7 @@ import {
   actionActualizarSlotsBatch,
   actionObtenerResumen,
   actionImportarExcelCalendario,
+  actionValidarAsignacion,
 } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
@@ -104,6 +105,23 @@ export function OperacionPageClient() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportarExcelResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Warning modal state
+  const [warningModal, setWarningModal] = useState<{
+    slotId: number;
+    empresaId: number;
+    empresaNombre: string;
+    warnings: string[];
+    restriccionesVioladas: string[];
+  } | null>(null);
+
+  // Motivo cambio modal state
+  const [motivoModal, setMotivoModal] = useState<{
+    slotId: number;
+    action: "cancel" | "reassign";
+    empresaId?: number;  // for reassign
+    empresaNombre?: string;
+  } | null>(null);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
@@ -203,7 +221,7 @@ export function OperacionPageClient() {
 
   const handleUpdateSlot = useCallback(async (
     slotId: number,
-    updates: { estado?: string; confirmado?: boolean; empresa_id?: number | null; notas?: string | null }
+    updates: { estado?: string; confirmado?: boolean; empresa_id?: number | null; notas?: string | null; motivo_cambio?: string | null }
   ) => {
     if (!trimestre) return;
     setUpdatingSlot(slotId);
@@ -220,6 +238,77 @@ export function OperacionPageClient() {
       setUpdatingSlot(null);
     }
   }, [trimestre, cargarDatos]);
+
+  // Validate assignment before assigning a company
+  const handleValidateAndAssign = useCallback(async (
+    slotId: number,
+    empresaId: number,
+    empresaNombre: string,
+    currentEmpresaId: number | null,
+  ) => {
+    if (!trimestre) return;
+
+    // If slot has a company (reassign), show motivo modal first
+    if (currentEmpresaId !== null) {
+      setMotivoModal({
+        slotId,
+        action: "reassign",
+        empresaId,
+        empresaNombre,
+      });
+      return;
+    }
+
+    // For vacant slots, validate first
+    try {
+      const result = await actionValidarAsignacion(trimestre, slotId, empresaId);
+      if (!result.ok) throw new Error(result.error);
+
+      if (result.data.warnings.length > 0) {
+        // Show warning modal
+        setWarningModal({
+          slotId,
+          empresaId,
+          empresaNombre,
+          warnings: result.data.warnings,
+          restriccionesVioladas: result.data.restricciones_violadas,
+        });
+      } else {
+        // No warnings, assign directly
+        await handleUpdateSlot(slotId, { empresa_id: empresaId });
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Error al validar";
+      toast.error(msg);
+    }
+  }, [trimestre, handleUpdateSlot]);
+
+  // Confirm assignment despite warnings
+  const handleConfirmWithWarnings = useCallback(async () => {
+    if (!warningModal) return;
+    await handleUpdateSlot(warningModal.slotId, { empresa_id: warningModal.empresaId });
+    setWarningModal(null);
+  }, [warningModal, handleUpdateSlot]);
+
+  // Handle cancel action (shows motivo modal)
+  const handleRequestCancel = useCallback((slotId: number) => {
+    setMotivoModal({
+      slotId,
+      action: "cancel",
+    });
+  }, []);
+
+  // Confirm motivo and execute action
+  const handleConfirmMotivo = useCallback(async (motivo: "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR") => {
+    if (!motivoModal) return;
+
+    if (motivoModal.action === "cancel") {
+      await handleUpdateSlot(motivoModal.slotId, { estado: "CANCELADO", motivo_cambio: motivo });
+    } else if (motivoModal.action === "reassign" && motivoModal.empresaId !== undefined) {
+      await handleUpdateSlot(motivoModal.slotId, { empresa_id: motivoModal.empresaId, motivo_cambio: motivo });
+    }
+    setMotivoModal(null);
+  }, [motivoModal, handleUpdateSlot]);
 
   const handleBatchUpdate = useCallback(async (updates: { estado?: string; confirmado?: boolean }) => {
     if (!trimestre || selectedSlots.size === 0) return;
@@ -637,6 +726,10 @@ export function OperacionPageClient() {
                       showNotes={hasNotesInWeek}
                       onToggleSelect={() => toggleSlotSelection(slot.id)}
                       onUpdate={(updates) => handleUpdateSlot(slot.id, updates)}
+                      onValidateAndAssign={(empresaId, empresaNombre) =>
+                        handleValidateAndAssign(slot.id, empresaId, empresaNombre, slot.empresa_id)
+                      }
+                      onRequestCancel={() => handleRequestCancel(slot.id)}
                     />
                   ))}
                 </div>
@@ -665,6 +758,94 @@ export function OperacionPageClient() {
           }}
           onConfirm={handleConfirmImport}
         />
+      )}
+
+      {/* Warning Modal for restriction violations */}
+      {warningModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              Advertencias de asignación
+            </h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Asignar <strong>{warningModal.empresaNombre}</strong> a este slot genera las siguientes advertencias:
+            </p>
+            <div className="space-y-2 mb-6">
+              {warningModal.restriccionesVioladas.map((w, i) => (
+                <div key={i} className="flex items-start gap-2 p-2 bg-red-50 rounded border border-red-200">
+                  <span className="text-red-500 shrink-0">⚠️</span>
+                  <span className="text-sm text-red-700">{w}</span>
+                </div>
+              ))}
+              {warningModal.warnings
+                .filter(w => !warningModal.restriccionesVioladas.includes(w))
+                .map((w, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2 bg-amber-50 rounded border border-amber-200">
+                    <span className="text-amber-500 shrink-0">⚡</span>
+                    <span className="text-sm text-amber-700">{w}</span>
+                  </div>
+                ))}
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setWarningModal(null)}
+                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmWithWarnings}
+                className="px-4 py-2 text-sm bg-amber-500 text-white rounded hover:bg-amber-600"
+              >
+                Asignar de todos modos
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Motivo cambio Modal */}
+      {motivoModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">
+              {motivoModal.action === "cancel" ? "¿Por qué se cancela?" : "¿Por qué se cambia la empresa?"}
+            </h3>
+            <p className="text-sm text-slate-600 mb-6">
+              Selecciona el motivo para mantener un registro correcto de los cambios.
+            </p>
+            <div className="space-y-3 mb-6">
+              <button
+                onClick={() => handleConfirmMotivo("EMPRESA_CANCELO")}
+                className="w-full flex items-center gap-3 p-4 border-2 border-slate-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-colors text-left"
+              >
+                <span className="text-2xl">🏢</span>
+                <div>
+                  <div className="font-medium text-slate-900">La empresa canceló</div>
+                  <div className="text-xs text-slate-500">Afecta la fiabilidad de la empresa</div>
+                </div>
+              </button>
+              <button
+                onClick={() => handleConfirmMotivo("DECISION_PLANIFICADOR")}
+                className="w-full flex items-center gap-3 p-4 border-2 border-slate-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
+              >
+                <span className="text-2xl">📋</span>
+                <div>
+                  <div className="font-medium text-slate-900">Decisión del planificador</div>
+                  <div className="text-xs text-slate-500">No afecta la fiabilidad de la empresa</div>
+                </div>
+              </button>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => setMotivoModal(null)}
+                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -703,6 +884,8 @@ function SlotRow({
   showNotes,
   onToggleSelect,
   onUpdate,
+  onValidateAndAssign,
+  onRequestCancel,
 }: {
   slot: SlotCalendario;
   empresas: EmpresaSimple[];
@@ -711,6 +894,8 @@ function SlotRow({
   showNotes: boolean;
   onToggleSelect: () => void;
   onUpdate: (updates: { estado?: string; confirmado?: boolean; empresa_id?: number | null; notas?: string | null }) => void;
+  onValidateAndAssign: (empresaId: number, empresaNombre: string) => void;
+  onRequestCancel: () => void;
 }) {
   const [showAssign, setShowAssign] = useState(false);
   const [showChangeEmpresa, setShowChangeEmpresa] = useState(false);
@@ -721,6 +906,9 @@ function SlotRow({
   const config = ESTADO_CONFIG[slot.estado] || ESTADO_CONFIG.PLANIFICADO;
   const isVacante = slot.estado === "VACANTE";
   const isCancelado = slot.estado === "CANCELADO";
+
+  // Check if company was changed from original
+  const wasCompanyChanged = slot.empresa_id !== slot.empresa_id_original && slot.empresa_id_original !== null;
 
   const filteredEmpresas = useMemo(() => {
     const search = empresaSearch.toLowerCase();
@@ -735,7 +923,9 @@ function SlotRow({
   };
 
   const handleAssignEmpresa = (empresaId: number) => {
-    onUpdate({ empresa_id: empresaId });
+    const empresa = empresas.find(e => e.id === empresaId);
+    const empresaNombre = empresa?.nombre || "";
+    onValidateAndAssign(empresaId, empresaNombre);
     setShowAssign(false);
     setShowChangeEmpresa(false);
     setEmpresaSearch("");
@@ -823,6 +1013,22 @@ function SlotRow({
             <Badge variant="outline" className={`shrink-0 text-[10px] ${config.border} ${config.text}`}>
               {slot.estado}
             </Badge>
+            {/* Motivo cambio badge */}
+            {slot.motivo_cambio === "EMPRESA_CANCELO" && (
+              <Badge variant="outline" className="shrink-0 text-[10px] bg-red-50 text-red-600 border-red-200">
+                Empresa canceló
+              </Badge>
+            )}
+            {slot.motivo_cambio === "DECISION_PLANIFICADOR" && (
+              <Badge variant="outline" className="shrink-0 text-[10px] bg-blue-50 text-blue-600 border-blue-200">
+                Cambio planificador
+              </Badge>
+            )}
+            {wasCompanyChanged && !slot.motivo_cambio && (
+              <Badge variant="outline" className="shrink-0 text-[10px] bg-slate-50 text-slate-500 border-slate-200">
+                Cambiada
+              </Badge>
+            )}
             {slot.notas && (
               <span title={slot.notas} className="cursor-help text-slate-400 hover:text-slate-600">
                 📝
@@ -853,7 +1059,7 @@ function SlotRow({
               Confirmar
             </button>
             <button
-              onClick={() => onUpdate({ estado: "CANCELADO" })}
+              onClick={onRequestCancel}
               className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
               disabled={isUpdating}
             >
@@ -871,7 +1077,7 @@ function SlotRow({
               OK
             </button>
             <button
-              onClick={() => onUpdate({ estado: "CANCELADO" })}
+              onClick={onRequestCancel}
               className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
               disabled={isUpdating}
             >

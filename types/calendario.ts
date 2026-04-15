@@ -17,6 +17,7 @@ export interface SlotCalendario {
   horario: string;
   turno: string;
   empresa_id: number | null;
+  empresa_id_original: number | null;  // Solver's original assignment (never changes)
   empresa_nombre: string | null;
   programa: string;
   taller_id: number;
@@ -27,6 +28,7 @@ export interface SlotCalendario {
   estado: string;  // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
   confirmado: boolean;
   notas: string | null;
+  motivo_cambio: string | null;  // EMPRESA_CANCELO | DECISION_PLANIFICADOR | null
   sugerencias?: SugerenciaContingencia[] | null;
 }
 
@@ -76,6 +78,7 @@ export interface SlotUpdateInput {
   confirmado?: boolean;
   empresa_id?: number | null;
   notas?: string | null;
+  motivo_cambio?: string | null;  // EMPRESA_CANCELO | DECISION_PLANIFICADOR
 }
 
 export interface SlotBatchUpdateItem {
@@ -84,6 +87,20 @@ export interface SlotBatchUpdateItem {
   confirmado?: boolean;
   empresa_id?: number | null;
   notas?: string | null;
+  motivo_cambio?: string | null;  // EMPRESA_CANCELO | DECISION_PLANIFICADOR
+}
+
+// ── Validation types ─────────────────────────────────────────
+
+export interface ValidarAsignacionInput {
+  slot_id: number;
+  empresa_id: number;
+}
+
+export interface ValidarAsignacionResult {
+  ok: boolean;
+  warnings: string[];
+  restricciones_violadas: string[];
 }
 
 export interface CalendarioGetResponse {

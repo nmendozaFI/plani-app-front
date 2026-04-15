@@ -5,6 +5,7 @@
  */
 
 import { apiFetch, apiFetchBlob, apiUpload } from "./api-client";
+import type { ValidarAsignacionResult } from "@/types/calendario";
 
 // ── Re-export types from canonical source ────────────────────
 export type {
@@ -25,6 +26,7 @@ export type {
   SlotBatchUpdateItem,
   EmpresaCambiada,
   ImportarExcelResult,
+  ValidarAsignacionResult,
 } from "@/types/calendario";
 
 export type {
@@ -214,6 +216,20 @@ export async function actualizarSlotsBatch(
     {
       method: "PATCH",
       body: JSON.stringify({ updates }),
+    }
+  );
+}
+
+export async function validarAsignacion(
+  trimestre: string,
+  slotId: number,
+  empresaId: number
+): Promise<ValidarAsignacionResult> {
+  return apiFetch<ValidarAsignacionResult>(
+    `/api/calendario/${trimestre}/validar-asignacion`,
+    {
+      method: "POST",
+      body: JSON.stringify({ slot_id: slotId, empresa_id: empresaId }),
     }
   );
 }

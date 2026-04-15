@@ -221,6 +221,7 @@ model HistoricoTaller {
   estado            EstadoTaller @default(OK)
   ciudad            String?
   trimestre         String?
+  motivoCambio      String?      // "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR" | null
   createdAt         DateTime     @default(now())
   empresa           Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   taller            Taller       @relation(fields: [tallerId], references: [id], onDelete: Cascade)
@@ -250,6 +251,7 @@ model Planificacion {
   estado            String         @default("PLANIFICADO") // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
   confirmado        Boolean        @default(false)
   notas             String?
+  motivoCambio      String?        // "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR" | null (reason for company change)
   ciudad            Ciudad?        @relation(fields: [ciudadId], references: [id])
   empresa           Empresa?       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   taller            Taller         @relation(fields: [tallerId], references: [id], onDelete: Cascade)

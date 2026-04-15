@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { actionObtenerAnalisis } from "@/actions/calendario-actions";
+import { actionObtenerAnalisis, actionRecalcularScores } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
 import type {
   AnalisisResponse,
@@ -24,6 +24,7 @@ import {
   TrendingDown,
   TrendingUp,
   Clock,
+  RefreshCw,
 } from "lucide-react";
 
 // ── Constants ────────────────────────────────────────────────
@@ -75,6 +76,7 @@ export function AnalisisPageClient() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [analisis, setAnalisis] = useState<AnalisisResponse | null>(null);
+  const [recalculando, setRecalculando] = useState(false);
 
   // Filters & sorting
   const [filtroEmpresa, setFiltroEmpresa] = useState("");
@@ -223,6 +225,25 @@ export function AnalisisPageClient() {
     toast.success("CSV exportado");
   };
 
+  // ── Recalcular Scores ──────────────────────────────────────
+
+  const handleRecalcularScores = async () => {
+    setRecalculando(true);
+    try {
+      const result = await actionRecalcularScores();
+      if (!result.ok) throw new Error(result.error);
+      toast.success(`Scores actualizados para ${result.data.empresas_actualizadas} empresas`);
+      if (result.data.warnings.length > 0) {
+        result.data.warnings.forEach((w) => toast.warning(w));
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Error al recalcular scores";
+      toast.error(msg);
+    } finally {
+      setRecalculando(false);
+    }
+  };
+
   // ── Render ─────────────────────────────────────────────────
 
   if (loadingSettings) {
@@ -274,6 +295,16 @@ export function AnalisisPageClient() {
               </option>
             ))}
           </select>
+
+          {/* Recalcular Scores */}
+          <button
+            onClick={handleRecalcularScores}
+            disabled={recalculando}
+            className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${recalculando ? "animate-spin" : ""}`} />
+            {recalculando ? "Calculando..." : "Recalcular Scores"}
+          </button>
 
           {/* Export */}
           <button
