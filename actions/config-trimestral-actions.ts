@@ -6,6 +6,7 @@ import {
   actualizarConfigTrimestral,
   actualizarConfigsBatch,
   inicializarConfigTrimestral,
+  importarConfigExcel,
 } from "@/lib/api";
 import type {
   ConfigTrimestralUpdate,
@@ -61,6 +62,19 @@ export async function actionInicializarConfigTrimestral(
 ) {
   try {
     const result = await inicializarConfigTrimestral(trimestre, origenTrimestre);
+    return { data: result, error: null };
+  } catch (e) {
+    return { data: null, error: (e as Error).message };
+  }
+}
+
+export async function actionImportarConfigExcel(
+  trimestre: string,
+  file: File,
+  dryRun: boolean = true
+) {
+  try {
+    const result = await importarConfigExcel(trimestre, file, dryRun);
     return { data: result, error: null };
   } catch (e) {
     return { data: null, error: (e as Error).message };

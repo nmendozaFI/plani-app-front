@@ -268,6 +268,7 @@ export type FrecuenciaScalarFieldEnum = (typeof FrecuenciaScalarFieldEnum)[keyof
 export const HistoricoTallerScalarFieldEnum = {
   id: 'id',
   empresaId: 'empresaId',
+  empresaIdOriginal: 'empresaIdOriginal',
   tallerId: 'tallerId',
   fecha: 'fecha',
   estado: 'estado',
@@ -286,6 +287,7 @@ export const PlanificacionScalarFieldEnum = {
   dia: 'dia',
   turno: 'turno',
   empresaId: 'empresaId',
+  empresaIdOriginal: 'empresaIdOriginal',
   tallerId: 'tallerId',
   ciudadId: 'ciudadId',
   tipoAsignacion: 'tipoAsignacion',

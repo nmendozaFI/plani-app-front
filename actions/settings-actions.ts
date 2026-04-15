@@ -2,6 +2,7 @@
 
 import {
   obtenerSettings,
+  obtenerPlanningStatus,
   actualizarSettings,
   promoverTrimestre,
 } from "@/lib/api";
@@ -9,6 +10,7 @@ import type {
   AppSettings,
   AppSettingsUpdate,
   PromoverResult,
+  PlanningStatus,
 } from "@/types/settings";
 import type { ActionResult } from "@/types/actions";
 
@@ -40,6 +42,16 @@ export async function actionPromoverTrimestre(): Promise<ActionResult<PromoverRe
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al promover trimestre";
+    return { ok: false, error: msg };
+  }
+}
+
+export async function actionObtenerPlanningStatus(): Promise<ActionResult<PlanningStatus>> {
+  try {
+    const data = await obtenerPlanningStatus();
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al obtener estado de planificacion";
     return { ok: false, error: msg };
   }
 }

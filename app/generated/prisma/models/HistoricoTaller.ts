@@ -29,18 +29,21 @@ export type AggregateHistoricoTaller = {
 export type HistoricoTallerAvgAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  empresaIdOriginal: number | null
   tallerId: number | null
 }
 
 export type HistoricoTallerSumAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  empresaIdOriginal: number | null
   tallerId: number | null
 }
 
 export type HistoricoTallerMinAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  empresaIdOriginal: number | null
   tallerId: number | null
   fecha: Date | null
   estado: $Enums.EstadoTaller | null
@@ -52,6 +55,7 @@ export type HistoricoTallerMinAggregateOutputType = {
 export type HistoricoTallerMaxAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  empresaIdOriginal: number | null
   tallerId: number | null
   fecha: Date | null
   estado: $Enums.EstadoTaller | null
@@ -63,6 +67,7 @@ export type HistoricoTallerMaxAggregateOutputType = {
 export type HistoricoTallerCountAggregateOutputType = {
   id: number
   empresaId: number
+  empresaIdOriginal: number
   tallerId: number
   fecha: number
   estado: number
@@ -76,18 +81,21 @@ export type HistoricoTallerCountAggregateOutputType = {
 export type HistoricoTallerAvgAggregateInputType = {
   id?: true
   empresaId?: true
+  empresaIdOriginal?: true
   tallerId?: true
 }
 
 export type HistoricoTallerSumAggregateInputType = {
   id?: true
   empresaId?: true
+  empresaIdOriginal?: true
   tallerId?: true
 }
 
 export type HistoricoTallerMinAggregateInputType = {
   id?: true
   empresaId?: true
+  empresaIdOriginal?: true
   tallerId?: true
   fecha?: true
   estado?: true
@@ -99,6 +107,7 @@ export type HistoricoTallerMinAggregateInputType = {
 export type HistoricoTallerMaxAggregateInputType = {
   id?: true
   empresaId?: true
+  empresaIdOriginal?: true
   tallerId?: true
   fecha?: true
   estado?: true
@@ -110,6 +119,7 @@ export type HistoricoTallerMaxAggregateInputType = {
 export type HistoricoTallerCountAggregateInputType = {
   id?: true
   empresaId?: true
+  empresaIdOriginal?: true
   tallerId?: true
   fecha?: true
   estado?: true
@@ -208,6 +218,7 @@ export type HistoricoTallerGroupByArgs<ExtArgs extends runtime.Types.Extensions.
 export type HistoricoTallerGroupByOutputType = {
   id: number
   empresaId: number
+  empresaIdOriginal: number | null
   tallerId: number
   fecha: Date
   estado: $Enums.EstadoTaller
@@ -242,6 +253,7 @@ export type HistoricoTallerWhereInput = {
   NOT?: Prisma.HistoricoTallerWhereInput | Prisma.HistoricoTallerWhereInput[]
   id?: Prisma.IntFilter<"HistoricoTaller"> | number
   empresaId?: Prisma.IntFilter<"HistoricoTaller"> | number
+  empresaIdOriginal?: Prisma.IntNullableFilter<"HistoricoTaller"> | number | null
   tallerId?: Prisma.IntFilter<"HistoricoTaller"> | number
   fecha?: Prisma.DateTimeFilter<"HistoricoTaller"> | Date | string
   estado?: Prisma.EnumEstadoTallerFilter<"HistoricoTaller"> | $Enums.EstadoTaller
@@ -255,6 +267,7 @@ export type HistoricoTallerWhereInput = {
 export type HistoricoTallerOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  empresaIdOriginal?: Prisma.SortOrderInput | Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -271,6 +284,7 @@ export type HistoricoTallerWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.HistoricoTallerWhereInput[]
   NOT?: Prisma.HistoricoTallerWhereInput | Prisma.HistoricoTallerWhereInput[]
   empresaId?: Prisma.IntFilter<"HistoricoTaller"> | number
+  empresaIdOriginal?: Prisma.IntNullableFilter<"HistoricoTaller"> | number | null
   tallerId?: Prisma.IntFilter<"HistoricoTaller"> | number
   fecha?: Prisma.DateTimeFilter<"HistoricoTaller"> | Date | string
   estado?: Prisma.EnumEstadoTallerFilter<"HistoricoTaller"> | $Enums.EstadoTaller
@@ -284,6 +298,7 @@ export type HistoricoTallerWhereUniqueInput = Prisma.AtLeast<{
 export type HistoricoTallerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  empresaIdOriginal?: Prisma.SortOrderInput | Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -303,6 +318,7 @@ export type HistoricoTallerScalarWhereWithAggregatesInput = {
   NOT?: Prisma.HistoricoTallerScalarWhereWithAggregatesInput | Prisma.HistoricoTallerScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"HistoricoTaller"> | number
   empresaId?: Prisma.IntWithAggregatesFilter<"HistoricoTaller"> | number
+  empresaIdOriginal?: Prisma.IntNullableWithAggregatesFilter<"HistoricoTaller"> | number | null
   tallerId?: Prisma.IntWithAggregatesFilter<"HistoricoTaller"> | number
   fecha?: Prisma.DateTimeWithAggregatesFilter<"HistoricoTaller"> | Date | string
   estado?: Prisma.EnumEstadoTallerWithAggregatesFilter<"HistoricoTaller"> | $Enums.EstadoTaller
@@ -312,6 +328,7 @@ export type HistoricoTallerScalarWhereWithAggregatesInput = {
 }
 
 export type HistoricoTallerCreateInput = {
+  empresaIdOriginal?: number | null
   fecha: Date | string
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
@@ -324,6 +341,7 @@ export type HistoricoTallerCreateInput = {
 export type HistoricoTallerUncheckedCreateInput = {
   id?: number
   empresaId: number
+  empresaIdOriginal?: number | null
   tallerId: number
   fecha: Date | string
   estado?: $Enums.EstadoTaller
@@ -333,6 +351,7 @@ export type HistoricoTallerUncheckedCreateInput = {
 }
 
 export type HistoricoTallerUpdateInput = {
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -345,6 +364,7 @@ export type HistoricoTallerUpdateInput = {
 export type HistoricoTallerUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
@@ -356,6 +376,7 @@ export type HistoricoTallerUncheckedUpdateInput = {
 export type HistoricoTallerCreateManyInput = {
   id?: number
   empresaId: number
+  empresaIdOriginal?: number | null
   tallerId: number
   fecha: Date | string
   estado?: $Enums.EstadoTaller
@@ -365,6 +386,7 @@ export type HistoricoTallerCreateManyInput = {
 }
 
 export type HistoricoTallerUpdateManyMutationInput = {
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -375,6 +397,7 @@ export type HistoricoTallerUpdateManyMutationInput = {
 export type HistoricoTallerUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
@@ -396,6 +419,7 @@ export type HistoricoTallerOrderByRelationAggregateInput = {
 export type HistoricoTallerCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  empresaIdOriginal?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -407,12 +431,14 @@ export type HistoricoTallerCountOrderByAggregateInput = {
 export type HistoricoTallerAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  empresaIdOriginal?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
 }
 
 export type HistoricoTallerMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  empresaIdOriginal?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -424,6 +450,7 @@ export type HistoricoTallerMaxOrderByAggregateInput = {
 export type HistoricoTallerMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  empresaIdOriginal?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   fecha?: Prisma.SortOrder
   estado?: Prisma.SortOrder
@@ -435,6 +462,7 @@ export type HistoricoTallerMinOrderByAggregateInput = {
 export type HistoricoTallerSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  empresaIdOriginal?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
 }
 
@@ -527,6 +555,7 @@ export type EnumEstadoTallerFieldUpdateOperationsInput = {
 }
 
 export type HistoricoTallerCreateWithoutEmpresaInput = {
+  empresaIdOriginal?: number | null
   fecha: Date | string
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
@@ -537,6 +566,7 @@ export type HistoricoTallerCreateWithoutEmpresaInput = {
 
 export type HistoricoTallerUncheckedCreateWithoutEmpresaInput = {
   id?: number
+  empresaIdOriginal?: number | null
   tallerId: number
   fecha: Date | string
   estado?: $Enums.EstadoTaller
@@ -577,6 +607,7 @@ export type HistoricoTallerScalarWhereInput = {
   NOT?: Prisma.HistoricoTallerScalarWhereInput | Prisma.HistoricoTallerScalarWhereInput[]
   id?: Prisma.IntFilter<"HistoricoTaller"> | number
   empresaId?: Prisma.IntFilter<"HistoricoTaller"> | number
+  empresaIdOriginal?: Prisma.IntNullableFilter<"HistoricoTaller"> | number | null
   tallerId?: Prisma.IntFilter<"HistoricoTaller"> | number
   fecha?: Prisma.DateTimeFilter<"HistoricoTaller"> | Date | string
   estado?: Prisma.EnumEstadoTallerFilter<"HistoricoTaller"> | $Enums.EstadoTaller
@@ -586,6 +617,7 @@ export type HistoricoTallerScalarWhereInput = {
 }
 
 export type HistoricoTallerCreateWithoutTallerInput = {
+  empresaIdOriginal?: number | null
   fecha: Date | string
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
@@ -597,6 +629,7 @@ export type HistoricoTallerCreateWithoutTallerInput = {
 export type HistoricoTallerUncheckedCreateWithoutTallerInput = {
   id?: number
   empresaId: number
+  empresaIdOriginal?: number | null
   fecha: Date | string
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
@@ -632,6 +665,7 @@ export type HistoricoTallerUpdateManyWithWhereWithoutTallerInput = {
 
 export type HistoricoTallerCreateManyEmpresaInput = {
   id?: number
+  empresaIdOriginal?: number | null
   tallerId: number
   fecha: Date | string
   estado?: $Enums.EstadoTaller
@@ -641,6 +675,7 @@ export type HistoricoTallerCreateManyEmpresaInput = {
 }
 
 export type HistoricoTallerUpdateWithoutEmpresaInput = {
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -651,6 +686,7 @@ export type HistoricoTallerUpdateWithoutEmpresaInput = {
 
 export type HistoricoTallerUncheckedUpdateWithoutEmpresaInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
@@ -661,6 +697,7 @@ export type HistoricoTallerUncheckedUpdateWithoutEmpresaInput = {
 
 export type HistoricoTallerUncheckedUpdateManyWithoutEmpresaInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   tallerId?: Prisma.IntFieldUpdateOperationsInput | number
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
@@ -672,6 +709,7 @@ export type HistoricoTallerUncheckedUpdateManyWithoutEmpresaInput = {
 export type HistoricoTallerCreateManyTallerInput = {
   id?: number
   empresaId: number
+  empresaIdOriginal?: number | null
   fecha: Date | string
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
@@ -680,6 +718,7 @@ export type HistoricoTallerCreateManyTallerInput = {
 }
 
 export type HistoricoTallerUpdateWithoutTallerInput = {
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -691,6 +730,7 @@ export type HistoricoTallerUpdateWithoutTallerInput = {
 export type HistoricoTallerUncheckedUpdateWithoutTallerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -701,6 +741,7 @@ export type HistoricoTallerUncheckedUpdateWithoutTallerInput = {
 export type HistoricoTallerUncheckedUpdateManyWithoutTallerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaIdOriginal?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -713,6 +754,7 @@ export type HistoricoTallerUncheckedUpdateManyWithoutTallerInput = {
 export type HistoricoTallerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   empresaId?: boolean
+  empresaIdOriginal?: boolean
   tallerId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -726,6 +768,7 @@ export type HistoricoTallerSelect<ExtArgs extends runtime.Types.Extensions.Inter
 export type HistoricoTallerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   empresaId?: boolean
+  empresaIdOriginal?: boolean
   tallerId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -739,6 +782,7 @@ export type HistoricoTallerSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
 export type HistoricoTallerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   empresaId?: boolean
+  empresaIdOriginal?: boolean
   tallerId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -752,6 +796,7 @@ export type HistoricoTallerSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
 export type HistoricoTallerSelectScalar = {
   id?: boolean
   empresaId?: boolean
+  empresaIdOriginal?: boolean
   tallerId?: boolean
   fecha?: boolean
   estado?: boolean
@@ -760,7 +805,7 @@ export type HistoricoTallerSelectScalar = {
   createdAt?: boolean
 }
 
-export type HistoricoTallerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "tallerId" | "fecha" | "estado" | "ciudad" | "trimestre" | "createdAt", ExtArgs["result"]["historicoTaller"]>
+export type HistoricoTallerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "empresaIdOriginal" | "tallerId" | "fecha" | "estado" | "ciudad" | "trimestre" | "createdAt", ExtArgs["result"]["historicoTaller"]>
 export type HistoricoTallerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -783,6 +828,7 @@ export type $HistoricoTallerPayload<ExtArgs extends runtime.Types.Extensions.Int
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     empresaId: number
+    empresaIdOriginal: number | null
     tallerId: number
     fecha: Date
     estado: $Enums.EstadoTaller
@@ -1216,6 +1262,7 @@ export interface Prisma__HistoricoTallerClient<T, Null = never, ExtArgs extends 
 export interface HistoricoTallerFieldRefs {
   readonly id: Prisma.FieldRef<"HistoricoTaller", 'Int'>
   readonly empresaId: Prisma.FieldRef<"HistoricoTaller", 'Int'>
+  readonly empresaIdOriginal: Prisma.FieldRef<"HistoricoTaller", 'Int'>
   readonly tallerId: Prisma.FieldRef<"HistoricoTaller", 'Int'>
   readonly fecha: Prisma.FieldRef<"HistoricoTaller", 'DateTime'>
   readonly estado: Prisma.FieldRef<"HistoricoTaller", 'EstadoTaller'>

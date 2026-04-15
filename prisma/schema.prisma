@@ -211,16 +211,17 @@ model Frecuencia {
 }
 
 model HistoricoTaller {
-  id        Int          @id @default(autoincrement())
-  empresaId Int
-  tallerId  Int
-  fecha     DateTime     @db.Date
-  estado    EstadoTaller @default(OK)
-  ciudad    String?
-  trimestre String?
-  createdAt DateTime     @default(now())
-  empresa   Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  taller    Taller       @relation(fields: [tallerId], references: [id], onDelete: Cascade)
+  id                Int          @id @default(autoincrement())
+  empresaId         Int          // Company that actually did the workshop (final)
+  empresaIdOriginal Int?         // Company originally assigned by solver (for traceability)
+  tallerId          Int
+  fecha             DateTime     @db.Date
+  estado            EstadoTaller @default(OK)
+  ciudad            String?
+  trimestre         String?
+  createdAt         DateTime     @default(now())
+  empresa           Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  taller            Taller       @relation(fields: [tallerId], references: [id], onDelete: Cascade)
 
   @@index([empresaId])
   @@index([trimestre])
@@ -229,26 +230,27 @@ model HistoricoTaller {
 }
 
 model Planificacion {
-  id             Int            @id @default(autoincrement())
-  trimestre      String
-  semana         Int
-  dia            String
-  turno          String?
-  empresaId      Int?           // nullable: null = vacancy
-  tallerId       Int
-  ciudadId       Int?
-  tipoAsignacion TipoAsignacion @default(BASE)
-  esContingencia Boolean        @default(false)
-  version        Int            @default(1)
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  horario        String?
-  estado         String         @default("PLANIFICADO") // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
-  confirmado     Boolean        @default(false)
-  notas          String?
-  ciudad         Ciudad?        @relation(fields: [ciudadId], references: [id])
-  empresa        Empresa?       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
-  taller         Taller         @relation(fields: [tallerId], references: [id], onDelete: Cascade)
+  id                Int            @id @default(autoincrement())
+  trimestre         String
+  semana            Int
+  dia               String
+  turno             String?
+  empresaId         Int?           // nullable: null = vacancy (current company, may change during operation)
+  empresaIdOriginal Int?           // Company assigned by solver (NEVER changes after generation)
+  tallerId          Int
+  ciudadId          Int?
+  tipoAsignacion    TipoAsignacion @default(BASE)
+  esContingencia    Boolean        @default(false)
+  version           Int            @default(1)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  horario           String?
+  estado            String         @default("PLANIFICADO") // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
+  confirmado        Boolean        @default(false)
+  notas             String?
+  ciudad            Ciudad?        @relation(fields: [ciudadId], references: [id])
+  empresa           Empresa?       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  taller            Taller         @relation(fields: [tallerId], references: [id], onDelete: Cascade)
 
   @@index([trimestre])
   @@index([empresaId])

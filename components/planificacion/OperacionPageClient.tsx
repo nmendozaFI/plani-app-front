@@ -9,6 +9,7 @@ import {
   actionImportarExcelCalendario,
 } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
+import { usePlanningStatus } from "@/hooks/use-planning-status";
 import { exportarExcel, obtenerEmpresas } from "@/lib/api";
 import type {
   SlotCalendario,
@@ -81,6 +82,7 @@ function getWeekDateRange(trimestre: string, semana: number): string {
 
 export function OperacionPageClient() {
   const { settings, loading: loadingSettings } = useSettings();
+  const { status: planningStatus } = usePlanningStatus();
   const trimestre = settings?.trimestre_activo || null;
 
   const [loading, setLoading] = useState(false);
@@ -390,8 +392,45 @@ export function OperacionPageClient() {
         </div>
       )}
 
+      {/* Empty State: Calendar not generated yet */}
+      {!loading && calendario && calendario.total_slots === 0 && trimestre && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+            <svg className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-amber-900">
+            El calendario de {trimestre} aun no ha sido generado
+          </h3>
+          <p className="mt-2 text-sm text-amber-700">
+            {planningStatus?.activo_tiene_frecuencias
+              ? "El trimestre tiene frecuencias confirmadas. Solo falta generar el calendario en Fase 2."
+              : "Completa la Fase 1 (Frecuencias) y Fase 2 (Calendario) primero."}
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            {!planningStatus?.activo_tiene_frecuencias && (
+              <a
+                href="/planificacion/frecuencias"
+                className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
+              >
+                Ir a Fase 1 - Frecuencias
+              </a>
+            )}
+            {planningStatus?.activo_tiene_frecuencias && !planningStatus?.activo_tiene_calendario && (
+              <a
+                href="/planificacion/calendario"
+                className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 transition-colors"
+              >
+                Ir a Fase 2 - Calendario
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Summary Cards - Responsive */}
-      {resumen && (
+      {resumen && resumen.total_slots > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <SummaryCard label="Total" value={resumen.total_slots} color="slate" />
           <SummaryCard label="Asignados" value={resumen.asignados} color="blue" />

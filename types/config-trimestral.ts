@@ -74,3 +74,23 @@ export interface CerrarTrimestreResult {
   total_ignorado: number;
   preview: boolean;
 }
+
+export interface ImportPreviewItem {
+  empresa_id: number;
+  nombre: string;
+  frecuencia: number;
+  tipo: string | null;
+  notas: string | null;
+  detalle_ef: number | null;
+  detalle_it: number | null;
+}
+
+export interface ImportarConfigExcelResult {
+  trimestre: string;
+  formato_detectado: "ideal" | "legacy";
+  total_procesados: number;
+  aplicados: number;
+  preview: ImportPreviewItem[];
+  warnings: string[];
+  dry_run: boolean;
+}

@@ -7,7 +7,7 @@ import {
   actionObtenerCalendario,
   actionImportarExcelCalendario,
 } from "@/actions/calendario-actions";
-import { useSettings } from "@/hooks/use-settings";
+import { usePlanningStatus } from "@/hooks/use-planning-status";
 import type { CalendarioOutput, SlotCalendario, ImportarExcelResult } from "@/lib/api";
 import { WarningsPanel } from "./WarningsPanel";
 
@@ -63,8 +63,12 @@ type FiltroVacante = "todas" | "asignadas" | "vacantes";
 // ══════════════════════════════════════════════════════════════
 
 export function CalendarioWizard() {
-  const { settings, loading: loadingSettings } = useSettings();
-  const trimestre = settings?.trimestre_siguiente || null;
+  const { status, loading: loadingStatus } = usePlanningStatus();
+  const trimestre = status?.trimestre_a_planificar || null;
+  const esPlanificandoActivo = status?.activo_necesita_planificacion || false;
+  const tieneFrequencias = esPlanificandoActivo
+    ? status?.activo_tiene_frecuencias
+    : status?.siguiente_tiene_frecuencias;
 
   const [paso, setPaso] = useState<Paso>("config");
   const [loading, setLoading] = useState(false);
@@ -240,7 +244,7 @@ export function CalendarioWizard() {
       {/* ═══ CONFIG ═══ */}
       {paso === "config" && (
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          {loadingSettings ? (
+          {loadingStatus ? (
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <Spinner />
               Cargando configuracion...
@@ -248,19 +252,48 @@ export function CalendarioWizard() {
           ) : trimestre ? (
             <>
               <h2 className="text-sm font-semibold text-slate-700 mb-4">Generar calendario</h2>
+
+              {/* Info banner when planning the activo trimestre */}
+              {esPlanificandoActivo && (
+                <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Nota:</strong> Generando calendario para el trimestre activo ({trimestre}).
+                    Una vez completado, podras operarlo desde la pagina de Operacion.
+                  </p>
+                </div>
+              )}
+
+              {/* Warning if no frecuencias */}
+              {!tieneFrequencias && (
+                <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <p className="text-sm text-amber-700">
+                    <strong>Atencion:</strong> El trimestre {trimestre} no tiene frecuencias confirmadas.
+                    Debes completar la <a href="/planificacion/frecuencias" className="font-medium underline">Fase 1 (Frecuencias)</a> primero.
+                  </p>
+                </div>
+              )}
+
               <div className="flex items-end gap-4">
                 <div>
                   <label className="block text-xs font-medium text-slate-500 mb-1">Trimestre a Planificar</label>
-                  <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
-                    <span className="text-lg font-bold text-blue-800">{trimestre}</span>
-                    <span className="ml-2 text-xs text-blue-600">(siguiente)</span>
+                  <div className={`rounded-lg border px-4 py-2 ${
+                    esPlanificandoActivo
+                      ? "border-emerald-200 bg-emerald-50"
+                      : "border-blue-200 bg-blue-50"
+                  }`}>
+                    <span className={`text-lg font-bold ${
+                      esPlanificandoActivo ? "text-emerald-800" : "text-blue-800"
+                    }`}>{trimestre}</span>
+                    <span className={`ml-2 text-xs ${
+                      esPlanificandoActivo ? "text-emerald-600" : "text-blue-600"
+                    }`}>({esPlanificandoActivo ? "activo" : "siguiente"})</span>
                   </div>
                 </div>
               </div>
               <p className="mt-3 text-xs text-slate-400">Requiere frecuencias confirmadas (Fase 1). Cada semana genera 20 slots fijos.</p>
               <div className="mt-5 flex gap-3">
-                <button onClick={handleGenerar} disabled={loading}
-                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50">
+                <button onClick={handleGenerar} disabled={loading || !tieneFrequencias}
+                  className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed">
                   {loading ? <><Spinner />Generando...</> : "Generar calendario"}
                 </button>
                 <button onClick={handleCargar} disabled={loading}
@@ -272,10 +305,12 @@ export function CalendarioWizard() {
           ) : (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
               <h3 className="text-sm font-semibold text-amber-800 mb-2">
-                No hay trimestre siguiente configurado
+                No hay trimestre para planificar
               </h3>
               <p className="text-sm text-amber-700">
-                Configura el trimestre siguiente desde el Dashboard para poder generar el calendario.
+                {status?.activo_tiene_frecuencias && status?.activo_tiene_calendario
+                  ? "El trimestre activo ya tiene calendario. Configura el trimestre siguiente desde el Dashboard para continuar."
+                  : "Configura el trimestre desde el Dashboard para poder generar el calendario."}
               </p>
               <a
                 href="/dashboard"

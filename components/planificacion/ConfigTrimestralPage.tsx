@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,21 +9,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Save, X, Copy, Plus, Search, Settings2 } from "lucide-react";
+import { Loader2, Save, X, Copy, Plus, Search, Settings2, Download, Upload } from "lucide-react";
 import { getTrimestreAnterior } from "@/utils/trimestres";
 import {
   actionObtenerConfigsTrimestre,
   actionObtenerConfigResumen,
   actionActualizarConfigsBatch,
   actionInicializarConfigTrimestral,
+  actionImportarConfigExcel,
 } from "@/actions/config-trimestral-actions";
 import { useSettings } from "@/hooks/use-settings";
 import type {
   ConfigTrimestralOut,
   ConfigTrimestralResumen,
   ConfigBatchUpdateItem,
+  ImportarConfigExcelResult,
 } from "@/types/config-trimestral";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const DIAS_SEMANA = ["L", "M", "X", "J", "V"];
 
 export default function ConfigTrimestralPage() {
@@ -43,6 +46,12 @@ export default function ConfigTrimestralPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTipo, setFilterTipo] = useState<string>("all");
   const [filterSinFreq, setFilterSinFreq] = useState(false);
+
+  // Import modal state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportarConfigExcelResult | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Set trimestre when settings load
   useEffect(() => {
@@ -214,6 +223,65 @@ export default function ConfigTrimestralPage() {
     }
   };
 
+  // Export to Excel
+  const handleExport = useCallback(async () => {
+    if (!trimestre) return;
+    try {
+      const response = await fetch(`${API_URL}/api/config-trimestral/${trimestre}/exportar-excel`);
+      if (!response.ok) throw new Error("Error exportando");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `config_trimestral_${trimestre}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Excel exportado");
+    } catch (e) {
+      toast.error("Error al exportar Excel");
+    }
+  }, [trimestre]);
+
+  // Import file handler (dry run preview)
+  const handleImportFile = useCallback(async (file: File) => {
+    if (!trimestre) return;
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const result = await actionImportarConfigExcel(trimestre, file, true);
+      if (result.error) throw new Error(result.error);
+      setImportResult(result.data);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al procesar Excel";
+      toast.error(msg);
+      setShowImportModal(false);
+    } finally {
+      setImporting(false);
+    }
+  }, [trimestre]);
+
+  // Apply import changes
+  const handleApplyImport = useCallback(async (file: File) => {
+    if (!trimestre || !importResult) return;
+    setImporting(true);
+    try {
+      const result = await actionImportarConfigExcel(trimestre, file, false);
+      if (result.error) throw new Error(result.error);
+      toast.success(`${result.data?.aplicados} configuraciones actualizadas`);
+      if (result.data?.warnings && result.data.warnings.length > 0) {
+        result.data.warnings.slice(0, 3).forEach((w) => toast.warning(w));
+      }
+      setShowImportModal(false);
+      setImportResult(null);
+      await loadData();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Error al aplicar cambios";
+      toast.error(msg);
+    } finally {
+      setImporting(false);
+    }
+  }, [trimestre, importResult, loadData]);
+
   const isRowModified = (empresaId: number) => modifiedRows.has(empresaId);
 
   if (loadingSettings) {
@@ -245,25 +313,48 @@ export default function ConfigTrimestralPage() {
             Preferencias de empresas para el trimestre
           </p>
         </div>
-        {trimestreOptions.length > 1 ? (
-          <Select value={trimestre} onValueChange={setTrimestre}>
-            <SelectTrigger className="w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {trimestreOptions.map((t) => (
-                <SelectItem key={t.value} value={t.value}>
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
-            <span className="text-sm font-semibold text-slate-700">{trimestre}</span>
-            <span className="ml-2 text-xs text-slate-500">(Activo)</span>
-          </div>
-        )}
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleExport}
+            disabled={loading || configs.length === 0}
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Exportar Excel
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setShowImportModal(true);
+              setImportResult(null);
+            }}
+            disabled={loading || configs.length === 0}
+          >
+            <Upload className="h-4 w-4 mr-1" />
+            Importar Excel
+          </Button>
+          {trimestreOptions.length > 1 ? (
+            <Select value={trimestre} onValueChange={setTrimestre}>
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {trimestreOptions.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
+              <span className="text-sm font-semibold text-slate-700">{trimestre}</span>
+              <span className="ml-2 text-xs text-slate-500">(Activo)</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -528,6 +619,259 @@ export default function ConfigTrimestralPage() {
           </Card>
         </>
       )}
+
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx,.xls"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleImportFile(file);
+          e.target.value = "";
+        }}
+      />
+
+      {/* Import Modal */}
+      {showImportModal && (
+        <ImportConfigModal
+          trimestre={trimestre || ""}
+          importing={importing}
+          importResult={importResult}
+          fileInputRef={fileInputRef}
+          onClose={() => {
+            setShowImportModal(false);
+            setImportResult(null);
+          }}
+          onApply={handleApplyImport}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Import Modal Component ─────────────────────────────────────
+
+function ImportConfigModal({
+  trimestre,
+  importing,
+  importResult,
+  fileInputRef,
+  onClose,
+  onApply,
+}: {
+  trimestre: string;
+  importing: boolean;
+  importResult: ImportarConfigExcelResult | null;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  onClose: () => void;
+  onApply: (file: File) => void;
+}) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
+      setSelectedFile(file);
+    }
+  };
+
+  // When file is selected, trigger preview (dry run)
+  useEffect(() => {
+    if (selectedFile && !importResult && !importing) {
+      const input = fileInputRef.current;
+      if (input) {
+        const dt = new DataTransfer();
+        dt.items.add(selectedFile);
+        input.files = dt.files;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+  }, [selectedFile, importResult, importing, fileInputRef]);
+
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[85vh] overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800">Importar Excel</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Soporta formato propio del sistema o el Excel del planificador
+            </p>
+          </div>
+          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-5 overflow-y-auto flex-1">
+          {!importResult && !importing && (
+            <div
+              className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors cursor-pointer"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={handleDrop}
+              onClick={() => document.getElementById("import-config-file-input")?.click()}
+            >
+              <input
+                id="import-config-file-input"
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <div className="text-4xl mb-3">📥</div>
+              <p className="text-sm font-medium text-slate-700 mb-1">
+                Arrastra el Excel aqui o haz click para seleccionar
+              </p>
+              <p className="text-xs text-slate-500">
+                Acepta formato propio (exportado) o formato planificador (frecuencias2026.xlsx)
+              </p>
+            </div>
+          )}
+
+          {importing && (
+            <div className="flex flex-col items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+              <p className="text-sm text-slate-600">Analizando Excel...</p>
+            </div>
+          )}
+
+          {importResult && (
+            <div className="space-y-4">
+              {/* Format badge */}
+              <div className="flex items-center gap-3">
+                <Badge variant={importResult.formato_detectado === "ideal" ? "default" : "secondary"}>
+                  Formato detectado: {importResult.formato_detectado === "ideal" ? "Sistema" : "Planificador"}
+                </Badge>
+                <span className="text-xs text-slate-500">
+                  {importResult.total_procesados} filas procesadas
+                </span>
+              </div>
+
+              {/* Summary stats */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center">
+                  <div className="text-xl font-bold text-slate-800">{importResult.total_procesados}</div>
+                  <div className="text-[10px] uppercase text-slate-500">Filas</div>
+                </div>
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-center">
+                  <div className="text-xl font-bold text-blue-700">{importResult.preview.length}</div>
+                  <div className="text-[10px] uppercase text-blue-600">Actualizaciones</div>
+                </div>
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-center">
+                  <div className="text-xl font-bold text-amber-700">{importResult.warnings.length}</div>
+                  <div className="text-[10px] uppercase text-amber-600">Advertencias</div>
+                </div>
+              </div>
+
+              {/* Preview table */}
+              {importResult.preview.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-slate-700 mb-2">
+                    Vista previa de cambios
+                  </h4>
+                  <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-200">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-slate-50 border-b">
+                          <th className="text-left p-2 font-medium">Empresa</th>
+                          {importResult.formato_detectado === "legacy" ? (
+                            <>
+                              <th className="text-center p-2 font-medium w-14">EF</th>
+                              <th className="text-center p-2 font-medium w-14">IT</th>
+                            </>
+                          ) : null}
+                          <th className="text-center p-2 font-medium w-16">Freq</th>
+                          <th className="text-center p-2 font-medium w-16">Tipo</th>
+                          <th className="text-left p-2 font-medium">Notas</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {importResult.preview.slice(0, 20).map((item) => (
+                          <tr key={item.empresa_id} className="border-b hover:bg-slate-50">
+                            <td className="p-2 font-medium">{item.nombre}</td>
+                            {importResult.formato_detectado === "legacy" ? (
+                              <>
+                                <td className="p-2 text-center text-blue-600">{item.detalle_ef || "-"}</td>
+                                <td className="p-2 text-center text-green-600">{item.detalle_it || "-"}</td>
+                              </>
+                            ) : null}
+                            <td className="p-2 text-center font-semibold">{item.frecuencia}</td>
+                            <td className="p-2 text-center">{item.tipo || "-"}</td>
+                            <td className="p-2 text-slate-500 truncate max-w-[200px]">{item.notas || "-"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    {importResult.preview.length > 20 && (
+                      <div className="p-2 text-center text-xs text-slate-500 bg-slate-50">
+                        ... y {importResult.preview.length - 20} mas
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Warnings */}
+              {importResult.warnings.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-amber-700 mb-2">
+                    Advertencias ({importResult.warnings.length})
+                  </h4>
+                  <div className="max-h-28 overflow-y-auto rounded-lg border border-amber-200 bg-amber-50 p-2">
+                    {importResult.warnings.map((w, i) => (
+                      <div key={i} className="text-xs text-amber-800 py-0.5">{w}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No changes */}
+              {importResult.preview.length === 0 && (
+                <div className="text-center py-4 text-slate-500">
+                  No hay cambios para aplicar
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 py-4 border-t border-slate-200 flex items-center justify-end gap-3">
+          <Button variant="outline" onClick={onClose} disabled={importing}>
+            Cancelar
+          </Button>
+          {importResult && importResult.preview.length > 0 && selectedFile && (
+            <Button
+              onClick={() => onApply(selectedFile)}
+              disabled={importing}
+            >
+              {importing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Aplicando...
+                </>
+              ) : (
+                `Aplicar ${importResult.preview.length} cambios`
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

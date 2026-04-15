@@ -60,13 +60,23 @@ export type {
   ConfigTrimestralResumen,
   InicializarConfigResult,
   CerrarTrimestreResult,
+  ImportarConfigExcelResult,
+  ImportPreviewItem,
 } from "@/types/config-trimestral";
 
 export type {
   AppSettings,
   AppSettingsUpdate,
   PromoverResult,
+  PlanningStatus,
 } from "@/types/settings";
+
+export type {
+  EmpresaAnalisis,
+  CambioSlot,
+  AnalisisResumen,
+  AnalisisResponse,
+} from "@/types/analisis";
 
 // Import types for use in this file
 import type {
@@ -84,6 +94,8 @@ import type {
   SlotBatchUpdateItem,
   ImportarExcelResult,
 } from "@/types/calendario";
+
+import type { AnalisisResponse } from "@/types/analisis";
 
 import type {
   ImportEmpresasResult,
@@ -115,12 +127,14 @@ import type {
   ConfigTrimestralResumen,
   InicializarConfigResult,
   CerrarTrimestreResult,
+  ImportarConfigExcelResult,
 } from "@/types/config-trimestral";
 
 import type {
   AppSettings,
   AppSettingsUpdate,
   PromoverResult,
+  PlanningStatus,
 } from "@/types/settings";
 
 // ── Frecuencias (Fase 1) ─────────────────────────────────────
@@ -209,6 +223,14 @@ export async function obtenerResumenOperacion(
 ): Promise<CalendarioResumen> {
   return apiFetch<CalendarioResumen>(
     `/api/calendario/${trimestre}/resumen`
+  );
+}
+
+export async function obtenerAnalisis(
+  trimestre: string
+): Promise<AnalisisResponse> {
+  return apiFetch<AnalisisResponse>(
+    `/api/calendario/${trimestre}/analisis`
   );
 }
 
@@ -419,6 +441,20 @@ export async function inicializarConfigTrimestral(
   );
 }
 
+export async function importarConfigExcel(
+  trimestre: string,
+  file: File,
+  dryRun: boolean = true
+): Promise<ImportarConfigExcelResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("dry_run", dryRun ? "true" : "false");
+  return apiUpload<ImportarConfigExcelResult>(
+    `/api/config-trimestral/${trimestre}/importar-excel`,
+    formData
+  );
+}
+
 // ── Cerrar Trimestre ─────────────────────────────────────────
 
 export async function cerrarTrimestre(
@@ -438,6 +474,10 @@ export async function cerrarTrimestre(
 
 export async function obtenerSettings(): Promise<AppSettings> {
   return apiFetch<AppSettings>("/api/settings/");
+}
+
+export async function obtenerPlanningStatus(): Promise<PlanningStatus> {
+  return apiFetch<PlanningStatus>("/api/settings/status");
 }
 
 export async function actualizarSettings(

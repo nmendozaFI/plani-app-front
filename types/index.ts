@@ -19,3 +19,4 @@ export * from "./importacion";
 export * from "./taller";
 export * from "./config-trimestral";
 export * from "./settings";
+export * from "./analisis";

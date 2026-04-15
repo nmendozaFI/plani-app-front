@@ -6,6 +6,7 @@ import {
   actualizarSlot,
   actualizarSlotsBatch,
   obtenerResumenOperacion,
+  obtenerAnalisis,
   cerrarTrimestre,
   importarExcelCalendario,
 } from "@/lib/api";
@@ -18,6 +19,7 @@ import type {
   SlotBatchUpdateItem,
   ImportarExcelResult,
 } from "@/types/calendario";
+import type { AnalisisResponse } from "@/types/analisis";
 import type { ActionResult } from "@/types/actions";
 import type { CerrarTrimestreResult } from "@/types/config-trimestral";
 
@@ -113,6 +115,20 @@ export async function actionImportarExcelCalendario(
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al importar Excel";
+    return { ok: false, error: msg };
+  }
+}
+
+// ── Analisis: Planificado vs Realizado ───────────────────────
+
+export async function actionObtenerAnalisis(
+  trimestre: string
+): Promise<ActionResult<AnalisisResponse>> {
+  try {
+    const data = await obtenerAnalisis(trimestre);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al obtener analisis";
     return { ok: false, error: msg };
   }
 }

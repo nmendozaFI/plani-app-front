@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart, Calendar, CalendarCheck } from "lucide-react";
+import { BarChart, Calendar, CalendarCheck, TrendingUp } from "lucide-react";
 import { useSettings } from "@/hooks/use-settings";
 
 export function DashboardCards() {
@@ -16,7 +16,7 @@ export function DashboardCards() {
     : "Cargando...";
 
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {/* Fase 1 */}
       <Link
         href="/planificacion/frecuencias"
@@ -104,6 +104,35 @@ export function DashboardCards() {
             <span className="text-slate-400">Cargando...</span>
           ) : (
             <span className="text-emerald-600">{activoLabel}</span>
+          )}
+        </div>
+      </Link>
+
+      {/* Analisis */}
+      <Link
+        href="/planificacion/analisis"
+        className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+            <TrendingUp />
+          </div>
+          <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600">
+            Analisis
+          </span>
+        </div>
+        <h2 className="mt-4 text-lg font-semibold text-slate-900">
+          Planificado vs Realizado
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Compara asignaciones del solver vs resultado final.
+          Identifica empresas sustituidas y comodines.
+        </p>
+        <div className="mt-4 text-xs font-medium">
+          {loading ? (
+            <span className="text-slate-400">Cargando...</span>
+          ) : (
+            <span className="text-violet-600">{activoLabel}</span>
           )}
         </div>
       </Link>

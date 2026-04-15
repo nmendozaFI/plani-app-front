@@ -6,7 +6,7 @@ import {
   actionCalcularFrecuencias,
   actionConfirmarFrecuencias,
 } from "@/actions/frecuencias-actions";
-import { useSettings } from "@/hooks/use-settings";
+import { usePlanningStatus } from "@/hooks/use-planning-status";
 import type {
   FrecuenciaOutput,
   FrecuenciaEmpresa,
@@ -30,8 +30,9 @@ type Paso = "config" | "revision" | "confirmado";
 // ── Component ────────────────────────────────────────────────
 
 export function FrecuenciasWizard() {
-  const { settings, loading: loadingSettings } = useSettings();
-  const trimestre = settings?.trimestre_siguiente || null;
+  const { status, loading: loadingStatus } = usePlanningStatus();
+  const trimestre = status?.trimestre_a_planificar || null;
+  const esPlanificandoActivo = status?.activo_necesita_planificacion || false;
 
   const [paso, setPaso] = useState<Paso>("config");
   const [loading, setLoading] = useState(false);
@@ -204,7 +205,7 @@ export function FrecuenciasWizard() {
       {/* ── PASO 1: Configurar ───────────────────────────────── */}
       {paso === "config" && (
         <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          {loadingSettings ? (
+          {loadingStatus ? (
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -217,10 +218,27 @@ export function FrecuenciasWizard() {
               <h2 className="text-sm font-semibold text-slate-700 mb-4">
                 Trimestre a Planificar
               </h2>
+              {/* Info banner when planning the activo trimestre */}
+              {esPlanificandoActivo && (
+                <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                  <p className="text-sm text-blue-700">
+                    <strong>Nota:</strong> Planificando el trimestre activo ({trimestre}) porque aun no tiene frecuencias confirmadas.
+                    Una vez completado, podras operarlo desde la pagina de Operacion.
+                  </p>
+                </div>
+              )}
               <div className="flex items-end gap-4">
-                <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2">
-                  <span className="text-lg font-bold text-blue-800">{trimestre}</span>
-                  <span className="ml-2 text-xs text-blue-600">(siguiente)</span>
+                <div className={`rounded-lg border px-4 py-2 ${
+                  esPlanificandoActivo
+                    ? "border-emerald-200 bg-emerald-50"
+                    : "border-blue-200 bg-blue-50"
+                }`}>
+                  <span className={`text-lg font-bold ${
+                    esPlanificandoActivo ? "text-emerald-800" : "text-blue-800"
+                  }`}>{trimestre}</span>
+                  <span className={`ml-2 text-xs ${
+                    esPlanificandoActivo ? "text-emerald-600" : "text-blue-600"
+                  }`}>({esPlanificandoActivo ? "activo" : "siguiente"})</span>
                 </div>
                 <div className="text-xs text-slate-400">
                   vs. trimestre anterior: {getTrimestreAnterior(trimestre)}
@@ -247,10 +265,12 @@ export function FrecuenciasWizard() {
           ) : (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
               <h3 className="text-sm font-semibold text-amber-800 mb-2">
-                No hay trimestre siguiente configurado
+                No hay trimestre para planificar
               </h3>
               <p className="text-sm text-amber-700">
-                Configura el trimestre siguiente desde el Dashboard para poder calcular frecuencias.
+                {status?.activo_tiene_frecuencias && status?.activo_tiene_calendario
+                  ? "El trimestre activo ya esta planificado. Configura el trimestre siguiente desde el Dashboard para continuar."
+                  : "Configura el trimestre activo y/o siguiente desde el Dashboard para poder calcular frecuencias."}
               </p>
               <a
                 href="/dashboard"
