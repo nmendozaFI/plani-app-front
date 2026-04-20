@@ -110,8 +110,47 @@ model Taller {
   horario         String?
   historico       HistoricoTaller[]
   planificaciones Planificacion[]
+  extraSlots      SemanaExtraSlot[]
 
   @@map("taller")
+}
+
+// Annual weekly calendar configuration
+// Each row = one week of one year, either "normal" or "intensiva"
+// Normal: all 20 base talleres active with default day/horario
+// Intensiva: EF afternoon OFF, IT afternoon moved to Wednesday morning
+model SemanaConfig {
+  id        Int      @id @default(autoincrement())
+  anio      Int                          // 2026
+  semana    Int                          // 1-52 (ISO week number)
+  tipo      String   @default("normal")  // "normal" | "intensiva"
+  notas     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  extras    SemanaExtraSlot[]
+
+  @@unique([anio, semana])
+  @@index([anio])
+  @@map("semana_config")
+}
+
+// Extra taller slots for specific weeks (beyond standard configuration)
+// Used when a week needs MORE than the standard 20 slots
+model SemanaExtraSlot {
+  id             Int      @id @default(autoincrement())
+  semanaConfigId Int
+  tallerId       Int               // References base taller from catalogue
+  diaSemana      String?           // Override day (null = use taller's default)
+  horario        String?           // Override horario (null = use taller's default)
+  notas          String?
+  createdAt      DateTime @default(now())
+
+  semanaConfig   SemanaConfig @relation(fields: [semanaConfigId], references: [id], onDelete: Cascade)
+  taller         Taller       @relation(fields: [tallerId], references: [id])
+
+  @@index([semanaConfigId])
+  @@map("semana_extra_slot")
 }
 
 model Ciudad {

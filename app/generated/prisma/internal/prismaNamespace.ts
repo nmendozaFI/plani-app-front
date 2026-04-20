@@ -390,6 +390,8 @@ export const ModelName = {
   Verification: 'Verification',
   Empresa: 'Empresa',
   Taller: 'Taller',
+  SemanaConfig: 'SemanaConfig',
+  SemanaExtraSlot: 'SemanaExtraSlot',
   Ciudad: 'Ciudad',
   EmpresaCiudad: 'EmpresaCiudad',
   Restriccion: 'Restriccion',
@@ -415,7 +417,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "empresa" | "taller" | "ciudad" | "empresaCiudad" | "restriccion" | "configTrimestral" | "festivo" | "frecuencia" | "historicoTaller" | "planificacion" | "solverLog" | "appSettings"
+    modelProps: "user" | "session" | "account" | "verification" | "empresa" | "taller" | "semanaConfig" | "semanaExtraSlot" | "ciudad" | "empresaCiudad" | "restriccion" | "configTrimestral" | "festivo" | "frecuencia" | "historicoTaller" | "planificacion" | "solverLog" | "appSettings"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -860,6 +862,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.TallerCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.TallerCountAggregateOutputType> | number
+        }
+      }
+    }
+    SemanaConfig: {
+      payload: Prisma.$SemanaConfigPayload<ExtArgs>
+      fields: Prisma.SemanaConfigFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SemanaConfigFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SemanaConfigFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>
+        }
+        findFirst: {
+          args: Prisma.SemanaConfigFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SemanaConfigFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>
+        }
+        findMany: {
+          args: Prisma.SemanaConfigFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>[]
+        }
+        create: {
+          args: Prisma.SemanaConfigCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>
+        }
+        createMany: {
+          args: Prisma.SemanaConfigCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SemanaConfigCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>[]
+        }
+        delete: {
+          args: Prisma.SemanaConfigDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>
+        }
+        update: {
+          args: Prisma.SemanaConfigUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>
+        }
+        deleteMany: {
+          args: Prisma.SemanaConfigDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SemanaConfigUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SemanaConfigUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>[]
+        }
+        upsert: {
+          args: Prisma.SemanaConfigUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaConfigPayload>
+        }
+        aggregate: {
+          args: Prisma.SemanaConfigAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSemanaConfig>
+        }
+        groupBy: {
+          args: Prisma.SemanaConfigGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SemanaConfigGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SemanaConfigCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SemanaConfigCountAggregateOutputType> | number
+        }
+      }
+    }
+    SemanaExtraSlot: {
+      payload: Prisma.$SemanaExtraSlotPayload<ExtArgs>
+      fields: Prisma.SemanaExtraSlotFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SemanaExtraSlotFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SemanaExtraSlotFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>
+        }
+        findFirst: {
+          args: Prisma.SemanaExtraSlotFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SemanaExtraSlotFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>
+        }
+        findMany: {
+          args: Prisma.SemanaExtraSlotFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>[]
+        }
+        create: {
+          args: Prisma.SemanaExtraSlotCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>
+        }
+        createMany: {
+          args: Prisma.SemanaExtraSlotCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SemanaExtraSlotCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>[]
+        }
+        delete: {
+          args: Prisma.SemanaExtraSlotDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>
+        }
+        update: {
+          args: Prisma.SemanaExtraSlotUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>
+        }
+        deleteMany: {
+          args: Prisma.SemanaExtraSlotDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SemanaExtraSlotUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SemanaExtraSlotUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>[]
+        }
+        upsert: {
+          args: Prisma.SemanaExtraSlotUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SemanaExtraSlotPayload>
+        }
+        aggregate: {
+          args: Prisma.SemanaExtraSlotAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSemanaExtraSlot>
+        }
+        groupBy: {
+          args: Prisma.SemanaExtraSlotGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SemanaExtraSlotGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SemanaExtraSlotCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SemanaExtraSlotCountAggregateOutputType> | number
         }
       }
     }
@@ -1740,6 +1890,32 @@ export const TallerScalarFieldEnum = {
 export type TallerScalarFieldEnum = (typeof TallerScalarFieldEnum)[keyof typeof TallerScalarFieldEnum]
 
 
+export const SemanaConfigScalarFieldEnum = {
+  id: 'id',
+  anio: 'anio',
+  semana: 'semana',
+  tipo: 'tipo',
+  notas: 'notas',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SemanaConfigScalarFieldEnum = (typeof SemanaConfigScalarFieldEnum)[keyof typeof SemanaConfigScalarFieldEnum]
+
+
+export const SemanaExtraSlotScalarFieldEnum = {
+  id: 'id',
+  semanaConfigId: 'semanaConfigId',
+  tallerId: 'tallerId',
+  diaSemana: 'diaSemana',
+  horario: 'horario',
+  notas: 'notas',
+  createdAt: 'createdAt'
+} as const
+
+export type SemanaExtraSlotScalarFieldEnum = (typeof SemanaExtraSlotScalarFieldEnum)[keyof typeof SemanaExtraSlotScalarFieldEnum]
+
+
 export const CiudadScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
@@ -1833,6 +2009,7 @@ export const HistoricoTallerScalarFieldEnum = {
   estado: 'estado',
   ciudad: 'ciudad',
   trimestre: 'trimestre',
+  motivoCambio: 'motivoCambio',
   createdAt: 'createdAt'
 } as const
 
@@ -1857,7 +2034,8 @@ export const PlanificacionScalarFieldEnum = {
   horario: 'horario',
   estado: 'estado',
   confirmado: 'confirmado',
-  notas: 'notas'
+  notas: 'notas',
+  motivoCambio: 'motivoCambio'
 } as const
 
 export type PlanificacionScalarFieldEnum = (typeof PlanificacionScalarFieldEnum)[keyof typeof PlanificacionScalarFieldEnum]
@@ -2180,6 +2358,8 @@ export type GlobalOmitConfig = {
   verification?: Prisma.VerificationOmit
   empresa?: Prisma.EmpresaOmit
   taller?: Prisma.TallerOmit
+  semanaConfig?: Prisma.SemanaConfigOmit
+  semanaExtraSlot?: Prisma.SemanaExtraSlotOmit
   ciudad?: Prisma.CiudadOmit
   empresaCiudad?: Prisma.EmpresaCiudadOmit
   restriccion?: Prisma.RestriccionOmit

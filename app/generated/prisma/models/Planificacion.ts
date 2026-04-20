@@ -65,6 +65,7 @@ export type PlanificacionMinAggregateOutputType = {
   estado: string | null
   confirmado: boolean | null
   notas: string | null
+  motivoCambio: string | null
 }
 
 export type PlanificacionMaxAggregateOutputType = {
@@ -86,6 +87,7 @@ export type PlanificacionMaxAggregateOutputType = {
   estado: string | null
   confirmado: boolean | null
   notas: string | null
+  motivoCambio: string | null
 }
 
 export type PlanificacionCountAggregateOutputType = {
@@ -107,6 +109,7 @@ export type PlanificacionCountAggregateOutputType = {
   estado: number
   confirmado: number
   notas: number
+  motivoCambio: number
   _all: number
 }
 
@@ -150,6 +153,7 @@ export type PlanificacionMinAggregateInputType = {
   estado?: true
   confirmado?: true
   notas?: true
+  motivoCambio?: true
 }
 
 export type PlanificacionMaxAggregateInputType = {
@@ -171,6 +175,7 @@ export type PlanificacionMaxAggregateInputType = {
   estado?: true
   confirmado?: true
   notas?: true
+  motivoCambio?: true
 }
 
 export type PlanificacionCountAggregateInputType = {
@@ -192,6 +197,7 @@ export type PlanificacionCountAggregateInputType = {
   estado?: true
   confirmado?: true
   notas?: true
+  motivoCambio?: true
   _all?: true
 }
 
@@ -300,6 +306,7 @@ export type PlanificacionGroupByOutputType = {
   estado: string
   confirmado: boolean
   notas: string | null
+  motivoCambio: string | null
   _count: PlanificacionCountAggregateOutputType | null
   _avg: PlanificacionAvgAggregateOutputType | null
   _sum: PlanificacionSumAggregateOutputType | null
@@ -344,6 +351,7 @@ export type PlanificacionWhereInput = {
   estado?: Prisma.StringFilter<"Planificacion"> | string
   confirmado?: Prisma.BoolFilter<"Planificacion"> | boolean
   notas?: Prisma.StringNullableFilter<"Planificacion"> | string | null
+  motivoCambio?: Prisma.StringNullableFilter<"Planificacion"> | string | null
   ciudad?: Prisma.XOR<Prisma.CiudadNullableScalarRelationFilter, Prisma.CiudadWhereInput> | null
   empresa?: Prisma.XOR<Prisma.EmpresaNullableScalarRelationFilter, Prisma.EmpresaWhereInput> | null
   taller?: Prisma.XOR<Prisma.TallerScalarRelationFilter, Prisma.TallerWhereInput>
@@ -368,6 +376,7 @@ export type PlanificacionOrderByWithRelationInput = {
   estado?: Prisma.SortOrder
   confirmado?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrderInput | Prisma.SortOrder
   ciudad?: Prisma.CiudadOrderByWithRelationInput
   empresa?: Prisma.EmpresaOrderByWithRelationInput
   taller?: Prisma.TallerOrderByWithRelationInput
@@ -395,6 +404,7 @@ export type PlanificacionWhereUniqueInput = Prisma.AtLeast<{
   estado?: Prisma.StringFilter<"Planificacion"> | string
   confirmado?: Prisma.BoolFilter<"Planificacion"> | boolean
   notas?: Prisma.StringNullableFilter<"Planificacion"> | string | null
+  motivoCambio?: Prisma.StringNullableFilter<"Planificacion"> | string | null
   ciudad?: Prisma.XOR<Prisma.CiudadNullableScalarRelationFilter, Prisma.CiudadWhereInput> | null
   empresa?: Prisma.XOR<Prisma.EmpresaNullableScalarRelationFilter, Prisma.EmpresaWhereInput> | null
   taller?: Prisma.XOR<Prisma.TallerScalarRelationFilter, Prisma.TallerWhereInput>
@@ -419,6 +429,7 @@ export type PlanificacionOrderByWithAggregationInput = {
   estado?: Prisma.SortOrder
   confirmado?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PlanificacionCountOrderByAggregateInput
   _avg?: Prisma.PlanificacionAvgOrderByAggregateInput
   _max?: Prisma.PlanificacionMaxOrderByAggregateInput
@@ -448,6 +459,7 @@ export type PlanificacionScalarWhereWithAggregatesInput = {
   estado?: Prisma.StringWithAggregatesFilter<"Planificacion"> | string
   confirmado?: Prisma.BoolWithAggregatesFilter<"Planificacion"> | boolean
   notas?: Prisma.StringNullableWithAggregatesFilter<"Planificacion"> | string | null
+  motivoCambio?: Prisma.StringNullableWithAggregatesFilter<"Planificacion"> | string | null
 }
 
 export type PlanificacionCreateInput = {
@@ -465,6 +477,7 @@ export type PlanificacionCreateInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
   ciudad?: Prisma.CiudadCreateNestedOneWithoutPlanificacionesInput
   empresa?: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
   taller: Prisma.TallerCreateNestedOneWithoutPlanificacionesInput
@@ -489,6 +502,7 @@ export type PlanificacionUncheckedCreateInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionUpdateInput = {
@@ -506,6 +520,7 @@ export type PlanificacionUpdateInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ciudad?: Prisma.CiudadUpdateOneWithoutPlanificacionesNestedInput
   empresa?: Prisma.EmpresaUpdateOneWithoutPlanificacionesNestedInput
   taller?: Prisma.TallerUpdateOneRequiredWithoutPlanificacionesNestedInput
@@ -530,6 +545,7 @@ export type PlanificacionUncheckedUpdateInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionCreateManyInput = {
@@ -551,6 +567,7 @@ export type PlanificacionCreateManyInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionUpdateManyMutationInput = {
@@ -568,6 +585,7 @@ export type PlanificacionUpdateManyMutationInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyInput = {
@@ -589,6 +607,7 @@ export type PlanificacionUncheckedUpdateManyInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionListRelationFilter = {
@@ -620,6 +639,7 @@ export type PlanificacionCountOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   confirmado?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrder
 }
 
 export type PlanificacionAvgOrderByAggregateInput = {
@@ -651,6 +671,7 @@ export type PlanificacionMaxOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   confirmado?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrder
 }
 
 export type PlanificacionMinOrderByAggregateInput = {
@@ -672,6 +693,7 @@ export type PlanificacionMinOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   confirmado?: Prisma.SortOrder
   notas?: Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrder
 }
 
 export type PlanificacionSumOrderByAggregateInput = {
@@ -829,6 +851,7 @@ export type PlanificacionCreateWithoutEmpresaInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
   ciudad?: Prisma.CiudadCreateNestedOneWithoutPlanificacionesInput
   taller: Prisma.TallerCreateNestedOneWithoutPlanificacionesInput
 }
@@ -851,6 +874,7 @@ export type PlanificacionUncheckedCreateWithoutEmpresaInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionCreateOrConnectWithoutEmpresaInput = {
@@ -901,6 +925,7 @@ export type PlanificacionScalarWhereInput = {
   estado?: Prisma.StringFilter<"Planificacion"> | string
   confirmado?: Prisma.BoolFilter<"Planificacion"> | boolean
   notas?: Prisma.StringNullableFilter<"Planificacion"> | string | null
+  motivoCambio?: Prisma.StringNullableFilter<"Planificacion"> | string | null
 }
 
 export type PlanificacionCreateWithoutTallerInput = {
@@ -918,6 +943,7 @@ export type PlanificacionCreateWithoutTallerInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
   ciudad?: Prisma.CiudadCreateNestedOneWithoutPlanificacionesInput
   empresa?: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
 }
@@ -940,6 +966,7 @@ export type PlanificacionUncheckedCreateWithoutTallerInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionCreateOrConnectWithoutTallerInput = {
@@ -983,6 +1010,7 @@ export type PlanificacionCreateWithoutCiudadInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
   empresa?: Prisma.EmpresaCreateNestedOneWithoutPlanificacionesInput
   taller: Prisma.TallerCreateNestedOneWithoutPlanificacionesInput
 }
@@ -1005,6 +1033,7 @@ export type PlanificacionUncheckedCreateWithoutCiudadInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionCreateOrConnectWithoutCiudadInput = {
@@ -1051,6 +1080,7 @@ export type PlanificacionCreateManyEmpresaInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionUpdateWithoutEmpresaInput = {
@@ -1068,6 +1098,7 @@ export type PlanificacionUpdateWithoutEmpresaInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ciudad?: Prisma.CiudadUpdateOneWithoutPlanificacionesNestedInput
   taller?: Prisma.TallerUpdateOneRequiredWithoutPlanificacionesNestedInput
 }
@@ -1090,6 +1121,7 @@ export type PlanificacionUncheckedUpdateWithoutEmpresaInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyWithoutEmpresaInput = {
@@ -1110,6 +1142,7 @@ export type PlanificacionUncheckedUpdateManyWithoutEmpresaInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionCreateManyTallerInput = {
@@ -1130,6 +1163,7 @@ export type PlanificacionCreateManyTallerInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionUpdateWithoutTallerInput = {
@@ -1147,6 +1181,7 @@ export type PlanificacionUpdateWithoutTallerInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   ciudad?: Prisma.CiudadUpdateOneWithoutPlanificacionesNestedInput
   empresa?: Prisma.EmpresaUpdateOneWithoutPlanificacionesNestedInput
 }
@@ -1169,6 +1204,7 @@ export type PlanificacionUncheckedUpdateWithoutTallerInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyWithoutTallerInput = {
@@ -1189,6 +1225,7 @@ export type PlanificacionUncheckedUpdateManyWithoutTallerInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionCreateManyCiudadInput = {
@@ -1209,6 +1246,7 @@ export type PlanificacionCreateManyCiudadInput = {
   estado?: string
   confirmado?: boolean
   notas?: string | null
+  motivoCambio?: string | null
 }
 
 export type PlanificacionUpdateWithoutCiudadInput = {
@@ -1226,6 +1264,7 @@ export type PlanificacionUpdateWithoutCiudadInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   empresa?: Prisma.EmpresaUpdateOneWithoutPlanificacionesNestedInput
   taller?: Prisma.TallerUpdateOneRequiredWithoutPlanificacionesNestedInput
 }
@@ -1248,6 +1287,7 @@ export type PlanificacionUncheckedUpdateWithoutCiudadInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PlanificacionUncheckedUpdateManyWithoutCiudadInput = {
@@ -1268,6 +1308,7 @@ export type PlanificacionUncheckedUpdateManyWithoutCiudadInput = {
   estado?: Prisma.StringFieldUpdateOperationsInput | string
   confirmado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -1291,6 +1332,7 @@ export type PlanificacionSelect<ExtArgs extends runtime.Types.Extensions.Interna
   estado?: boolean
   confirmado?: boolean
   notas?: boolean
+  motivoCambio?: boolean
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
   empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -1315,6 +1357,7 @@ export type PlanificacionSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   estado?: boolean
   confirmado?: boolean
   notas?: boolean
+  motivoCambio?: boolean
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
   empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -1339,6 +1382,7 @@ export type PlanificacionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   estado?: boolean
   confirmado?: boolean
   notas?: boolean
+  motivoCambio?: boolean
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
   empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -1363,9 +1407,10 @@ export type PlanificacionSelectScalar = {
   estado?: boolean
   confirmado?: boolean
   notas?: boolean
+  motivoCambio?: boolean
 }
 
-export type PlanificacionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "trimestre" | "semana" | "dia" | "turno" | "empresaId" | "empresaIdOriginal" | "tallerId" | "ciudadId" | "tipoAsignacion" | "esContingencia" | "version" | "createdAt" | "updatedAt" | "horario" | "estado" | "confirmado" | "notas", ExtArgs["result"]["planificacion"]>
+export type PlanificacionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "trimestre" | "semana" | "dia" | "turno" | "empresaId" | "empresaIdOriginal" | "tallerId" | "ciudadId" | "tipoAsignacion" | "esContingencia" | "version" | "createdAt" | "updatedAt" | "horario" | "estado" | "confirmado" | "notas" | "motivoCambio", ExtArgs["result"]["planificacion"]>
 export type PlanificacionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ciudad?: boolean | Prisma.Planificacion$ciudadArgs<ExtArgs>
   empresa?: boolean | Prisma.Planificacion$empresaArgs<ExtArgs>
@@ -1408,6 +1453,7 @@ export type $PlanificacionPayload<ExtArgs extends runtime.Types.Extensions.Inter
     estado: string
     confirmado: boolean
     notas: string | null
+    motivoCambio: string | null
   }, ExtArgs["result"]["planificacion"]>
   composites: {}
 }
@@ -1852,6 +1898,7 @@ export interface PlanificacionFieldRefs {
   readonly estado: Prisma.FieldRef<"Planificacion", 'String'>
   readonly confirmado: Prisma.FieldRef<"Planificacion", 'Boolean'>
   readonly notas: Prisma.FieldRef<"Planificacion", 'String'>
+  readonly motivoCambio: Prisma.FieldRef<"Planificacion", 'String'>
 }
     
 

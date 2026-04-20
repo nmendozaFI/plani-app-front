@@ -555,15 +555,15 @@ export function CalendarioWizard() {
                                   if (!horariosDelDia.includes(h)) {
                                     return <td key={d} className="px-1 py-1 bg-slate-50/50" />;
                                   }
-                                  // Buscar en slotsFiltrados para esta semana
-                                  const slot = slotsFiltrados.find(
+                                  // Buscar TODOS los slots en esta celda (puede haber IT + EF simultáneos)
+                                  const slotsInCell = slotsFiltrados.filter(
                                     (s) => s.semana === sem && s.dia === d && s.horario === h
                                   );
-                                  // Si no está en filtrados pero sí existe en el calendario, slot oculto por filtro
-                                  const slotExists = calendario.slots.find(
+                                  // Si no están en filtrados pero sí existen en el calendario, ocultos por filtro
+                                  const slotsExist = calendario.slots.filter(
                                     (s) => s.semana === sem && s.dia === d && s.horario === h
                                   );
-                                  if (!slot && slotExists && filtroVacante !== "todas") {
+                                  if (slotsInCell.length === 0 && slotsExist.length > 0 && filtroVacante !== "todas") {
                                     return (
                                       <td key={d} className="px-1 py-1">
                                         <div className="rounded border border-dashed border-slate-200 bg-slate-50/30 p-1.5 text-center text-[9px] text-slate-300">
@@ -572,7 +572,7 @@ export function CalendarioWizard() {
                                       </td>
                                     );
                                   }
-                                  if (!slot) {
+                                  if (slotsInCell.length === 0) {
                                     return (
                                       <td key={d} className="px-1 py-1">
                                         <div className="rounded border border-dashed border-slate-200 bg-slate-50/30 p-1.5 text-center text-[9px] text-slate-300">
@@ -581,9 +581,20 @@ export function CalendarioWizard() {
                                       </td>
                                     );
                                   }
+                                  // Render all slots stacked in this cell
+                                  const isCompact = slotsInCell.length > 1;
                                   return (
                                     <td key={d} className="px-1 py-1">
-                                      <SlotCard slot={slot} onClick={() => setSlotSel(slot)} />
+                                      <div className="space-y-1">
+                                        {slotsInCell.map((slot, idx) => (
+                                          <SlotCard
+                                            key={slot.id ?? `${slot.semana}-${slot.taller_id}-${slot.horario}-${idx}`}
+                                            slot={slot}
+                                            onClick={() => setSlotSel(slot)}
+                                            compact={isCompact}
+                                          />
+                                        ))}
+                                      </div>
                                     </td>
                                   );
                                 })}
@@ -765,28 +776,45 @@ export function CalendarioWizard() {
 
 
 // ══════════════════════════════════════════════════════════════
-// SlotCard (grid cell)
+// SlotCard (grid cell) — supports compact mode for stacking
 // ══════════════════════════════════════════════════════════════
 
-function SlotCard({ slot, onClick }: { slot: SlotCalendario; onClick: () => void }) {
+function SlotCard({ slot, onClick, compact = false }: { slot: SlotCalendario; onClick: () => void; compact?: boolean }) {
   const vacant = isVacante(slot);
   const c = getColor(slot.empresa_id);
+
+  // Program-based left border for visual distinction when stacked
+  const programBorder = slot.programa === "IT" ? "border-l-2 border-l-violet-400" : "border-l-2 border-l-blue-400";
 
   if (vacant) {
     return (
       <button onClick={onClick}
-        className="w-full rounded-md border-2 border-dashed border-amber-300 bg-amber-50/80 p-1.5 text-left transition-all hover:shadow-sm hover:bg-amber-100/80 group">
+        className={`w-full rounded-md border-2 border-dashed border-amber-300 bg-amber-50/80 text-left transition-all hover:shadow-sm hover:bg-amber-100/80 group ${
+          compact ? "p-1 " + programBorder : "p-1.5"
+        }`}>
         <div className="flex items-center gap-1 text-amber-600">
           <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-          <span className="text-[11px] font-semibold">Vacante</span>
+          <span className={`font-semibold ${compact ? "text-[10px]" : "text-[11px]"}`}>Vacante</span>
+          {compact && (
+            <span className={`text-[8px] font-bold rounded px-1 py-px ${
+              slot.programa === "EF" ? "bg-blue-100 text-blue-600" : "bg-violet-200 text-violet-700"
+            }`}>{slot.programa}</span>
+          )}
         </div>
-        <div className="mt-0.5 flex items-center gap-1">
-          <span className={`text-[9px] font-bold rounded px-1 py-px ${
-            slot.programa === "EF" ? "bg-slate-200 text-slate-600" : "bg-violet-200 text-violet-700"
-          }`}>{slot.programa}</span>
-        </div>
-        <div className="mt-0.5 text-[9px] text-amber-500 truncate">{slot.taller_nombre}</div>
-        {slot.sugerencias && slot.sugerencias.length > 0 && (
+        {!compact && (
+          <>
+            <div className="mt-0.5 flex items-center gap-1">
+              <span className={`text-[9px] font-bold rounded px-1 py-px ${
+                slot.programa === "EF" ? "bg-blue-100 text-blue-600" : "bg-violet-200 text-violet-700"
+              }`}>{slot.programa}</span>
+            </div>
+            <div className="mt-0.5 text-[9px] text-amber-500 truncate">{slot.taller_nombre}</div>
+          </>
+        )}
+        {compact && (
+          <div className="text-[8px] text-amber-500 truncate">{slot.taller_nombre}</div>
+        )}
+        {!compact && slot.sugerencias && slot.sugerencias.length > 0 && (
           <div className="mt-1 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <span className="text-[8px] text-emerald-600 font-medium">{slot.sugerencias.length} sugerencia{slot.sugerencias.length > 1 ? "s" : ""}</span>
           </div>
@@ -797,17 +825,31 @@ function SlotCard({ slot, onClick }: { slot: SlotCalendario; onClick: () => void
 
   return (
     <button onClick={onClick}
-      className={`w-full rounded-md border p-1.5 text-left transition-all hover:shadow-sm ${c.border} ${c.bg}`}>
+      className={`w-full rounded-md border text-left transition-all hover:shadow-sm ${c.border} ${c.bg} ${
+        compact ? "p-1 " + programBorder : "p-1.5"
+      }`}>
       <div className={`flex items-center gap-1 ${c.text}`}>
-        <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${c.dot}`} />
-        <span className="text-[11px] font-semibold truncate">{slot.empresa_nombre}</span>
+        <span className={`shrink-0 rounded-full ${c.dot} ${compact ? "h-1 w-1" : "h-1.5 w-1.5"}`} />
+        <span className={`font-semibold truncate ${compact ? "text-[10px]" : "text-[11px]"}`}>{slot.empresa_nombre}</span>
+        {compact && (
+          <span className={`text-[8px] font-bold rounded px-1 py-px shrink-0 ${
+            slot.programa === "EF" ? "bg-blue-100 text-blue-600" : "bg-violet-200 text-violet-700"
+          }`}>{slot.programa}</span>
+        )}
       </div>
-      <div className="mt-0.5 flex items-center gap-1">
-        <span className={`text-[9px] font-bold rounded px-1 py-px ${
-          slot.programa === "EF" ? "bg-slate-200 text-slate-600" : "bg-violet-200 text-violet-700"
-        }`}>{slot.programa}</span>
-      </div>
-      <div className="mt-0.5 text-[9px] text-slate-400 truncate">{slot.taller_nombre}</div>
+      {!compact && (
+        <>
+          <div className="mt-0.5 flex items-center gap-1">
+            <span className={`text-[9px] font-bold rounded px-1 py-px ${
+              slot.programa === "EF" ? "bg-blue-100 text-blue-600" : "bg-violet-200 text-violet-700"
+            }`}>{slot.programa}</span>
+          </div>
+          <div className="mt-0.5 text-[9px] text-slate-400 truncate">{slot.taller_nombre}</div>
+        </>
+      )}
+      {compact && (
+        <div className="text-[8px] text-slate-400 truncate">{slot.taller_nombre}</div>
+      )}
     </button>
   );
 }

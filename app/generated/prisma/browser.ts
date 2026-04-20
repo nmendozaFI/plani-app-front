@@ -48,6 +48,16 @@ export type Empresa = Prisma.EmpresaModel
  */
 export type Taller = Prisma.TallerModel
 /**
+ * Model SemanaConfig
+ * 
+ */
+export type SemanaConfig = Prisma.SemanaConfigModel
+/**
+ * Model SemanaExtraSlot
+ * 
+ */
+export type SemanaExtraSlot = Prisma.SemanaExtraSlotModel
+/**
  * Model Ciudad
  * 
  */

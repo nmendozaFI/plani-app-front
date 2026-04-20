@@ -266,6 +266,7 @@ export type TallerWhereInput = {
   horario?: Prisma.StringNullableFilter<"Taller"> | string | null
   historico?: Prisma.HistoricoTallerListRelationFilter
   planificaciones?: Prisma.PlanificacionListRelationFilter
+  extraSlots?: Prisma.SemanaExtraSlotListRelationFilter
 }
 
 export type TallerOrderByWithRelationInput = {
@@ -282,6 +283,7 @@ export type TallerOrderByWithRelationInput = {
   horario?: Prisma.SortOrderInput | Prisma.SortOrder
   historico?: Prisma.HistoricoTallerOrderByRelationAggregateInput
   planificaciones?: Prisma.PlanificacionOrderByRelationAggregateInput
+  extraSlots?: Prisma.SemanaExtraSlotOrderByRelationAggregateInput
 }
 
 export type TallerWhereUniqueInput = Prisma.AtLeast<{
@@ -301,6 +303,7 @@ export type TallerWhereUniqueInput = Prisma.AtLeast<{
   horario?: Prisma.StringNullableFilter<"Taller"> | string | null
   historico?: Prisma.HistoricoTallerListRelationFilter
   planificaciones?: Prisma.PlanificacionListRelationFilter
+  extraSlots?: Prisma.SemanaExtraSlotListRelationFilter
 }, "id">
 
 export type TallerOrderByWithAggregationInput = {
@@ -352,6 +355,7 @@ export type TallerCreateInput = {
   horario?: string | null
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutTallerInput
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutTallerInput
+  extraSlots?: Prisma.SemanaExtraSlotCreateNestedManyWithoutTallerInput
 }
 
 export type TallerUncheckedCreateInput = {
@@ -368,6 +372,7 @@ export type TallerUncheckedCreateInput = {
   horario?: string | null
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutTallerInput
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutTallerInput
+  extraSlots?: Prisma.SemanaExtraSlotUncheckedCreateNestedManyWithoutTallerInput
 }
 
 export type TallerUpdateInput = {
@@ -383,6 +388,7 @@ export type TallerUpdateInput = {
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUpdateManyWithoutTallerNestedInput
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutTallerNestedInput
+  extraSlots?: Prisma.SemanaExtraSlotUpdateManyWithoutTallerNestedInput
 }
 
 export type TallerUncheckedUpdateInput = {
@@ -399,6 +405,7 @@ export type TallerUncheckedUpdateInput = {
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutTallerNestedInput
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutTallerNestedInput
+  extraSlots?: Prisma.SemanaExtraSlotUncheckedUpdateManyWithoutTallerNestedInput
 }
 
 export type TallerCreateManyInput = {
@@ -497,6 +504,20 @@ export type TallerScalarRelationFilter = {
   isNot?: Prisma.TallerWhereInput
 }
 
+export type TallerCreateNestedOneWithoutExtraSlotsInput = {
+  create?: Prisma.XOR<Prisma.TallerCreateWithoutExtraSlotsInput, Prisma.TallerUncheckedCreateWithoutExtraSlotsInput>
+  connectOrCreate?: Prisma.TallerCreateOrConnectWithoutExtraSlotsInput
+  connect?: Prisma.TallerWhereUniqueInput
+}
+
+export type TallerUpdateOneRequiredWithoutExtraSlotsNestedInput = {
+  create?: Prisma.XOR<Prisma.TallerCreateWithoutExtraSlotsInput, Prisma.TallerUncheckedCreateWithoutExtraSlotsInput>
+  connectOrCreate?: Prisma.TallerCreateOrConnectWithoutExtraSlotsInput
+  upsert?: Prisma.TallerUpsertWithoutExtraSlotsInput
+  connect?: Prisma.TallerWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TallerUpdateToOneWithWhereWithoutExtraSlotsInput, Prisma.TallerUpdateWithoutExtraSlotsInput>, Prisma.TallerUncheckedUpdateWithoutExtraSlotsInput>
+}
+
 export type TallerCreateNestedOneWithoutHistoricoInput = {
   create?: Prisma.XOR<Prisma.TallerCreateWithoutHistoricoInput, Prisma.TallerUncheckedCreateWithoutHistoricoInput>
   connectOrCreate?: Prisma.TallerCreateOrConnectWithoutHistoricoInput
@@ -525,6 +546,84 @@ export type TallerUpdateOneRequiredWithoutPlanificacionesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TallerUpdateToOneWithWhereWithoutPlanificacionesInput, Prisma.TallerUpdateWithoutPlanificacionesInput>, Prisma.TallerUncheckedUpdateWithoutPlanificacionesInput>
 }
 
+export type TallerCreateWithoutExtraSlotsInput = {
+  nombre: string
+  programa: $Enums.Programa
+  diaSemana?: string | null
+  turno?: string | null
+  esContratante?: boolean
+  descripcion?: string | null
+  activo?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  horario?: string | null
+  historico?: Prisma.HistoricoTallerCreateNestedManyWithoutTallerInput
+  planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutTallerInput
+}
+
+export type TallerUncheckedCreateWithoutExtraSlotsInput = {
+  id?: number
+  nombre: string
+  programa: $Enums.Programa
+  diaSemana?: string | null
+  turno?: string | null
+  esContratante?: boolean
+  descripcion?: string | null
+  activo?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  horario?: string | null
+  historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutTallerInput
+  planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutTallerInput
+}
+
+export type TallerCreateOrConnectWithoutExtraSlotsInput = {
+  where: Prisma.TallerWhereUniqueInput
+  create: Prisma.XOR<Prisma.TallerCreateWithoutExtraSlotsInput, Prisma.TallerUncheckedCreateWithoutExtraSlotsInput>
+}
+
+export type TallerUpsertWithoutExtraSlotsInput = {
+  update: Prisma.XOR<Prisma.TallerUpdateWithoutExtraSlotsInput, Prisma.TallerUncheckedUpdateWithoutExtraSlotsInput>
+  create: Prisma.XOR<Prisma.TallerCreateWithoutExtraSlotsInput, Prisma.TallerUncheckedCreateWithoutExtraSlotsInput>
+  where?: Prisma.TallerWhereInput
+}
+
+export type TallerUpdateToOneWithWhereWithoutExtraSlotsInput = {
+  where?: Prisma.TallerWhereInput
+  data: Prisma.XOR<Prisma.TallerUpdateWithoutExtraSlotsInput, Prisma.TallerUncheckedUpdateWithoutExtraSlotsInput>
+}
+
+export type TallerUpdateWithoutExtraSlotsInput = {
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
+  diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historico?: Prisma.HistoricoTallerUpdateManyWithoutTallerNestedInput
+  planificaciones?: Prisma.PlanificacionUpdateManyWithoutTallerNestedInput
+}
+
+export type TallerUncheckedUpdateWithoutExtraSlotsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  programa?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
+  diaSemana?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  turno?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutTallerNestedInput
+  planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutTallerNestedInput
+}
+
 export type TallerCreateWithoutHistoricoInput = {
   nombre: string
   programa: $Enums.Programa
@@ -537,6 +636,7 @@ export type TallerCreateWithoutHistoricoInput = {
   updatedAt?: Date | string
   horario?: string | null
   planificaciones?: Prisma.PlanificacionCreateNestedManyWithoutTallerInput
+  extraSlots?: Prisma.SemanaExtraSlotCreateNestedManyWithoutTallerInput
 }
 
 export type TallerUncheckedCreateWithoutHistoricoInput = {
@@ -552,6 +652,7 @@ export type TallerUncheckedCreateWithoutHistoricoInput = {
   updatedAt?: Date | string
   horario?: string | null
   planificaciones?: Prisma.PlanificacionUncheckedCreateNestedManyWithoutTallerInput
+  extraSlots?: Prisma.SemanaExtraSlotUncheckedCreateNestedManyWithoutTallerInput
 }
 
 export type TallerCreateOrConnectWithoutHistoricoInput = {
@@ -582,6 +683,7 @@ export type TallerUpdateWithoutHistoricoInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   planificaciones?: Prisma.PlanificacionUpdateManyWithoutTallerNestedInput
+  extraSlots?: Prisma.SemanaExtraSlotUpdateManyWithoutTallerNestedInput
 }
 
 export type TallerUncheckedUpdateWithoutHistoricoInput = {
@@ -597,6 +699,7 @@ export type TallerUncheckedUpdateWithoutHistoricoInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   planificaciones?: Prisma.PlanificacionUncheckedUpdateManyWithoutTallerNestedInput
+  extraSlots?: Prisma.SemanaExtraSlotUncheckedUpdateManyWithoutTallerNestedInput
 }
 
 export type TallerCreateWithoutPlanificacionesInput = {
@@ -611,6 +714,7 @@ export type TallerCreateWithoutPlanificacionesInput = {
   updatedAt?: Date | string
   horario?: string | null
   historico?: Prisma.HistoricoTallerCreateNestedManyWithoutTallerInput
+  extraSlots?: Prisma.SemanaExtraSlotCreateNestedManyWithoutTallerInput
 }
 
 export type TallerUncheckedCreateWithoutPlanificacionesInput = {
@@ -626,6 +730,7 @@ export type TallerUncheckedCreateWithoutPlanificacionesInput = {
   updatedAt?: Date | string
   horario?: string | null
   historico?: Prisma.HistoricoTallerUncheckedCreateNestedManyWithoutTallerInput
+  extraSlots?: Prisma.SemanaExtraSlotUncheckedCreateNestedManyWithoutTallerInput
 }
 
 export type TallerCreateOrConnectWithoutPlanificacionesInput = {
@@ -656,6 +761,7 @@ export type TallerUpdateWithoutPlanificacionesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUpdateManyWithoutTallerNestedInput
+  extraSlots?: Prisma.SemanaExtraSlotUpdateManyWithoutTallerNestedInput
 }
 
 export type TallerUncheckedUpdateWithoutPlanificacionesInput = {
@@ -671,6 +777,7 @@ export type TallerUncheckedUpdateWithoutPlanificacionesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   horario?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   historico?: Prisma.HistoricoTallerUncheckedUpdateManyWithoutTallerNestedInput
+  extraSlots?: Prisma.SemanaExtraSlotUncheckedUpdateManyWithoutTallerNestedInput
 }
 
 
@@ -681,11 +788,13 @@ export type TallerUncheckedUpdateWithoutPlanificacionesInput = {
 export type TallerCountOutputType = {
   historico: number
   planificaciones: number
+  extraSlots: number
 }
 
 export type TallerCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   historico?: boolean | TallerCountOutputTypeCountHistoricoArgs
   planificaciones?: boolean | TallerCountOutputTypeCountPlanificacionesArgs
+  extraSlots?: boolean | TallerCountOutputTypeCountExtraSlotsArgs
 }
 
 /**
@@ -712,6 +821,13 @@ export type TallerCountOutputTypeCountPlanificacionesArgs<ExtArgs extends runtim
   where?: Prisma.PlanificacionWhereInput
 }
 
+/**
+ * TallerCountOutputType without action
+ */
+export type TallerCountOutputTypeCountExtraSlotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SemanaExtraSlotWhereInput
+}
+
 
 export type TallerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -727,6 +843,7 @@ export type TallerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   horario?: boolean
   historico?: boolean | Prisma.Taller$historicoArgs<ExtArgs>
   planificaciones?: boolean | Prisma.Taller$planificacionesArgs<ExtArgs>
+  extraSlots?: boolean | Prisma.Taller$extraSlotsArgs<ExtArgs>
   _count?: boolean | Prisma.TallerCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["taller"]>
 
@@ -776,6 +893,7 @@ export type TallerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
 export type TallerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   historico?: boolean | Prisma.Taller$historicoArgs<ExtArgs>
   planificaciones?: boolean | Prisma.Taller$planificacionesArgs<ExtArgs>
+  extraSlots?: boolean | Prisma.Taller$extraSlotsArgs<ExtArgs>
   _count?: boolean | Prisma.TallerCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TallerIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -786,6 +904,7 @@ export type $TallerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   objects: {
     historico: Prisma.$HistoricoTallerPayload<ExtArgs>[]
     planificaciones: Prisma.$PlanificacionPayload<ExtArgs>[]
+    extraSlots: Prisma.$SemanaExtraSlotPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1195,6 +1314,7 @@ export interface Prisma__TallerClient<T, Null = never, ExtArgs extends runtime.T
   readonly [Symbol.toStringTag]: "PrismaPromise"
   historico<T extends Prisma.Taller$historicoArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Taller$historicoArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$HistoricoTallerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   planificaciones<T extends Prisma.Taller$planificacionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Taller$planificacionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PlanificacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  extraSlots<T extends Prisma.Taller$extraSlotsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Taller$extraSlotsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SemanaExtraSlotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1668,6 +1788,30 @@ export type Taller$planificacionesArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.PlanificacionScalarFieldEnum | Prisma.PlanificacionScalarFieldEnum[]
+}
+
+/**
+ * Taller.extraSlots
+ */
+export type Taller$extraSlotsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SemanaExtraSlot
+   */
+  select?: Prisma.SemanaExtraSlotSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SemanaExtraSlot
+   */
+  omit?: Prisma.SemanaExtraSlotOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SemanaExtraSlotInclude<ExtArgs> | null
+  where?: Prisma.SemanaExtraSlotWhereInput
+  orderBy?: Prisma.SemanaExtraSlotOrderByWithRelationInput | Prisma.SemanaExtraSlotOrderByWithRelationInput[]
+  cursor?: Prisma.SemanaExtraSlotWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SemanaExtraSlotScalarFieldEnum | Prisma.SemanaExtraSlotScalarFieldEnum[]
 }
 
 /**

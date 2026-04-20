@@ -49,6 +49,7 @@ export type HistoricoTallerMinAggregateOutputType = {
   estado: $Enums.EstadoTaller | null
   ciudad: string | null
   trimestre: string | null
+  motivoCambio: string | null
   createdAt: Date | null
 }
 
@@ -61,6 +62,7 @@ export type HistoricoTallerMaxAggregateOutputType = {
   estado: $Enums.EstadoTaller | null
   ciudad: string | null
   trimestre: string | null
+  motivoCambio: string | null
   createdAt: Date | null
 }
 
@@ -73,6 +75,7 @@ export type HistoricoTallerCountAggregateOutputType = {
   estado: number
   ciudad: number
   trimestre: number
+  motivoCambio: number
   createdAt: number
   _all: number
 }
@@ -101,6 +104,7 @@ export type HistoricoTallerMinAggregateInputType = {
   estado?: true
   ciudad?: true
   trimestre?: true
+  motivoCambio?: true
   createdAt?: true
 }
 
@@ -113,6 +117,7 @@ export type HistoricoTallerMaxAggregateInputType = {
   estado?: true
   ciudad?: true
   trimestre?: true
+  motivoCambio?: true
   createdAt?: true
 }
 
@@ -125,6 +130,7 @@ export type HistoricoTallerCountAggregateInputType = {
   estado?: true
   ciudad?: true
   trimestre?: true
+  motivoCambio?: true
   createdAt?: true
   _all?: true
 }
@@ -224,6 +230,7 @@ export type HistoricoTallerGroupByOutputType = {
   estado: $Enums.EstadoTaller
   ciudad: string | null
   trimestre: string | null
+  motivoCambio: string | null
   createdAt: Date
   _count: HistoricoTallerCountAggregateOutputType | null
   _avg: HistoricoTallerAvgAggregateOutputType | null
@@ -259,6 +266,7 @@ export type HistoricoTallerWhereInput = {
   estado?: Prisma.EnumEstadoTallerFilter<"HistoricoTaller"> | $Enums.EstadoTaller
   ciudad?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
   trimestre?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
+  motivoCambio?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HistoricoTaller"> | Date | string
   empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
   taller?: Prisma.XOR<Prisma.TallerScalarRelationFilter, Prisma.TallerWhereInput>
@@ -273,6 +281,7 @@ export type HistoricoTallerOrderByWithRelationInput = {
   estado?: Prisma.SortOrder
   ciudad?: Prisma.SortOrderInput | Prisma.SortOrder
   trimestre?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   empresa?: Prisma.EmpresaOrderByWithRelationInput
   taller?: Prisma.TallerOrderByWithRelationInput
@@ -290,6 +299,7 @@ export type HistoricoTallerWhereUniqueInput = Prisma.AtLeast<{
   estado?: Prisma.EnumEstadoTallerFilter<"HistoricoTaller"> | $Enums.EstadoTaller
   ciudad?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
   trimestre?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
+  motivoCambio?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HistoricoTaller"> | Date | string
   empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
   taller?: Prisma.XOR<Prisma.TallerScalarRelationFilter, Prisma.TallerWhereInput>
@@ -304,6 +314,7 @@ export type HistoricoTallerOrderByWithAggregationInput = {
   estado?: Prisma.SortOrder
   ciudad?: Prisma.SortOrderInput | Prisma.SortOrder
   trimestre?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.HistoricoTallerCountOrderByAggregateInput
   _avg?: Prisma.HistoricoTallerAvgOrderByAggregateInput
@@ -324,6 +335,7 @@ export type HistoricoTallerScalarWhereWithAggregatesInput = {
   estado?: Prisma.EnumEstadoTallerWithAggregatesFilter<"HistoricoTaller"> | $Enums.EstadoTaller
   ciudad?: Prisma.StringNullableWithAggregatesFilter<"HistoricoTaller"> | string | null
   trimestre?: Prisma.StringNullableWithAggregatesFilter<"HistoricoTaller"> | string | null
+  motivoCambio?: Prisma.StringNullableWithAggregatesFilter<"HistoricoTaller"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"HistoricoTaller"> | Date | string
 }
 
@@ -333,6 +345,7 @@ export type HistoricoTallerCreateInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
   empresa: Prisma.EmpresaCreateNestedOneWithoutHistoricoInput
   taller: Prisma.TallerCreateNestedOneWithoutHistoricoInput
@@ -347,6 +360,7 @@ export type HistoricoTallerUncheckedCreateInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
 }
 
@@ -356,6 +370,7 @@ export type HistoricoTallerUpdateInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   empresa?: Prisma.EmpresaUpdateOneRequiredWithoutHistoricoNestedInput
   taller?: Prisma.TallerUpdateOneRequiredWithoutHistoricoNestedInput
@@ -370,6 +385,7 @@ export type HistoricoTallerUncheckedUpdateInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -382,6 +398,7 @@ export type HistoricoTallerCreateManyInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
 }
 
@@ -391,6 +408,7 @@ export type HistoricoTallerUpdateManyMutationInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -403,6 +421,7 @@ export type HistoricoTallerUncheckedUpdateManyInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -425,6 +444,7 @@ export type HistoricoTallerCountOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   ciudad?: Prisma.SortOrder
   trimestre?: Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -444,6 +464,7 @@ export type HistoricoTallerMaxOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   ciudad?: Prisma.SortOrder
   trimestre?: Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -456,6 +477,7 @@ export type HistoricoTallerMinOrderByAggregateInput = {
   estado?: Prisma.SortOrder
   ciudad?: Prisma.SortOrder
   trimestre?: Prisma.SortOrder
+  motivoCambio?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -560,6 +582,7 @@ export type HistoricoTallerCreateWithoutEmpresaInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
   taller: Prisma.TallerCreateNestedOneWithoutHistoricoInput
 }
@@ -572,6 +595,7 @@ export type HistoricoTallerUncheckedCreateWithoutEmpresaInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
 }
 
@@ -613,6 +637,7 @@ export type HistoricoTallerScalarWhereInput = {
   estado?: Prisma.EnumEstadoTallerFilter<"HistoricoTaller"> | $Enums.EstadoTaller
   ciudad?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
   trimestre?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
+  motivoCambio?: Prisma.StringNullableFilter<"HistoricoTaller"> | string | null
   createdAt?: Prisma.DateTimeFilter<"HistoricoTaller"> | Date | string
 }
 
@@ -622,6 +647,7 @@ export type HistoricoTallerCreateWithoutTallerInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
   empresa: Prisma.EmpresaCreateNestedOneWithoutHistoricoInput
 }
@@ -634,6 +660,7 @@ export type HistoricoTallerUncheckedCreateWithoutTallerInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
 }
 
@@ -671,6 +698,7 @@ export type HistoricoTallerCreateManyEmpresaInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
 }
 
@@ -680,6 +708,7 @@ export type HistoricoTallerUpdateWithoutEmpresaInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   taller?: Prisma.TallerUpdateOneRequiredWithoutHistoricoNestedInput
 }
@@ -692,6 +721,7 @@ export type HistoricoTallerUncheckedUpdateWithoutEmpresaInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -703,6 +733,7 @@ export type HistoricoTallerUncheckedUpdateManyWithoutEmpresaInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -714,6 +745,7 @@ export type HistoricoTallerCreateManyTallerInput = {
   estado?: $Enums.EstadoTaller
   ciudad?: string | null
   trimestre?: string | null
+  motivoCambio?: string | null
   createdAt?: Date | string
 }
 
@@ -723,6 +755,7 @@ export type HistoricoTallerUpdateWithoutTallerInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   empresa?: Prisma.EmpresaUpdateOneRequiredWithoutHistoricoNestedInput
 }
@@ -735,6 +768,7 @@ export type HistoricoTallerUncheckedUpdateWithoutTallerInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -746,6 +780,7 @@ export type HistoricoTallerUncheckedUpdateManyWithoutTallerInput = {
   estado?: Prisma.EnumEstadoTallerFieldUpdateOperationsInput | $Enums.EstadoTaller
   ciudad?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trimestre?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  motivoCambio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -760,6 +795,7 @@ export type HistoricoTallerSelect<ExtArgs extends runtime.Types.Extensions.Inter
   estado?: boolean
   ciudad?: boolean
   trimestre?: boolean
+  motivoCambio?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -774,6 +810,7 @@ export type HistoricoTallerSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   estado?: boolean
   ciudad?: boolean
   trimestre?: boolean
+  motivoCambio?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -788,6 +825,7 @@ export type HistoricoTallerSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   estado?: boolean
   ciudad?: boolean
   trimestre?: boolean
+  motivoCambio?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -802,10 +840,11 @@ export type HistoricoTallerSelectScalar = {
   estado?: boolean
   ciudad?: boolean
   trimestre?: boolean
+  motivoCambio?: boolean
   createdAt?: boolean
 }
 
-export type HistoricoTallerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "empresaIdOriginal" | "tallerId" | "fecha" | "estado" | "ciudad" | "trimestre" | "createdAt", ExtArgs["result"]["historicoTaller"]>
+export type HistoricoTallerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "empresaIdOriginal" | "tallerId" | "fecha" | "estado" | "ciudad" | "trimestre" | "motivoCambio" | "createdAt", ExtArgs["result"]["historicoTaller"]>
 export type HistoricoTallerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.TallerDefaultArgs<ExtArgs>
@@ -834,6 +873,7 @@ export type $HistoricoTallerPayload<ExtArgs extends runtime.Types.Extensions.Int
     estado: $Enums.EstadoTaller
     ciudad: string | null
     trimestre: string | null
+    motivoCambio: string | null
     createdAt: Date
   }, ExtArgs["result"]["historicoTaller"]>
   composites: {}
@@ -1268,6 +1308,7 @@ export interface HistoricoTallerFieldRefs {
   readonly estado: Prisma.FieldRef<"HistoricoTaller", 'EstadoTaller'>
   readonly ciudad: Prisma.FieldRef<"HistoricoTaller", 'String'>
   readonly trimestre: Prisma.FieldRef<"HistoricoTaller", 'String'>
+  readonly motivoCambio: Prisma.FieldRef<"HistoricoTaller", 'String'>
   readonly createdAt: Prisma.FieldRef<"HistoricoTaller", 'DateTime'>
 }
     

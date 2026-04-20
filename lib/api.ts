@@ -6,6 +6,15 @@
 
 import { apiFetch, apiFetchBlob, apiUpload } from "./api-client";
 import type { ValidarAsignacionResult } from "@/types/calendario";
+import type {
+  SemanaConfigOut,
+  SemanaConfigUpdate,
+  SemanaDetalleOut,
+  SemanaExtraSlotOut,
+  SemanaExtraSlotCreate,
+  CalendarioAnualResumen,
+  BatchUpdateResult,
+} from "@/types/taller";
 
 // ── Re-export types from canonical source ────────────────────
 export type {
@@ -550,4 +559,70 @@ export async function obtenerHistoricoTrimestre(
 
 export async function exportarHistoricoExcel(trimestre: string): Promise<Blob> {
   return apiFetchBlob(`/api/historico/${trimestre}/exportar-excel`, { method: "POST" });
+}
+
+// ── Calendario Anual (Weekly schedule config) ────────────────────
+
+export async function obtenerCalendarioAnual(anio: number): Promise<SemanaConfigOut[]> {
+  const response = await apiFetch<{ anio: number; semanas: SemanaConfigOut[]; resumen: Record<string, unknown> }>(`/api/talleres/calendario-anual/${anio}`);
+  return response.semanas;
+}
+
+export async function inicializarCalendarioAnual(
+  anio: number,
+  template?: "estandar_madrid"
+): Promise<{ message: string; created: number; template_applied: string | null }> {
+  const url = template
+    ? `/api/talleres/calendario-anual/${anio}/init?template=${template}`
+    : `/api/talleres/calendario-anual/${anio}/init`;
+  return apiFetch(url, { method: "POST" });
+}
+
+export async function actualizarSemanaConfig(
+  anio: number,
+  semana: number,
+  data: SemanaConfigUpdate
+): Promise<SemanaConfigOut> {
+  return apiFetch<SemanaConfigOut>(`/api/talleres/calendario-anual/${anio}/semana/${semana}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function actualizarSemanasConfigBatch(
+  anio: number,
+  updates: Array<{ semana: number; tipo?: "normal" | "intensiva"; notas?: string | null }>
+): Promise<BatchUpdateResult> {
+  return apiFetch<BatchUpdateResult>(`/api/talleres/calendario-anual/${anio}/batch`, {
+    method: "PUT",
+    body: JSON.stringify({ updates }),
+  });
+}
+
+export async function obtenerSemanaDetalle(anio: number, semana: number): Promise<SemanaDetalleOut> {
+  return apiFetch<SemanaDetalleOut>(`/api/talleres/calendario-anual/${anio}/semana/${semana}/detalle`);
+}
+
+export async function crearExtraSlot(
+  anio: number,
+  semana: number,
+  data: SemanaExtraSlotCreate
+): Promise<SemanaExtraSlotOut> {
+  return apiFetch<SemanaExtraSlotOut>(`/api/talleres/calendario-anual/${anio}/semana/${semana}/extras`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function eliminarExtraSlot(extraId: number): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/api/talleres/calendario-anual/extras/${extraId}`, {
+    method: "DELETE",
+  });
+}
+
+export async function obtenerResumenTrimestre(
+  anio: number,
+  quarter: number
+): Promise<CalendarioAnualResumen & { talleres_ef_total: number; talleres_it_total: number }> {
+  return apiFetch(`/api/talleres/calendario-anual/${anio}/trimestre/${quarter}/resumen`);
 }

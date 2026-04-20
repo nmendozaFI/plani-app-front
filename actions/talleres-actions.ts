@@ -6,7 +6,11 @@ import {
   editarTallerApi,
   eliminarTallerApi,
 } from "@/lib/api";
-import type { TallerOut, TallerCreate, TallerUpdate } from "@/types/taller";
+import type {
+  TallerOut,
+  TallerCreate,
+  TallerUpdate,
+} from "@/types/taller";
 import type { ActionResult } from "@/types/actions";
 
 export async function actionObtenerTalleres(

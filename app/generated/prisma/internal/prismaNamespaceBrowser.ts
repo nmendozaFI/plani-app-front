@@ -57,6 +57,8 @@ export const ModelName = {
   Verification: 'Verification',
   Empresa: 'Empresa',
   Taller: 'Taller',
+  SemanaConfig: 'SemanaConfig',
+  SemanaExtraSlot: 'SemanaExtraSlot',
   Ciudad: 'Ciudad',
   EmpresaCiudad: 'EmpresaCiudad',
   Restriccion: 'Restriccion',
@@ -183,6 +185,32 @@ export const TallerScalarFieldEnum = {
 export type TallerScalarFieldEnum = (typeof TallerScalarFieldEnum)[keyof typeof TallerScalarFieldEnum]
 
 
+export const SemanaConfigScalarFieldEnum = {
+  id: 'id',
+  anio: 'anio',
+  semana: 'semana',
+  tipo: 'tipo',
+  notas: 'notas',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SemanaConfigScalarFieldEnum = (typeof SemanaConfigScalarFieldEnum)[keyof typeof SemanaConfigScalarFieldEnum]
+
+
+export const SemanaExtraSlotScalarFieldEnum = {
+  id: 'id',
+  semanaConfigId: 'semanaConfigId',
+  tallerId: 'tallerId',
+  diaSemana: 'diaSemana',
+  horario: 'horario',
+  notas: 'notas',
+  createdAt: 'createdAt'
+} as const
+
+export type SemanaExtraSlotScalarFieldEnum = (typeof SemanaExtraSlotScalarFieldEnum)[keyof typeof SemanaExtraSlotScalarFieldEnum]
+
+
 export const CiudadScalarFieldEnum = {
   id: 'id',
   nombre: 'nombre',
@@ -276,6 +304,7 @@ export const HistoricoTallerScalarFieldEnum = {
   estado: 'estado',
   ciudad: 'ciudad',
   trimestre: 'trimestre',
+  motivoCambio: 'motivoCambio',
   createdAt: 'createdAt'
 } as const
 
@@ -300,7 +329,8 @@ export const PlanificacionScalarFieldEnum = {
   horario: 'horario',
   estado: 'estado',
   confirmado: 'confirmado',
-  notas: 'notas'
+  notas: 'notas',
+  motivoCambio: 'motivoCambio'
 } as const
 
 export type PlanificacionScalarFieldEnum = (typeof PlanificacionScalarFieldEnum)[keyof typeof PlanificacionScalarFieldEnum]
