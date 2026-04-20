@@ -106,8 +106,10 @@ export function OperacionPageClient() {
   const [importResult, setImportResult] = useState<ImportarExcelResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Warning modal state
-  const [warningModal, setWarningModal] = useState<{
+  // Unified assignment modal state
+  // Handles all assignment scenarios: warnings, motivo selection, or both
+  const [assignModal, setAssignModal] = useState<{
+    type: "warning_only" | "motivo_only" | "warning_with_motivo";
     slotId: number;
     empresaId: number;
     empresaNombre: string;
@@ -115,19 +117,19 @@ export function OperacionPageClient() {
     restriccionesVioladas: string[];
   } | null>(null);
 
-  // Motivo cambio modal state
-  const [motivoModal, setMotivoModal] = useState<{
+  // Selected motivo in modal (for reassignments)
+  const [selectedMotivo, setSelectedMotivo] = useState<"EMPRESA_CANCELO" | "DECISION_PLANIFICADOR" | null>(null);
+
+  // Cancel-specific modal (separate from assignment)
+  const [cancelModal, setCancelModal] = useState<{
     slotId: number;
-    action: "cancel" | "reassign";
-    empresaId?: number;  // for reassign
-    empresaNombre?: string;
   } | null>(null);
 
   const gridRef = useRef<HTMLDivElement>(null);
 
   // ── Load data ──────────────────────────────────────────────
 
-  const cargarDatos = useCallback(async () => {
+  const cargarDatos = useCallback(async (preserveWeek: boolean = false) => {
     if (!trimestre) return;
     setLoading(true);
     setError(null);
@@ -142,9 +144,17 @@ export function OperacionPageClient() {
       setCalendario(calResult.data);
       setResumen(resResult.data);
       setEmpresas(empList);
+
+      // Only set week on initial load or if current week is invalid
       if (calResult.data.slots.length > 0) {
         const weeks = [...new Set(calResult.data.slots.map(s => s.semana))].sort((a, b) => a - b);
-        setSemanaActual(weeks[0]);
+        if (!preserveWeek) {
+          // Initial load — set to first week
+          setSemanaActual(weeks[0]);
+        } else {
+          // Refresh after update — only reset if current week doesn't exist
+          setSemanaActual(prev => weeks.includes(prev) ? prev : weeks[0]);
+        }
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error al cargar datos");
@@ -229,7 +239,7 @@ export function OperacionPageClient() {
       const result = await actionActualizarSlot(trimestre, slotId, updates);
       if (!result.ok) throw new Error(result.error);
       toast.success("Slot actualizado");
-      await cargarDatos();
+      await cargarDatos(true);  // Preserve selected week
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Error al actualizar slot";
       toast.error(msg);
@@ -248,33 +258,49 @@ export function OperacionPageClient() {
   ) => {
     if (!trimestre) return;
 
-    // If slot has a company (reassign), show motivo modal first
-    if (currentEmpresaId !== null) {
-      setMotivoModal({
-        slotId,
-        action: "reassign",
-        empresaId,
-        empresaNombre,
-      });
-      return;
-    }
+    const isReassignment = currentEmpresaId !== null;
 
-    // For vacant slots, validate first
+    // ALWAYS validate first (for both vacant slots and reassignments)
     try {
       const result = await actionValidarAsignacion(trimestre, slotId, empresaId);
       if (!result.ok) throw new Error(result.error);
 
-      if (result.data.warnings.length > 0) {
-        // Show warning modal
-        setWarningModal({
+      const hasViolations = result.data.warnings.length > 0;
+
+      if (hasViolations && isReassignment) {
+        // Reassignment with violations → unified modal (warnings + motivo selector)
+        setSelectedMotivo(null);
+        setAssignModal({
+          type: "warning_with_motivo",
           slotId,
           empresaId,
           empresaNombre,
           warnings: result.data.warnings,
           restriccionesVioladas: result.data.restricciones_violadas,
         });
+      } else if (hasViolations && !isReassignment) {
+        // Vacant slot with violations → warning-only modal (no motivo needed)
+        setAssignModal({
+          type: "warning_only",
+          slotId,
+          empresaId,
+          empresaNombre,
+          warnings: result.data.warnings,
+          restriccionesVioladas: result.data.restricciones_violadas,
+        });
+      } else if (!hasViolations && isReassignment) {
+        // Reassignment without violations → motivo-only modal
+        setSelectedMotivo(null);
+        setAssignModal({
+          type: "motivo_only",
+          slotId,
+          empresaId,
+          empresaNombre,
+          warnings: [],
+          restriccionesVioladas: [],
+        });
       } else {
-        // No warnings, assign directly
+        // Vacant slot without violations → assign directly
         await handleUpdateSlot(slotId, { empresa_id: empresaId });
       }
     } catch (e: unknown) {
@@ -283,32 +309,40 @@ export function OperacionPageClient() {
     }
   }, [trimestre, handleUpdateSlot]);
 
-  // Confirm assignment despite warnings
-  const handleConfirmWithWarnings = useCallback(async () => {
-    if (!warningModal) return;
-    await handleUpdateSlot(warningModal.slotId, { empresa_id: warningModal.empresaId });
-    setWarningModal(null);
-  }, [warningModal, handleUpdateSlot]);
+  // Confirm assignment from unified modal
+  const handleConfirmAssignment = useCallback(async () => {
+    if (!assignModal) return;
 
-  // Handle cancel action (shows motivo modal)
-  const handleRequestCancel = useCallback((slotId: number) => {
-    setMotivoModal({
-      slotId,
-      action: "cancel",
+    // Determine the motivo_cambio to send
+    let motivo: string | undefined;
+    if (assignModal.type === "warning_only") {
+      // Vacant slot with violations → always DECISION_PLANIFICADOR
+      motivo = "DECISION_PLANIFICADOR";
+    } else if (assignModal.type === "motivo_only" || assignModal.type === "warning_with_motivo") {
+      // Reassignment → use selected motivo
+      if (!selectedMotivo) return; // Button should be disabled, but safety check
+      motivo = selectedMotivo;
+    }
+
+    await handleUpdateSlot(assignModal.slotId, {
+      empresa_id: assignModal.empresaId,
+      motivo_cambio: motivo,
     });
+    setAssignModal(null);
+    setSelectedMotivo(null);
+  }, [assignModal, selectedMotivo, handleUpdateSlot]);
+
+  // Handle cancel slot action (separate from reassignment)
+  const handleRequestCancel = useCallback((slotId: number) => {
+    setCancelModal({ slotId });
   }, []);
 
-  // Confirm motivo and execute action
-  const handleConfirmMotivo = useCallback(async (motivo: "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR") => {
-    if (!motivoModal) return;
-
-    if (motivoModal.action === "cancel") {
-      await handleUpdateSlot(motivoModal.slotId, { estado: "CANCELADO", motivo_cambio: motivo });
-    } else if (motivoModal.action === "reassign" && motivoModal.empresaId !== undefined) {
-      await handleUpdateSlot(motivoModal.slotId, { empresa_id: motivoModal.empresaId, motivo_cambio: motivo });
-    }
-    setMotivoModal(null);
-  }, [motivoModal, handleUpdateSlot]);
+  // Confirm cancel with motivo
+  const handleConfirmCancel = useCallback(async (motivo: "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR") => {
+    if (!cancelModal) return;
+    await handleUpdateSlot(cancelModal.slotId, { estado: "CANCELADO", motivo_cambio: motivo });
+    setCancelModal(null);
+  }, [cancelModal, handleUpdateSlot]);
 
   const handleBatchUpdate = useCallback(async (updates: { estado?: string; confirmado?: boolean }) => {
     if (!trimestre || selectedSlots.size === 0) return;
@@ -319,7 +353,7 @@ export function OperacionPageClient() {
       if (!result.ok) throw new Error(result.error);
       toast.success(`${result.data.updated} slots actualizados`);
       setSelectedSlots(new Set());
-      await cargarDatos();
+      await cargarDatos(true);  // Preserve selected week
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Error al actualizar slots";
       toast.error(msg);
@@ -372,7 +406,7 @@ export function OperacionPageClient() {
       toast.success(`${result.data.actualizados} slots actualizados`);
       setShowImportModal(false);
       setImportResult(null);
-      await cargarDatos();
+      await cargarDatos(true);  // Preserve selected week
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Error al importar";
       toast.error(msg);
@@ -760,63 +794,143 @@ export function OperacionPageClient() {
         />
       )}
 
-      {/* Warning Modal for restriction violations */}
-      {warningModal && (
+      {/* Unified Assignment Modal - handles warnings and/or motivo selection */}
+      {assignModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            {/* Header */}
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Advertencias de asignación
+              {assignModal.type === "motivo_only"
+                ? "¿Por qué se cambia la empresa?"
+                : "Confirmar asignación"}
             </h3>
+
+            {/* Description */}
             <p className="text-sm text-slate-600 mb-4">
-              Asignar <strong>{warningModal.empresaNombre}</strong> a este slot genera las siguientes advertencias:
+              {assignModal.type === "motivo_only" ? (
+                <>Cambiar a <strong>{assignModal.empresaNombre}</strong>. Selecciona el motivo del cambio.</>
+              ) : (
+                <>Asignar <strong>{assignModal.empresaNombre}</strong> a este slot.</>
+              )}
             </p>
-            <div className="space-y-2 mb-6">
-              {warningModal.restriccionesVioladas.map((w, i) => (
-                <div key={i} className="flex items-start gap-2 p-2 bg-red-50 rounded border border-red-200">
-                  <span className="text-red-500 shrink-0">⚠️</span>
-                  <span className="text-sm text-red-700">{w}</span>
-                </div>
-              ))}
-              {warningModal.warnings
-                .filter(w => !warningModal.restriccionesVioladas.includes(w))
-                .map((w, i) => (
-                  <div key={i} className="flex items-start gap-2 p-2 bg-amber-50 rounded border border-amber-200">
-                    <span className="text-amber-500 shrink-0">⚡</span>
-                    <span className="text-sm text-amber-700">{w}</span>
+
+            {/* Warnings Section (shown for warning_only and warning_with_motivo) */}
+            {(assignModal.type === "warning_only" || assignModal.type === "warning_with_motivo") && (
+              <div className="space-y-3 mb-4">
+                {/* Hard constraints (red) */}
+                {assignModal.restriccionesVioladas.length > 0 && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                    <h4 className="text-sm font-semibold text-red-800 mb-2">Restricciones duras</h4>
+                    <ul className="space-y-1.5">
+                      {assignModal.restriccionesVioladas.map((w, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm text-red-700">
+                          <span className="shrink-0">🔴</span>
+                          <span>{w}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                ))}
-            </div>
+                )}
+                {/* Soft constraints (yellow) */}
+                {assignModal.warnings.filter(w => !assignModal.restriccionesVioladas.includes(w)).length > 0 && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+                    <h4 className="text-sm font-semibold text-amber-800 mb-2">Preferencias no cumplidas</h4>
+                    <ul className="space-y-1.5">
+                      {assignModal.warnings
+                        .filter(w => !assignModal.restriccionesVioladas.includes(w))
+                        .map((w, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-amber-700">
+                            <span className="shrink-0">🟡</span>
+                            <span>{w}</span>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Motivo Selector (shown for motivo_only and warning_with_motivo) */}
+            {(assignModal.type === "motivo_only" || assignModal.type === "warning_with_motivo") && (
+              <div className="mb-6">
+                {assignModal.type === "warning_with_motivo" && (
+                  <p className="text-sm text-slate-600 mb-3">Selecciona el motivo del cambio:</p>
+                )}
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setSelectedMotivo("EMPRESA_CANCELO")}
+                    className={`w-full flex items-center gap-3 p-3 border-2 rounded-lg transition-colors text-left ${
+                      selectedMotivo === "EMPRESA_CANCELO"
+                        ? "border-red-400 bg-red-50"
+                        : "border-slate-200 hover:border-red-300 hover:bg-red-50"
+                    }`}
+                  >
+                    <span className="text-xl">🏢</span>
+                    <div>
+                      <div className="font-medium text-slate-900">La empresa canceló</div>
+                      <div className="text-xs text-slate-500">Afecta la fiabilidad de la empresa original</div>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => setSelectedMotivo("DECISION_PLANIFICADOR")}
+                    className={`w-full flex items-center gap-3 p-3 border-2 rounded-lg transition-colors text-left ${
+                      selectedMotivo === "DECISION_PLANIFICADOR"
+                        ? "border-blue-400 bg-blue-50"
+                        : "border-slate-200 hover:border-blue-300 hover:bg-blue-50"
+                    }`}
+                  >
+                    <span className="text-xl">📋</span>
+                    <div>
+                      <div className="font-medium text-slate-900">Decisión del planificador</div>
+                      <div className="text-xs text-slate-500">No afecta la fiabilidad de la empresa original</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
             <div className="flex gap-3 justify-end">
               <button
-                onClick={() => setWarningModal(null)}
-                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+                onClick={() => { setAssignModal(null); setSelectedMotivo(null); }}
+                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50"
               >
                 Cancelar
               </button>
               <button
-                onClick={handleConfirmWithWarnings}
-                className="px-4 py-2 text-sm bg-amber-500 text-white rounded hover:bg-amber-600"
+                onClick={handleConfirmAssignment}
+                disabled={
+                  (assignModal.type === "motivo_only" || assignModal.type === "warning_with_motivo") &&
+                  !selectedMotivo
+                }
+                className={`px-4 py-2 text-sm text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  assignModal.warnings.length > 0
+                    ? assignModal.restriccionesVioladas.length > 0
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-amber-500 hover:bg-amber-600"
+                    : "bg-blue-500 hover:bg-blue-600"
+                }`}
               >
-                Asignar de todos modos
+                {assignModal.warnings.length > 0 ? "Asignar de todos modos" : "Confirmar cambio"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Motivo cambio Modal */}
-      {motivoModal && (
+      {/* Cancel Slot Modal (separate from reassignment) */}
+      {cancelModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              {motivoModal.action === "cancel" ? "¿Por qué se cancela?" : "¿Por qué se cambia la empresa?"}
+              ¿Por qué se cancela?
             </h3>
             <p className="text-sm text-slate-600 mb-6">
               Selecciona el motivo para mantener un registro correcto de los cambios.
             </p>
             <div className="space-y-3 mb-6">
               <button
-                onClick={() => handleConfirmMotivo("EMPRESA_CANCELO")}
+                onClick={() => handleConfirmCancel("EMPRESA_CANCELO")}
                 className="w-full flex items-center gap-3 p-4 border-2 border-slate-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition-colors text-left"
               >
                 <span className="text-2xl">🏢</span>
@@ -826,7 +940,7 @@ export function OperacionPageClient() {
                 </div>
               </button>
               <button
-                onClick={() => handleConfirmMotivo("DECISION_PLANIFICADOR")}
+                onClick={() => handleConfirmCancel("DECISION_PLANIFICADOR")}
                 className="w-full flex items-center gap-3 p-4 border-2 border-slate-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
               >
                 <span className="text-2xl">📋</span>
@@ -838,7 +952,7 @@ export function OperacionPageClient() {
             </div>
             <div className="flex justify-end">
               <button
-                onClick={() => setMotivoModal(null)}
+                onClick={() => setCancelModal(null)}
                 className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
               >
                 Cancelar
