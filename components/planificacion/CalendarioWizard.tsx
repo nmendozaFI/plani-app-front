@@ -9,6 +9,7 @@ import {
 } from "@/actions/calendario-actions";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
 import type { CalendarioOutput, SlotCalendario, ImportarExcelResult } from "@/lib/api";
+import { apiFetchBlob } from "@/lib/api-client";
 import { WarningsPanel } from "./WarningsPanel";
 
 // ── Constants ────────────────────────────────────────────────
@@ -117,10 +118,7 @@ export function CalendarioWizard() {
 
   const handleExport = useCallback(async () => {
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      const res = await fetch(`${API}/api/calendario/${trimestre}/exportar-excel`, { method: "POST" });
-      if (!res.ok) throw new Error("Error al exportar");
-      const blob = await res.blob();
+      const blob = await apiFetchBlob(`/api/calendario/${trimestre}/exportar-excel`, { method: "POST" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `calendario_${trimestre}.xlsx`;

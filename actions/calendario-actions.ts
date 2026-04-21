@@ -11,6 +11,7 @@ import {
   cerrarTrimestre,
   importarExcelCalendario,
 } from "@/lib/api";
+import { apiFetchServer } from "@/lib/api-client";
 import type {
   CalendarioOutput,
   SlotCalendario,
@@ -168,15 +169,10 @@ export interface RecalcularScoresResult {
 
 export async function actionRecalcularScores(): Promise<ActionResult<RecalcularScoresResult>> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/calendario/recalcular-scores`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!response.ok) {
-      const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.detail || `Error ${response.status}`);
-    }
-    const data = await response.json();
+    const data = await apiFetchServer<RecalcularScoresResult>(
+      "/api/calendario/recalcular-scores",
+      { method: "POST" }
+    );
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al recalcular scores";

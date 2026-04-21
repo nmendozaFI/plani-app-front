@@ -25,8 +25,7 @@ import type {
   ConfigBatchUpdateItem,
   ImportarConfigExcelResult,
 } from "@/types/config-trimestral";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { apiFetchBlob } from "@/lib/api-client";
 const DIAS_SEMANA = ["L", "M", "X", "J", "V"];
 
 export default function ConfigTrimestralPage() {
@@ -227,9 +226,7 @@ export default function ConfigTrimestralPage() {
   const handleExport = useCallback(async () => {
     if (!trimestre) return;
     try {
-      const response = await fetch(`${API_URL}/api/config-trimestral/${trimestre}/exportar-excel`);
-      if (!response.ok) throw new Error("Error exportando");
-      const blob = await response.blob();
+      const blob = await apiFetchBlob(`/api/config-trimestral/${trimestre}/exportar-excel`);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;

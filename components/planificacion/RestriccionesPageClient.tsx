@@ -4,6 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import { RestriccionesCrud } from "./RestriccionesCrud";
 import type { Restriccion } from "@/actions/restricciones-actions";
+import { apiUpload } from "@/lib/api-client";
 
 // ── Props ────────────────────────────────────────────────────
 
@@ -71,21 +72,14 @@ export function RestriccionesPageClient({ empresas, restricciones, talleres }: P
 
     setImportando(true);
     try {
-      const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`${API}/api/restricciones/importar`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.detail || `Error ${res.status}`);
-      }
-
-      const result = await res.json();
+      const result = await apiUpload<{
+        creadas: number;
+        actualizadas?: number;
+        errores?: string[];
+      }>("/api/restricciones/importar", formData);
       toast.success(
         `Importadas ${result.creadas} restricciones` +
         (result.actualizadas ? `, ${result.actualizadas} actualizadas` : "") +

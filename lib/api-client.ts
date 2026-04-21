@@ -1,11 +1,30 @@
 /**
  * Shared API fetch utilities for communicating with the FastAPI backend.
  * Consolidates duplicate apiFetch implementations from lib/api.ts and action files.
+ *
+ * CORS Strategy:
+ * - Client-side: Use relative paths (/api/...) → Next.js rewrites proxy to backend
+ * - Server-side: Use direct URL (API_URL env var) → no CORS issues in SSR
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+// Server-side direct URL (used in server actions/components)
+const API_BASE_SERVER = process.env.API_URL || "http://127.0.0.1:8000";
 
-export { API_BASE };
+// Client-side uses relative paths to go through Next.js proxy (avoids CORS)
+const API_BASE_CLIENT = "";
+
+/**
+ * Get the appropriate API base URL depending on environment.
+ * Client-side returns empty string (relative /api paths).
+ * Server-side returns direct backend URL.
+ */
+function getApiBase(): string {
+  return typeof window === "undefined" ? API_BASE_SERVER : API_BASE_CLIENT;
+}
+
+// Legacy export for any code that imports API_BASE directly
+// Prefer using the fetch functions which handle this automatically
+export const API_BASE = API_BASE_SERVER;
 
 /**
  * Client-side API fetch with JSON handling and error extraction.
@@ -15,7 +34,7 @@ export async function apiFetch<T>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
-  const url = `${API_BASE}${path}`;
+  const url = `${getApiBase()}${path}`;
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -42,7 +61,8 @@ export async function apiFetchServer<T>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, {
+  // Server actions always use direct URL (no CORS in SSR)
+  const res = await fetch(`${API_BASE_SERVER}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -67,7 +87,7 @@ export async function apiFetchBlob(
   path: string,
   options?: RequestInit
 ): Promise<Blob> {
-  const url = `${API_BASE}${path}`;
+  const url = `${getApiBase()}${path}`;
   const res = await fetch(url, options);
   if (!res.ok) throw new Error("Error al descargar archivo");
   return res.blob();
@@ -80,7 +100,7 @@ export async function apiUpload<T>(
   path: string,
   formData: FormData
 ): Promise<T> {
-  const url = `${API_BASE}${path}`;
+  const url = `${getApiBase()}${path}`;
   const res = await fetch(url, {
     method: "POST",
     body: formData,
