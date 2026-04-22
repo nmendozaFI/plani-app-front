@@ -83,6 +83,7 @@ model Empresa {
   tieneBolsa         Boolean            @default(false)
   turnoPreferido     String?
   activa             Boolean            @default(true)
+  esNueva            Boolean            @default(false)
   notas              String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt

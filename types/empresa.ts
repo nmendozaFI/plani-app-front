@@ -19,6 +19,7 @@ export interface Empresa {
   tieneBolsa: boolean;
   turnoPreferido: string | null;
   activa: boolean;
+  esNueva: boolean;
   notas: string | null;
 }
 
@@ -44,6 +45,7 @@ export interface EmpresaCreateInput {
   prioridadReduccion?: string;
   tieneBolsa?: boolean;
   turnoPreferido?: string | null;
+  esNueva?: boolean;
   notas?: string | null;
 }
 
@@ -62,6 +64,7 @@ export interface EmpresaUpdateInput {
   prioridadReduccion?: string;
   tieneBolsa?: boolean;
   turnoPreferido?: string | null;
+  esNueva?: boolean;
   notas?: string | null;
 }
 

@@ -1865,6 +1865,7 @@ export const EmpresaScalarFieldEnum = {
   tieneBolsa: 'tieneBolsa',
   turnoPreferido: 'turnoPreferido',
   activa: 'activa',
+  esNueva: 'esNueva',
   notas: 'notas',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

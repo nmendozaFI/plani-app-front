@@ -434,6 +434,14 @@ export function EmpresasPageClient() {
                                 💼
                               </span>
                             )}
+                            {emp.esNueva && (
+                              <span
+                                className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-bold text-amber-700"
+                                title="Empresa nueva (reducción 50% primer año)"
+                              >
+                                NEW
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td
@@ -599,6 +607,7 @@ function EmpresaDetalle({
           />
           <DetailField label="Bolsa" value={emp.tieneBolsa ? "Sí" : "No"} />
           <DetailField label="Score V3" value={emp.scoreV3.toFixed(2)} />
+          <DetailField label="Es nueva" value={emp.esNueva ? "Sí" : "No"} />
         </div>
 
         {emp.notas && (
@@ -736,6 +745,7 @@ function EmpresaForm({
     prioridadReduccion: initial?.prioridadReduccion || "MEDIA",
     tieneBolsa: initial?.tieneBolsa ?? false,
     turnoPreferido: initial?.turnoPreferido || "",
+    esNueva: initial?.esNueva ?? false,
     notas: initial?.notas || "",
   });
 
@@ -760,6 +770,7 @@ function EmpresaForm({
       prioridadReduccion: form.prioridadReduccion,
       tieneBolsa: form.tieneBolsa,
       turnoPreferido: form.turnoPreferido || null,
+      esNueva: form.esNueva,
       notas: form.notas || null,
     };
     onSubmit(data);
@@ -889,6 +900,16 @@ function EmpresaForm({
               className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-500"
             />
           </FormField>
+        </div>
+
+        {/* Row: Nueva */}
+        <div className="grid gap-4 sm:grid-cols-4">
+          <CheckboxField
+            label="Es nueva"
+            checked={form.esNueva}
+            onChange={(v) => set("esNueva", v)}
+            hint="Empresa incorporada recientemente (reducción 50% primer año)"
+          />
         </div>
 
         {/* Notas */}
