@@ -237,6 +237,7 @@ export const RestriccionScalarFieldEnum = {
   tipo: 'tipo',
   clave: 'clave',
   valor: 'valor',
+  tallerId: 'tallerId',
   descripcion: 'descripcion',
   createdAt: 'createdAt'
 } as const

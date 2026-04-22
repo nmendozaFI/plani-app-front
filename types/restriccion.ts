@@ -13,6 +13,8 @@ export interface Restriccion {
   tipo: RestriccionTipo;
   clave: RestriccionClave;
   valor: string;
+  taller_id: number | null;
+  taller_nombre_ref: string | null;
   descripcion: string | null;
 }
 
@@ -20,6 +22,7 @@ export interface RestriccionInput {
   tipo: RestriccionTipo;
   clave: RestriccionClave;
   valor: string;
+  taller_id?: number | null;
   descripcion?: string;
 }
 

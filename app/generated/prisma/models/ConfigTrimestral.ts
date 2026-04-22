@@ -668,14 +668,6 @@ export type ConfigTrimestralUncheckedUpdateManyWithoutEmpresaNestedInput = {
   deleteMany?: Prisma.ConfigTrimestralScalarWhereInput | Prisma.ConfigTrimestralScalarWhereInput[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ConfigTrimestralCreateNestedOneWithoutFrecuenciasInput = {
   create?: Prisma.XOR<Prisma.ConfigTrimestralCreateWithoutFrecuenciasInput, Prisma.ConfigTrimestralUncheckedCreateWithoutFrecuenciasInput>
   connectOrCreate?: Prisma.ConfigTrimestralCreateOrConnectWithoutFrecuenciasInput

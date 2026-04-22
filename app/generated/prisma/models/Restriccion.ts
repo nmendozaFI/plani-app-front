@@ -29,11 +29,13 @@ export type AggregateRestriccion = {
 export type RestriccionAvgAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  tallerId: number | null
 }
 
 export type RestriccionSumAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  tallerId: number | null
 }
 
 export type RestriccionMinAggregateOutputType = {
@@ -42,6 +44,7 @@ export type RestriccionMinAggregateOutputType = {
   tipo: $Enums.TipoRestriccion | null
   clave: string | null
   valor: string | null
+  tallerId: number | null
   descripcion: string | null
   createdAt: Date | null
 }
@@ -52,6 +55,7 @@ export type RestriccionMaxAggregateOutputType = {
   tipo: $Enums.TipoRestriccion | null
   clave: string | null
   valor: string | null
+  tallerId: number | null
   descripcion: string | null
   createdAt: Date | null
 }
@@ -62,6 +66,7 @@ export type RestriccionCountAggregateOutputType = {
   tipo: number
   clave: number
   valor: number
+  tallerId: number
   descripcion: number
   createdAt: number
   _all: number
@@ -71,11 +76,13 @@ export type RestriccionCountAggregateOutputType = {
 export type RestriccionAvgAggregateInputType = {
   id?: true
   empresaId?: true
+  tallerId?: true
 }
 
 export type RestriccionSumAggregateInputType = {
   id?: true
   empresaId?: true
+  tallerId?: true
 }
 
 export type RestriccionMinAggregateInputType = {
@@ -84,6 +91,7 @@ export type RestriccionMinAggregateInputType = {
   tipo?: true
   clave?: true
   valor?: true
+  tallerId?: true
   descripcion?: true
   createdAt?: true
 }
@@ -94,6 +102,7 @@ export type RestriccionMaxAggregateInputType = {
   tipo?: true
   clave?: true
   valor?: true
+  tallerId?: true
   descripcion?: true
   createdAt?: true
 }
@@ -104,6 +113,7 @@ export type RestriccionCountAggregateInputType = {
   tipo?: true
   clave?: true
   valor?: true
+  tallerId?: true
   descripcion?: true
   createdAt?: true
   _all?: true
@@ -201,6 +211,7 @@ export type RestriccionGroupByOutputType = {
   tipo: $Enums.TipoRestriccion
   clave: string
   valor: string
+  tallerId: number | null
   descripcion: string | null
   createdAt: Date
   _count: RestriccionCountAggregateOutputType | null
@@ -234,9 +245,11 @@ export type RestriccionWhereInput = {
   tipo?: Prisma.EnumTipoRestriccionFilter<"Restriccion"> | $Enums.TipoRestriccion
   clave?: Prisma.StringFilter<"Restriccion"> | string
   valor?: Prisma.StringFilter<"Restriccion"> | string
+  tallerId?: Prisma.IntNullableFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restriccion"> | Date | string
   empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
+  taller?: Prisma.XOR<Prisma.TallerNullableScalarRelationFilter, Prisma.TallerWhereInput> | null
 }
 
 export type RestriccionOrderByWithRelationInput = {
@@ -245,9 +258,11 @@ export type RestriccionOrderByWithRelationInput = {
   tipo?: Prisma.SortOrder
   clave?: Prisma.SortOrder
   valor?: Prisma.SortOrder
+  tallerId?: Prisma.SortOrderInput | Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   empresa?: Prisma.EmpresaOrderByWithRelationInput
+  taller?: Prisma.TallerOrderByWithRelationInput
 }
 
 export type RestriccionWhereUniqueInput = Prisma.AtLeast<{
@@ -259,9 +274,11 @@ export type RestriccionWhereUniqueInput = Prisma.AtLeast<{
   tipo?: Prisma.EnumTipoRestriccionFilter<"Restriccion"> | $Enums.TipoRestriccion
   clave?: Prisma.StringFilter<"Restriccion"> | string
   valor?: Prisma.StringFilter<"Restriccion"> | string
+  tallerId?: Prisma.IntNullableFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restriccion"> | Date | string
   empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
+  taller?: Prisma.XOR<Prisma.TallerNullableScalarRelationFilter, Prisma.TallerWhereInput> | null
 }, "id">
 
 export type RestriccionOrderByWithAggregationInput = {
@@ -270,6 +287,7 @@ export type RestriccionOrderByWithAggregationInput = {
   tipo?: Prisma.SortOrder
   clave?: Prisma.SortOrder
   valor?: Prisma.SortOrder
+  tallerId?: Prisma.SortOrderInput | Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.RestriccionCountOrderByAggregateInput
@@ -288,6 +306,7 @@ export type RestriccionScalarWhereWithAggregatesInput = {
   tipo?: Prisma.EnumTipoRestriccionWithAggregatesFilter<"Restriccion"> | $Enums.TipoRestriccion
   clave?: Prisma.StringWithAggregatesFilter<"Restriccion"> | string
   valor?: Prisma.StringWithAggregatesFilter<"Restriccion"> | string
+  tallerId?: Prisma.IntNullableWithAggregatesFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableWithAggregatesFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Restriccion"> | Date | string
 }
@@ -299,6 +318,7 @@ export type RestriccionCreateInput = {
   descripcion?: string | null
   createdAt?: Date | string
   empresa: Prisma.EmpresaCreateNestedOneWithoutRestriccionesInput
+  taller?: Prisma.TallerCreateNestedOneWithoutRestriccionesInput
 }
 
 export type RestriccionUncheckedCreateInput = {
@@ -307,6 +327,7 @@ export type RestriccionUncheckedCreateInput = {
   tipo: $Enums.TipoRestriccion
   clave: string
   valor: string
+  tallerId?: number | null
   descripcion?: string | null
   createdAt?: Date | string
 }
@@ -318,6 +339,7 @@ export type RestriccionUpdateInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   empresa?: Prisma.EmpresaUpdateOneRequiredWithoutRestriccionesNestedInput
+  taller?: Prisma.TallerUpdateOneWithoutRestriccionesNestedInput
 }
 
 export type RestriccionUncheckedUpdateInput = {
@@ -326,6 +348,7 @@ export type RestriccionUncheckedUpdateInput = {
   tipo?: Prisma.EnumTipoRestriccionFieldUpdateOperationsInput | $Enums.TipoRestriccion
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
+  tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -336,6 +359,7 @@ export type RestriccionCreateManyInput = {
   tipo: $Enums.TipoRestriccion
   clave: string
   valor: string
+  tallerId?: number | null
   descripcion?: string | null
   createdAt?: Date | string
 }
@@ -354,6 +378,7 @@ export type RestriccionUncheckedUpdateManyInput = {
   tipo?: Prisma.EnumTipoRestriccionFieldUpdateOperationsInput | $Enums.TipoRestriccion
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
+  tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -374,6 +399,7 @@ export type RestriccionCountOrderByAggregateInput = {
   tipo?: Prisma.SortOrder
   clave?: Prisma.SortOrder
   valor?: Prisma.SortOrder
+  tallerId?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -381,6 +407,7 @@ export type RestriccionCountOrderByAggregateInput = {
 export type RestriccionAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  tallerId?: Prisma.SortOrder
 }
 
 export type RestriccionMaxOrderByAggregateInput = {
@@ -389,6 +416,7 @@ export type RestriccionMaxOrderByAggregateInput = {
   tipo?: Prisma.SortOrder
   clave?: Prisma.SortOrder
   valor?: Prisma.SortOrder
+  tallerId?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -399,6 +427,7 @@ export type RestriccionMinOrderByAggregateInput = {
   tipo?: Prisma.SortOrder
   clave?: Prisma.SortOrder
   valor?: Prisma.SortOrder
+  tallerId?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -406,6 +435,7 @@ export type RestriccionMinOrderByAggregateInput = {
 export type RestriccionSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  tallerId?: Prisma.SortOrder
 }
 
 export type RestriccionCreateNestedManyWithoutEmpresaInput = {
@@ -450,8 +480,58 @@ export type RestriccionUncheckedUpdateManyWithoutEmpresaNestedInput = {
   deleteMany?: Prisma.RestriccionScalarWhereInput | Prisma.RestriccionScalarWhereInput[]
 }
 
+export type RestriccionCreateNestedManyWithoutTallerInput = {
+  create?: Prisma.XOR<Prisma.RestriccionCreateWithoutTallerInput, Prisma.RestriccionUncheckedCreateWithoutTallerInput> | Prisma.RestriccionCreateWithoutTallerInput[] | Prisma.RestriccionUncheckedCreateWithoutTallerInput[]
+  connectOrCreate?: Prisma.RestriccionCreateOrConnectWithoutTallerInput | Prisma.RestriccionCreateOrConnectWithoutTallerInput[]
+  createMany?: Prisma.RestriccionCreateManyTallerInputEnvelope
+  connect?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+}
+
+export type RestriccionUncheckedCreateNestedManyWithoutTallerInput = {
+  create?: Prisma.XOR<Prisma.RestriccionCreateWithoutTallerInput, Prisma.RestriccionUncheckedCreateWithoutTallerInput> | Prisma.RestriccionCreateWithoutTallerInput[] | Prisma.RestriccionUncheckedCreateWithoutTallerInput[]
+  connectOrCreate?: Prisma.RestriccionCreateOrConnectWithoutTallerInput | Prisma.RestriccionCreateOrConnectWithoutTallerInput[]
+  createMany?: Prisma.RestriccionCreateManyTallerInputEnvelope
+  connect?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+}
+
+export type RestriccionUpdateManyWithoutTallerNestedInput = {
+  create?: Prisma.XOR<Prisma.RestriccionCreateWithoutTallerInput, Prisma.RestriccionUncheckedCreateWithoutTallerInput> | Prisma.RestriccionCreateWithoutTallerInput[] | Prisma.RestriccionUncheckedCreateWithoutTallerInput[]
+  connectOrCreate?: Prisma.RestriccionCreateOrConnectWithoutTallerInput | Prisma.RestriccionCreateOrConnectWithoutTallerInput[]
+  upsert?: Prisma.RestriccionUpsertWithWhereUniqueWithoutTallerInput | Prisma.RestriccionUpsertWithWhereUniqueWithoutTallerInput[]
+  createMany?: Prisma.RestriccionCreateManyTallerInputEnvelope
+  set?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  disconnect?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  delete?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  connect?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  update?: Prisma.RestriccionUpdateWithWhereUniqueWithoutTallerInput | Prisma.RestriccionUpdateWithWhereUniqueWithoutTallerInput[]
+  updateMany?: Prisma.RestriccionUpdateManyWithWhereWithoutTallerInput | Prisma.RestriccionUpdateManyWithWhereWithoutTallerInput[]
+  deleteMany?: Prisma.RestriccionScalarWhereInput | Prisma.RestriccionScalarWhereInput[]
+}
+
+export type RestriccionUncheckedUpdateManyWithoutTallerNestedInput = {
+  create?: Prisma.XOR<Prisma.RestriccionCreateWithoutTallerInput, Prisma.RestriccionUncheckedCreateWithoutTallerInput> | Prisma.RestriccionCreateWithoutTallerInput[] | Prisma.RestriccionUncheckedCreateWithoutTallerInput[]
+  connectOrCreate?: Prisma.RestriccionCreateOrConnectWithoutTallerInput | Prisma.RestriccionCreateOrConnectWithoutTallerInput[]
+  upsert?: Prisma.RestriccionUpsertWithWhereUniqueWithoutTallerInput | Prisma.RestriccionUpsertWithWhereUniqueWithoutTallerInput[]
+  createMany?: Prisma.RestriccionCreateManyTallerInputEnvelope
+  set?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  disconnect?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  delete?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  connect?: Prisma.RestriccionWhereUniqueInput | Prisma.RestriccionWhereUniqueInput[]
+  update?: Prisma.RestriccionUpdateWithWhereUniqueWithoutTallerInput | Prisma.RestriccionUpdateWithWhereUniqueWithoutTallerInput[]
+  updateMany?: Prisma.RestriccionUpdateManyWithWhereWithoutTallerInput | Prisma.RestriccionUpdateManyWithWhereWithoutTallerInput[]
+  deleteMany?: Prisma.RestriccionScalarWhereInput | Prisma.RestriccionScalarWhereInput[]
+}
+
 export type EnumTipoRestriccionFieldUpdateOperationsInput = {
   set?: $Enums.TipoRestriccion
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type RestriccionCreateWithoutEmpresaInput = {
@@ -460,6 +540,7 @@ export type RestriccionCreateWithoutEmpresaInput = {
   valor: string
   descripcion?: string | null
   createdAt?: Date | string
+  taller?: Prisma.TallerCreateNestedOneWithoutRestriccionesInput
 }
 
 export type RestriccionUncheckedCreateWithoutEmpresaInput = {
@@ -467,6 +548,7 @@ export type RestriccionUncheckedCreateWithoutEmpresaInput = {
   tipo: $Enums.TipoRestriccion
   clave: string
   valor: string
+  tallerId?: number | null
   descripcion?: string | null
   createdAt?: Date | string
 }
@@ -506,8 +588,54 @@ export type RestriccionScalarWhereInput = {
   tipo?: Prisma.EnumTipoRestriccionFilter<"Restriccion"> | $Enums.TipoRestriccion
   clave?: Prisma.StringFilter<"Restriccion"> | string
   valor?: Prisma.StringFilter<"Restriccion"> | string
+  tallerId?: Prisma.IntNullableFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restriccion"> | Date | string
+}
+
+export type RestriccionCreateWithoutTallerInput = {
+  tipo: $Enums.TipoRestriccion
+  clave: string
+  valor: string
+  descripcion?: string | null
+  createdAt?: Date | string
+  empresa: Prisma.EmpresaCreateNestedOneWithoutRestriccionesInput
+}
+
+export type RestriccionUncheckedCreateWithoutTallerInput = {
+  id?: number
+  empresaId: number
+  tipo: $Enums.TipoRestriccion
+  clave: string
+  valor: string
+  descripcion?: string | null
+  createdAt?: Date | string
+}
+
+export type RestriccionCreateOrConnectWithoutTallerInput = {
+  where: Prisma.RestriccionWhereUniqueInput
+  create: Prisma.XOR<Prisma.RestriccionCreateWithoutTallerInput, Prisma.RestriccionUncheckedCreateWithoutTallerInput>
+}
+
+export type RestriccionCreateManyTallerInputEnvelope = {
+  data: Prisma.RestriccionCreateManyTallerInput | Prisma.RestriccionCreateManyTallerInput[]
+  skipDuplicates?: boolean
+}
+
+export type RestriccionUpsertWithWhereUniqueWithoutTallerInput = {
+  where: Prisma.RestriccionWhereUniqueInput
+  update: Prisma.XOR<Prisma.RestriccionUpdateWithoutTallerInput, Prisma.RestriccionUncheckedUpdateWithoutTallerInput>
+  create: Prisma.XOR<Prisma.RestriccionCreateWithoutTallerInput, Prisma.RestriccionUncheckedCreateWithoutTallerInput>
+}
+
+export type RestriccionUpdateWithWhereUniqueWithoutTallerInput = {
+  where: Prisma.RestriccionWhereUniqueInput
+  data: Prisma.XOR<Prisma.RestriccionUpdateWithoutTallerInput, Prisma.RestriccionUncheckedUpdateWithoutTallerInput>
+}
+
+export type RestriccionUpdateManyWithWhereWithoutTallerInput = {
+  where: Prisma.RestriccionScalarWhereInput
+  data: Prisma.XOR<Prisma.RestriccionUpdateManyMutationInput, Prisma.RestriccionUncheckedUpdateManyWithoutTallerInput>
 }
 
 export type RestriccionCreateManyEmpresaInput = {
@@ -515,6 +643,7 @@ export type RestriccionCreateManyEmpresaInput = {
   tipo: $Enums.TipoRestriccion
   clave: string
   valor: string
+  tallerId?: number | null
   descripcion?: string | null
   createdAt?: Date | string
 }
@@ -525,6 +654,7 @@ export type RestriccionUpdateWithoutEmpresaInput = {
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  taller?: Prisma.TallerUpdateOneWithoutRestriccionesNestedInput
 }
 
 export type RestriccionUncheckedUpdateWithoutEmpresaInput = {
@@ -532,12 +662,53 @@ export type RestriccionUncheckedUpdateWithoutEmpresaInput = {
   tipo?: Prisma.EnumTipoRestriccionFieldUpdateOperationsInput | $Enums.TipoRestriccion
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
+  tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type RestriccionUncheckedUpdateManyWithoutEmpresaInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  tipo?: Prisma.EnumTipoRestriccionFieldUpdateOperationsInput | $Enums.TipoRestriccion
+  clave?: Prisma.StringFieldUpdateOperationsInput | string
+  valor?: Prisma.StringFieldUpdateOperationsInput | string
+  tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RestriccionCreateManyTallerInput = {
+  id?: number
+  empresaId: number
+  tipo: $Enums.TipoRestriccion
+  clave: string
+  valor: string
+  descripcion?: string | null
+  createdAt?: Date | string
+}
+
+export type RestriccionUpdateWithoutTallerInput = {
+  tipo?: Prisma.EnumTipoRestriccionFieldUpdateOperationsInput | $Enums.TipoRestriccion
+  clave?: Prisma.StringFieldUpdateOperationsInput | string
+  valor?: Prisma.StringFieldUpdateOperationsInput | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  empresa?: Prisma.EmpresaUpdateOneRequiredWithoutRestriccionesNestedInput
+}
+
+export type RestriccionUncheckedUpdateWithoutTallerInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
+  tipo?: Prisma.EnumTipoRestriccionFieldUpdateOperationsInput | $Enums.TipoRestriccion
+  clave?: Prisma.StringFieldUpdateOperationsInput | string
+  valor?: Prisma.StringFieldUpdateOperationsInput | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RestriccionUncheckedUpdateManyWithoutTallerInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  empresaId?: Prisma.IntFieldUpdateOperationsInput | number
   tipo?: Prisma.EnumTipoRestriccionFieldUpdateOperationsInput | $Enums.TipoRestriccion
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
@@ -553,9 +724,11 @@ export type RestriccionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   tipo?: boolean
   clave?: boolean
   valor?: boolean
+  tallerId?: boolean
   descripcion?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
 }, ExtArgs["result"]["restriccion"]>
 
 export type RestriccionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -564,9 +737,11 @@ export type RestriccionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   tipo?: boolean
   clave?: boolean
   valor?: boolean
+  tallerId?: boolean
   descripcion?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
 }, ExtArgs["result"]["restriccion"]>
 
 export type RestriccionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -575,9 +750,11 @@ export type RestriccionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   tipo?: boolean
   clave?: boolean
   valor?: boolean
+  tallerId?: boolean
   descripcion?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
 }, ExtArgs["result"]["restriccion"]>
 
 export type RestriccionSelectScalar = {
@@ -586,25 +763,30 @@ export type RestriccionSelectScalar = {
   tipo?: boolean
   clave?: boolean
   valor?: boolean
+  tallerId?: boolean
   descripcion?: boolean
   createdAt?: boolean
 }
 
-export type RestriccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "tipo" | "clave" | "valor" | "descripcion" | "createdAt", ExtArgs["result"]["restriccion"]>
+export type RestriccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "tipo" | "clave" | "valor" | "tallerId" | "descripcion" | "createdAt", ExtArgs["result"]["restriccion"]>
 export type RestriccionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
 }
 export type RestriccionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
 }
 export type RestriccionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
+  taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
 }
 
 export type $RestriccionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Restriccion"
   objects: {
     empresa: Prisma.$EmpresaPayload<ExtArgs>
+    taller: Prisma.$TallerPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -612,6 +794,7 @@ export type $RestriccionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     tipo: $Enums.TipoRestriccion
     clave: string
     valor: string
+    tallerId: number | null
     descripcion: string | null
     createdAt: Date
   }, ExtArgs["result"]["restriccion"]>
@@ -1009,6 +1192,7 @@ readonly fields: RestriccionFieldRefs;
 export interface Prisma__RestriccionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   empresa<T extends Prisma.EmpresaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.EmpresaDefaultArgs<ExtArgs>>): Prisma.Prisma__EmpresaClient<runtime.Types.Result.GetResult<Prisma.$EmpresaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  taller<T extends Prisma.Restriccion$tallerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Restriccion$tallerArgs<ExtArgs>>): Prisma.Prisma__TallerClient<runtime.Types.Result.GetResult<Prisma.$TallerPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1043,6 +1227,7 @@ export interface RestriccionFieldRefs {
   readonly tipo: Prisma.FieldRef<"Restriccion", 'TipoRestriccion'>
   readonly clave: Prisma.FieldRef<"Restriccion", 'String'>
   readonly valor: Prisma.FieldRef<"Restriccion", 'String'>
+  readonly tallerId: Prisma.FieldRef<"Restriccion", 'Int'>
   readonly descripcion: Prisma.FieldRef<"Restriccion", 'String'>
   readonly createdAt: Prisma.FieldRef<"Restriccion", 'DateTime'>
 }
@@ -1438,6 +1623,25 @@ export type RestriccionDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Limit how many Restriccions to delete.
    */
   limit?: number
+}
+
+/**
+ * Restriccion.taller
+ */
+export type Restriccion$tallerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Taller
+   */
+  select?: Prisma.TallerSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Taller
+   */
+  omit?: Prisma.TallerOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TallerInclude<ExtArgs> | null
+  where?: Prisma.TallerWhereInput
 }
 
 /**

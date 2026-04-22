@@ -277,16 +277,6 @@ export type EnumTipoRestriccionFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumTipoRestriccionFilter<$PrismaModel> | $Enums.TipoRestriccion
 }
 
-export type EnumTipoRestriccionWithAggregatesFilter<$PrismaModel = never> = {
-  equals?: $Enums.TipoRestriccion | Prisma.EnumTipoRestriccionFieldRefInput<$PrismaModel>
-  in?: $Enums.TipoRestriccion[] | Prisma.ListEnumTipoRestriccionFieldRefInput<$PrismaModel>
-  notIn?: $Enums.TipoRestriccion[] | Prisma.ListEnumTipoRestriccionFieldRefInput<$PrismaModel>
-  not?: Prisma.NestedEnumTipoRestriccionWithAggregatesFilter<$PrismaModel> | $Enums.TipoRestriccion
-  _count?: Prisma.NestedIntFilter<$PrismaModel>
-  _min?: Prisma.NestedEnumTipoRestriccionFilter<$PrismaModel>
-  _max?: Prisma.NestedEnumTipoRestriccionFilter<$PrismaModel>
-}
-
 export type IntNullableFilter<$PrismaModel = never> = {
   equals?: number | Prisma.IntFieldRefInput<$PrismaModel> | null
   in?: number[] | Prisma.ListIntFieldRefInput<$PrismaModel> | null
@@ -296,6 +286,16 @@ export type IntNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
   gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
   not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null
+}
+
+export type EnumTipoRestriccionWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.TipoRestriccion | Prisma.EnumTipoRestriccionFieldRefInput<$PrismaModel>
+  in?: $Enums.TipoRestriccion[] | Prisma.ListEnumTipoRestriccionFieldRefInput<$PrismaModel>
+  notIn?: $Enums.TipoRestriccion[] | Prisma.ListEnumTipoRestriccionFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumTipoRestriccionWithAggregatesFilter<$PrismaModel> | $Enums.TipoRestriccion
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumTipoRestriccionFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumTipoRestriccionFilter<$PrismaModel>
 }
 
 export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {

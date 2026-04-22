@@ -112,6 +112,7 @@ model Taller {
   historico       HistoricoTaller[]
   planificaciones Planificacion[]
   extraSlots      SemanaExtraSlot[]
+  restricciones   Restriccion[]
 
   @@map("taller")
 }
@@ -122,14 +123,14 @@ model Taller {
 // Intensiva: EF afternoon OFF, IT afternoon moved to Wednesday morning
 model SemanaConfig {
   id        Int      @id @default(autoincrement())
-  anio      Int                          // 2026
-  semana    Int                          // 1-52 (ISO week number)
-  tipo      String   @default("normal")  // "normal" | "intensiva"
+  anio      Int // 2026
+  semana    Int // 1-52 (ISO week number)
+  tipo      String   @default("normal") // "normal" | "intensiva"
   notas     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  extras    SemanaExtraSlot[]
+  extras SemanaExtraSlot[]
 
   @@unique([anio, semana])
   @@index([anio])
@@ -141,14 +142,14 @@ model SemanaConfig {
 model SemanaExtraSlot {
   id             Int      @id @default(autoincrement())
   semanaConfigId Int
-  tallerId       Int               // References base taller from catalogue
-  diaSemana      String?           // Override day (null = use taller's default)
-  horario        String?           // Override horario (null = use taller's default)
+  tallerId       Int // References base taller from catalogue
+  diaSemana      String? // Override day (null = use taller's default)
+  horario        String? // Override horario (null = use taller's default)
   notas          String?
   createdAt      DateTime @default(now())
 
-  semanaConfig   SemanaConfig @relation(fields: [semanaConfigId], references: [id], onDelete: Cascade)
-  taller         Taller       @relation(fields: [tallerId], references: [id])
+  semanaConfig SemanaConfig @relation(fields: [semanaConfigId], references: [id], onDelete: Cascade)
+  taller       Taller       @relation(fields: [tallerId], references: [id])
 
   @@index([semanaConfigId])
   @@map("semana_extra_slot")
@@ -182,11 +183,14 @@ model Restriccion {
   tipo        TipoRestriccion
   clave       String
   valor       String
+  tallerId    Int?
   descripcion String?
   createdAt   DateTime        @default(now())
   empresa     Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  taller      Taller?         @relation(fields: [tallerId], references: [id])
 
   @@index([empresaId])
+  @@index([tallerId])
   @@map("restriccion")
 }
 
@@ -197,8 +201,8 @@ model ConfigTrimestral {
   tipoParticipacion      Programa     @default(AMBAS)
   escuelaPropia          Boolean      @default(false)
   frecuenciaSolicitada   Int?
-  frecuenciaEF           Int?         // Explicit EF workshops requested (from master import)
-  frecuenciaIT           Int?         // Explicit IT workshops requested (from master import)
+  frecuenciaEF           Int? // Explicit EF workshops requested (from master import)
+  frecuenciaIT           Int? // Explicit IT workshops requested (from master import)
   disponibilidadDias     String       @default("L,M,X,J,V")
   turnoPreferido         String?
   voluntariosDisponibles Int          @default(0)
@@ -219,16 +223,16 @@ model ConfigTrimestral {
 // El solver excluye solo los slots cuyo día coincide con un festivo
 model Festivo {
   id        Int      @id @default(autoincrement())
-  fecha     DateTime @db.Date            // the actual date (2026-04-02)
-  dia       String                        // day letter: L, M, X, J, V (derived from fecha)
-  trimestre String                        // which quarter this falls in (2026-Q2)
-  semana    Int                           // relative week within quarter (1-13)
-  motivo    String?                       // "Jueves Santo", "Navidad", etc.
+  fecha     DateTime @db.Date // the actual date (2026-04-02)
+  dia       String // day letter: L, M, X, J, V (derived from fecha)
+  trimestre String // which quarter this falls in (2026-Q2)
+  semana    Int // relative week within quarter (1-13)
+  motivo    String? // "Jueves Santo", "Navidad", etc.
   createdAt DateTime @default(now())
 
-  @@unique([fecha])                       // one entry per date
-  @@map("festivo")
+  @@unique([fecha]) // one entry per date
   @@index([trimestre])
+  @@map("festivo")
 }
 
 model Frecuencia {
@@ -254,14 +258,14 @@ model Frecuencia {
 
 model HistoricoTaller {
   id                Int          @id @default(autoincrement())
-  empresaId         Int          // Company that actually did the workshop (final)
-  empresaIdOriginal Int?         // Company originally assigned by solver (for traceability)
+  empresaId         Int // Company that actually did the workshop (final)
+  empresaIdOriginal Int? // Company originally assigned by solver (for traceability)
   tallerId          Int
   fecha             DateTime     @db.Date
   estado            EstadoTaller @default(OK)
   ciudad            String?
   trimestre         String?
-  motivoCambio      String?      // "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR" | null
+  motivoCambio      String? // "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR" | null
   createdAt         DateTime     @default(now())
   empresa           Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   taller            Taller       @relation(fields: [tallerId], references: [id], onDelete: Cascade)
@@ -278,8 +282,8 @@ model Planificacion {
   semana            Int
   dia               String
   turno             String?
-  empresaId         Int?           // nullable: null = vacancy (current company, may change during operation)
-  empresaIdOriginal Int?           // Company assigned by solver (NEVER changes after generation)
+  empresaId         Int? // nullable: null = vacancy (current company, may change during operation)
+  empresaIdOriginal Int? // Company assigned by solver (NEVER changes after generation)
   tallerId          Int
   ciudadId          Int?
   tipoAsignacion    TipoAsignacion @default(BASE)
@@ -291,7 +295,7 @@ model Planificacion {
   estado            String         @default("PLANIFICADO") // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
   confirmado        Boolean        @default(false)
   notas             String?
-  motivoCambio      String?        // "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR" | null (reason for company change)
+  motivoCambio      String? // "EMPRESA_CANCELO" | "DECISION_PLANIFICADOR" | null (reason for company change)
   ciudad            Ciudad?        @relation(fields: [ciudadId], references: [id])
   empresa           Empresa?       @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   taller            Taller         @relation(fields: [tallerId], references: [id], onDelete: Cascade)
@@ -360,8 +364,8 @@ enum TipoAsignacion {
 // Global application settings (singleton table with id=1)
 model AppSettings {
   id                 Int      @id @default(1)
-  trimestreActivo    String   // e.g., "2026-Q2" — the quarter being operated
-  trimestreSiguiente String?  // e.g., "2026-Q3" — the quarter being prepared (nullable)
+  trimestreActivo    String // e.g., "2026-Q2" — the quarter being operated
+  trimestreSiguiente String? // e.g., "2026-Q3" — the quarter being prepared (nullable)
   updatedAt          DateTime @updatedAt
 
   @@map("appSettings")

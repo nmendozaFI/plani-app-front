@@ -81,6 +81,7 @@ interface FormState {
   clave: string;
   tipo: "HARD" | "SOFT";
   valor: string;
+  taller_id: number | null;
   descripcion: string;
 }
 
@@ -88,6 +89,7 @@ const FORM_VACIO: FormState = {
   clave: "solo_dia",
   tipo: "HARD",
   valor: "",
+  taller_id: null,
   descripcion: "",
 };
 
@@ -107,15 +109,21 @@ function RestriccionForm({
   const [form, setForm] = useState<FormState>(initial);
 
   const claveMeta = CLAVES.find((c) => c.value === form.clave);
+  const isLegacySoloTaller =
+    form.clave === "solo_taller" &&
+    form.taller_id === null &&
+    form.valor.trim() !== "";
 
-  function set(field: keyof FormState, value: string) {
+  function set<K extends keyof FormState>(field: K, value: FormState[K]) {
     setForm((prev) => {
-      const next = { ...prev, [field]: value };
-      // Al cambiar clave, resetear valor y tipo por defecto
+      const next = { ...prev, [field]: value } as FormState;
+      // Al cambiar clave, resetear valor/taller_id y tipo por defecto
       if (field === "clave") {
         const meta = CLAVES.find((c) => c.value === value);
         next.tipo = meta?.tipo_default ?? "HARD";
-        next.valor = meta?.render_valor === "fixed" ? (meta as any).valor_fijo : "";
+        next.valor =
+          meta?.render_valor === "fixed" ? (meta as any).valor_fijo : "";
+        next.taller_id = null;
       }
       return next;
     });
@@ -144,32 +152,52 @@ function RestriccionForm({
 
     if (claveMeta.render_valor === "taller") {
       return (
-        <select
-          value={form.valor}
-          onChange={(e) => set("valor", e.target.value)}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          required
-        >
-          <option value="">Selecciona un taller...</option>
-          <optgroup label="EF">
-            {talleres
-              .filter((t) => t.programa === "EF")
-              .map((t) => (
-                <option key={t.id} value={t.nombre}>
-                  {t.nombre}
-                </option>
-              ))}
-          </optgroup>
-          <optgroup label="IT">
-            {talleres
-              .filter((t) => t.programa === "IT")
-              .map((t) => (
-                <option key={t.id} value={t.nombre}>
-                  {t.nombre}
-                </option>
-              ))}
-          </optgroup>
-        </select>
+        <div className="space-y-2">
+          <select
+            value={form.taller_id ?? ""}
+            onChange={(e) => {
+              const idStr = e.target.value;
+              if (!idStr) {
+                set("taller_id", null);
+                set("valor", "");
+                return;
+              }
+              const id = Number(idStr);
+              const t = talleres.find((tt) => tt.id === id);
+              set("taller_id", id);
+              set("valor", t?.nombre ?? "");
+            }}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            required
+          >
+            <option value="">Selecciona un taller...</option>
+            <optgroup label="EF">
+              {talleres
+                .filter((t) => t.programa === "EF")
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nombre}
+                  </option>
+                ))}
+            </optgroup>
+            <optgroup label="IT">
+              {talleres
+                .filter((t) => t.programa === "IT")
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nombre}
+                  </option>
+                ))}
+            </optgroup>
+          </select>
+          {isLegacySoloTaller && (
+            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+              ⚠ Esta restricción usa matching por nombre (formato legado:{" "}
+              <span className="font-mono">{form.valor}</span>). Selecciona un
+              taller del catálogo para migrarla.
+            </p>
+          )}
+        </div>
       );
     }
 
@@ -276,7 +304,8 @@ function RestriccionForm({
           onClick={() => onSubmit(form)}
           disabled={
             loading ||
-            (claveMeta?.render_valor !== "fixed" && !form.valor.trim())
+            (claveMeta?.render_valor !== "fixed" && !form.valor.trim()) ||
+            (form.clave === "solo_taller" && form.taller_id === null)
           }
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
@@ -308,6 +337,7 @@ export function RestriccionesCrud({
       clave: r.clave,
       tipo: r.tipo,
       valor: r.valor,
+      taller_id: r.taller_id,
       descripcion: r.descripcion ?? "",
     };
   }
@@ -318,6 +348,7 @@ export function RestriccionesCrud({
         tipo: form.tipo,
         clave: form.clave as RestriccionInput["clave"],
         valor: form.valor,
+        taller_id: form.clave === "solo_taller" ? form.taller_id : null,
         descripcion: form.descripcion || undefined,
       };
       const res = await crearRestriccion(empresaId, input);
@@ -338,6 +369,7 @@ export function RestriccionesCrud({
         tipo: form.tipo,
         clave: form.clave as RestriccionInput["clave"],
         valor: form.valor,
+        taller_id: form.clave === "solo_taller" ? form.taller_id : null,
         descripcion: form.descripcion || undefined,
       };
       const res = await editarRestriccion(editando.id, input);
