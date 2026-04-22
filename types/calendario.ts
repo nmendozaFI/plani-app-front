@@ -3,6 +3,15 @@
  * Extracted from lib/api.ts
  */
 
+// V17: planificacion.estado dropped "OK". CONFIRMADO is the terminal state.
+// Operation page no longer tracks "did the workshop happen"; that lives in
+// historicoTaller (own enum, untouched).
+export type EstadoSlot =
+  | "VACANTE"
+  | "PLANIFICADO"
+  | "CONFIRMADO"
+  | "CANCELADO";
+
 export interface SugerenciaContingencia {
   empresa_id: number;
   empresa_nombre: string;
@@ -25,7 +34,7 @@ export interface SlotCalendario {
   ciudad_id: number | null;
   ciudad: string | null;
   tipo_asignacion: string;
-  estado: string;  // PLANIFICADO | CONFIRMADO | OK | CANCELADO | VACANTE
+  estado: EstadoSlot;
   confirmado: boolean;
   notas: string | null;
   motivo_cambio: string | null;  // EMPRESA_CANCELO | DECISION_PLANIFICADOR | null
@@ -52,7 +61,6 @@ export interface CalendarioResumen {
   asignados: number;
   vacantes: number;
   confirmados: number;
-  ok: number;
   cancelados: number;
   progress_pct: number;
   by_week: {
@@ -61,20 +69,18 @@ export interface CalendarioResumen {
     asignados: number;
     vacantes: number;
     confirmados: number;
-    ok: number;
     cancelados: number;
   }[];
   by_company: {
     empresa: string;
     total: number;
     confirmados: number;
-    ok: number;
     cancelados: number;
   }[];
 }
 
 export interface SlotUpdateInput {
-  estado?: string;
+  estado?: EstadoSlot;
   confirmado?: boolean;
   empresa_id?: number | null;
   notas?: string | null;
@@ -83,7 +89,7 @@ export interface SlotUpdateInput {
 
 export interface SlotBatchUpdateItem {
   slot_id: number;
-  estado?: string;
+  estado?: EstadoSlot;
   confirmado?: boolean;
   empresa_id?: number | null;
   notas?: string | null;
@@ -109,7 +115,6 @@ export interface CalendarioGetResponse {
   asignados: number;
   vacantes: number;
   confirmados: number;
-  ok: number;
   cancelados: number;
   slots: SlotCalendario[];
 }

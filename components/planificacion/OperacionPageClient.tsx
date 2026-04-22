@@ -17,6 +17,7 @@ import type {
   CalendarioGetResponse,
   CalendarioResumen,
   ImportarExcelResult,
+  EstadoSlot,
 } from "@/types/calendario";
 import type { EmpresaSimple } from "@/types/empresa";
 import { toast } from "sonner";
@@ -26,6 +27,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -37,16 +45,22 @@ const DIAS_LABEL: Record<string, string> = {
   L: "Lunes", M: "Martes", X: "Miercoles", J: "Jueves", V: "Viernes",
 };
 
-const ESTADO_OPTIONS = ["Todos", "VACANTE", "PLANIFICADO", "CONFIRMADO", "OK", "CANCELADO"] as const;
+// V17: dropped OK option. CONFIRMADO is the terminal state.
+const ESTADO_OPTIONS = ["Todos", "VACANTE", "PLANIFICADO", "CONFIRMADO", "CANCELADO"] as const;
 const PROGRAMA_OPTIONS = ["Todos", "EF", "IT"] as const;
 
+// V17: CONFIRMADO inherits the former OK green palette (terminal state).
 const ESTADO_CONFIG: Record<string, { bg: string; border: string; text: string; leftBorder: string }> = {
   VACANTE:     { bg: "bg-amber-50",   border: "border-amber-200", text: "text-amber-700",  leftBorder: "border-l-amber-400" },
   PLANIFICADO: { bg: "bg-white",      border: "border-slate-200", text: "text-slate-700",  leftBorder: "border-l-slate-300" },
-  CONFIRMADO:  { bg: "bg-blue-50",    border: "border-blue-200",  text: "text-blue-700",   leftBorder: "border-l-blue-400" },
-  OK:          { bg: "bg-green-50",   border: "border-green-200", text: "text-green-700",  leftBorder: "border-l-green-500" },
+  CONFIRMADO:  { bg: "bg-green-50",   border: "border-green-200", text: "text-green-700",  leftBorder: "border-l-green-500" },
   CANCELADO:   { bg: "bg-red-50/50",  border: "border-red-200",   text: "text-red-600",    leftBorder: "border-l-red-400" },
 };
+
+// V17: localStorage key for the operation page's quarter selection.
+// Schema additions are out of scope this release, so the per-page UI
+// preference lives client-side rather than on appSettings.
+const TRIMESTRE_STORAGE_KEY = "operacion.trimestreSeleccionado";
 
 // ── Date helpers ─────────────────────────────────────────────
 
@@ -84,7 +98,44 @@ function getWeekDateRange(trimestre: string, semana: number): string {
 export function OperacionPageClient() {
   const { settings, loading: loadingSettings } = useSettings();
   const { status: planningStatus } = usePlanningStatus();
-  const trimestre = settings?.trimestre_activo || null;
+
+  // V17: quarter selector. Defaults to trimestre_siguiente when present,
+  // falls back to trimestre_activo. Persisted via localStorage so the
+  // planner returns to the last viewed quarter on reload.
+  const trimestreActivo = settings?.trimestre_activo ?? null;
+  const trimestreSiguiente = settings?.trimestre_siguiente ?? null;
+  const defaultTrimestre = trimestreSiguiente ?? trimestreActivo;
+
+  const [trimestre, setTrimestre] = useState<string | null>(null);
+
+  // Once settings load, hydrate the selector from localStorage (if it points
+  // to a still-valid quarter) or fall back to the default.
+  useEffect(() => {
+    if (loadingSettings) return;
+    if (trimestre !== null) return;  // already initialised
+    if (defaultTrimestre === null && trimestreActivo === null && trimestreSiguiente === null) return;
+    let initial: string | null = defaultTrimestre;
+    try {
+      const stored = typeof window !== "undefined" ? window.localStorage.getItem(TRIMESTRE_STORAGE_KEY) : null;
+      if (stored && (stored === trimestreActivo || stored === trimestreSiguiente)) {
+        initial = stored;
+      }
+    } catch {
+      // localStorage unavailable — fall back to default silently.
+    }
+    setTrimestre(initial);
+  }, [loadingSettings, defaultTrimestre, trimestreActivo, trimestreSiguiente, trimestre]);
+
+  const trimestreOptions = useMemo(() => {
+    const opts: { value: string; label: string; sublabel: string }[] = [];
+    if (trimestreSiguiente) {
+      opts.push({ value: trimestreSiguiente, label: trimestreSiguiente, sublabel: "siguiente" });
+    }
+    if (trimestreActivo) {
+      opts.push({ value: trimestreActivo, label: trimestreActivo, sublabel: "activo" });
+    }
+    return opts;
+  }, [trimestreActivo, trimestreSiguiente]);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -169,6 +220,25 @@ export function OperacionPageClient() {
     }
   }, [cargarDatos, trimestre]);
 
+  // V17: switch trimestre. Persists selection, resets week/filters/selection
+  // before re-fetching for the new trimestre.
+  const handleTrimestreChange = useCallback((next: string) => {
+    if (next === trimestre) return;
+    setSemanaActual(1);
+    setSelectedSlots(new Set());
+    setFiltroEstado("Todos");
+    setFiltroPrograma("Todos");
+    setFiltroEmpresa("");
+    setCalendario(null);
+    setResumen(null);
+    setTrimestre(next);
+    try {
+      window.localStorage.setItem(TRIMESTRE_STORAGE_KEY, next);
+    } catch {
+      // ignore storage failures
+    }
+  }, [trimestre]);
+
   // ── Computed data ──────────────────────────────────────────
 
   const semanas = useMemo(() => {
@@ -178,14 +248,15 @@ export function OperacionPageClient() {
 
   const weekStats = useMemo(() => {
     if (!calendario) return {};
-    const stats: Record<number, { vacantes: number; ok: number; cancelados: number; total: number }> = {};
+    // V17: track confirmados (terminal state) instead of ok.
+    const stats: Record<number, { vacantes: number; confirmados: number; cancelados: number; total: number }> = {};
     for (const slot of calendario.slots) {
       if (!stats[slot.semana]) {
-        stats[slot.semana] = { vacantes: 0, ok: 0, cancelados: 0, total: 0 };
+        stats[slot.semana] = { vacantes: 0, confirmados: 0, cancelados: 0, total: 0 };
       }
       stats[slot.semana].total++;
       if (slot.estado === "VACANTE") stats[slot.semana].vacantes++;
-      if (slot.estado === "OK") stats[slot.semana].ok++;
+      if (slot.estado === "CONFIRMADO") stats[slot.semana].confirmados++;
       if (slot.estado === "CANCELADO") stats[slot.semana].cancelados++;
     }
     return stats;
@@ -231,7 +302,7 @@ export function OperacionPageClient() {
 
   const handleUpdateSlot = useCallback(async (
     slotId: number,
-    updates: { estado?: string; confirmado?: boolean; empresa_id?: number | null; notas?: string | null; motivo_cambio?: string | null }
+    updates: { estado?: EstadoSlot; confirmado?: boolean; empresa_id?: number | null; notas?: string | null; motivo_cambio?: string | null }
   ) => {
     if (!trimestre) return;
     setUpdatingSlot(slotId);
@@ -344,7 +415,7 @@ export function OperacionPageClient() {
     setCancelModal(null);
   }, [cancelModal, handleUpdateSlot]);
 
-  const handleBatchUpdate = useCallback(async (updates: { estado?: string; confirmado?: boolean }) => {
+  const handleBatchUpdate = useCallback(async (updates: { estado?: EstadoSlot; confirmado?: boolean }) => {
     if (!trimestre || selectedSlots.size === 0) return;
     setLoading(true);
     try {
@@ -465,11 +536,33 @@ export function OperacionPageClient() {
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent" />
               Cargando...
             </div>
-          ) : trimestre ? (
-            <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2">
-              <span className="text-sm font-semibold text-slate-700">{trimestre}</span>
+          ) : trimestreOptions.length > 0 ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-slate-600">Trimestre:</span>
+              <Select
+                value={trimestre ?? undefined}
+                onValueChange={handleTrimestreChange}
+              >
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder="Selecciona…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {trimestreOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <span className="flex items-baseline gap-2">
+                        <span className="font-semibold">{opt.label}</span>
+                        <span className="text-xs text-slate-500">{opt.sublabel}</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          ) : null}
+          ) : (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-700">
+              No hay trimestres configurados
+            </div>
+          )}
           <button
             onClick={() => setShowImportModal(true)}
             disabled={!trimestre}
@@ -552,40 +645,49 @@ export function OperacionPageClient() {
         </div>
       )}
 
-      {/* Summary Cards - Responsive */}
+      {/* Summary Cards - Responsive (V17: 5 cards, dropped "OK") */}
       {resumen && resumen.total_slots > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <SummaryCard label="Total" value={resumen.total_slots} color="slate" />
           <SummaryCard label="Asignados" value={resumen.asignados} color="blue" />
           <SummaryCard label="Vacantes" value={resumen.vacantes} color="amber" />
-          <SummaryCard label="Confirmados" value={resumen.confirmados} color="sky" />
-          <SummaryCard label="OK" value={resumen.ok} color="green" />
+          <SummaryCard label="Confirmados" value={resumen.confirmados} color="green" />
           <SummaryCard label="Cancelados" value={resumen.cancelados} color="red" />
         </div>
       )}
 
-      {/* Segmented Progress Bar */}
-      {resumen && resumen.total_slots > 0 && (
-        <div className="rounded-lg bg-white p-4 shadow-sm border border-slate-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-slate-700">Progreso del trimestre</span>
-            <span className="text-sm text-slate-500">{resumen.progress_pct}% completado</span>
+      {/* Segmented Progress Bar (V17: confirmados / total) */}
+      {resumen && resumen.total_slots > 0 && (() => {
+        const planificados = Math.max(
+          0,
+          resumen.asignados - resumen.confirmados - resumen.cancelados,
+        );
+        const pctCompletado = resumen.total_slots > 0
+          ? (resumen.confirmados / resumen.total_slots) * 100
+          : 0;
+        return (
+          <div className="rounded-lg bg-white p-4 shadow-sm border border-slate-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-slate-700">Progreso del trimestre</span>
+              <span className="text-sm text-slate-500">{pctCompletado.toFixed(1)}% completado</span>
+            </div>
+            <div className="h-3 bg-slate-100 rounded-full overflow-hidden flex">
+              <div className="bg-green-500 transition-all" style={{ width: `${(resumen.confirmados / resumen.total_slots) * 100}%` }} />
+              <div className="bg-red-400 transition-all" style={{ width: `${(resumen.cancelados / resumen.total_slots) * 100}%` }} />
+              <div className="bg-blue-400 transition-all" style={{ width: `${(planificados / resumen.total_slots) * 100}%` }} />
+              <div className="bg-amber-300 transition-all" style={{ width: `${(resumen.vacantes / resumen.total_slots) * 100}%` }} />
+            </div>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
+              <span><span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1" />Confirmados: {resumen.confirmados} ({Math.round((resumen.confirmados / resumen.total_slots) * 100)}%)</span>
+              <span><span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-1" />Planificados: {planificados}</span>
+              <span><span className="inline-block w-2 h-2 rounded-full bg-amber-300 mr-1" />Vacantes: {resumen.vacantes} ({Math.round((resumen.vacantes / resumen.total_slots) * 100)}%)</span>
+              {resumen.cancelados > 0 && (
+                <span><span className="inline-block w-2 h-2 rounded-full bg-red-400 mr-1" />Cancelados: {resumen.cancelados} ({Math.round((resumen.cancelados / resumen.total_slots) * 100)}%)</span>
+              )}
+            </div>
           </div>
-          <div className="h-3 bg-slate-100 rounded-full overflow-hidden flex">
-            <div className="bg-green-500 transition-all" style={{ width: `${(resumen.ok / resumen.total_slots) * 100}%` }} />
-            <div className="bg-red-400 transition-all" style={{ width: `${(resumen.cancelados / resumen.total_slots) * 100}%` }} />
-            <div className="bg-blue-400 transition-all" style={{ width: `${(resumen.confirmados / resumen.total_slots) * 100}%` }} />
-            <div className="bg-slate-300 transition-all" style={{ width: `${((resumen.asignados - resumen.confirmados - resumen.ok - resumen.cancelados) / resumen.total_slots) * 100}%` }} />
-            <div className="bg-amber-300 transition-all" style={{ width: `${(resumen.vacantes / resumen.total_slots) * 100}%` }} />
-          </div>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600">
-            <span><span className="inline-block w-2 h-2 rounded-full bg-green-500 mr-1" />OK: {resumen.ok} ({Math.round((resumen.ok / resumen.total_slots) * 100)}%)</span>
-            <span><span className="inline-block w-2 h-2 rounded-full bg-blue-400 mr-1" />Confirmados: {resumen.confirmados} ({Math.round((resumen.confirmados / resumen.total_slots) * 100)}%)</span>
-            <span><span className="inline-block w-2 h-2 rounded-full bg-slate-300 mr-1" />Planificados: {resumen.asignados - resumen.confirmados - resumen.ok - resumen.cancelados}</span>
-            <span><span className="inline-block w-2 h-2 rounded-full bg-amber-300 mr-1" />Vacantes: {resumen.vacantes} ({Math.round((resumen.vacantes / resumen.total_slots) * 100)}%)</span>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Week Selector with badges */}
       {calendario && semanas.length > 0 && (
@@ -596,9 +698,9 @@ export function OperacionPageClient() {
           </div>
           <div className="flex gap-2 flex-wrap">
             {semanas.map(sem => {
-              const stats = weekStats[sem] || { vacantes: 0, ok: 0, cancelados: 0, total: 0 };
+              const stats = weekStats[sem] || { vacantes: 0, confirmados: 0, cancelados: 0, total: 0 };
               const isActive = semanaActual === sem;
-              const isComplete = stats.ok === stats.total && stats.total > 0;
+              const isComplete = stats.confirmados === stats.total && stats.total > 0;
               const hasCancel = stats.cancelados > 0;
               const dateRange = trimestre ? getWeekDateRange(trimestre, sem) : "";
 
@@ -706,17 +808,12 @@ export function OperacionPageClient() {
 
             {selectedSlots.size > 0 && (
               <div className="flex items-center gap-2">
+                {/* V17: Confirmar is the terminal action. "Marcar OK" was removed. */}
                 <button
                   onClick={() => handleBatchUpdate({ confirmado: true, estado: "CONFIRMADO" })}
-                  className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Confirmar
-                </button>
-                <button
-                  onClick={() => handleBatchUpdate({ estado: "OK" })}
                   className="px-3 py-1.5 text-xs font-medium bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                 >
-                  Marcar OK
+                  Confirmar
                 </button>
                 <button
                   onClick={() => handleBatchUpdate({ estado: "CANCELADO" })}
@@ -1007,7 +1104,7 @@ function SlotRow({
   isUpdating: boolean;
   showNotes: boolean;
   onToggleSelect: () => void;
-  onUpdate: (updates: { estado?: string; confirmado?: boolean; empresa_id?: number | null; notas?: string | null }) => void;
+  onUpdate: (updates: { estado?: EstadoSlot; confirmado?: boolean; empresa_id?: number | null; notas?: string | null }) => void;
   onValidateAndAssign: (empresaId: number, empresaNombre: string) => void;
   onRequestCancel: () => void;
 }) {
@@ -1167,7 +1264,7 @@ function SlotRow({
           <>
             <button
               onClick={() => onUpdate({ confirmado: true, estado: "CONFIRMADO" })}
-              className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors font-medium"
+              className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors font-medium"
               disabled={isUpdating}
             >
               Confirmar
@@ -1181,23 +1278,16 @@ function SlotRow({
             </button>
           </>
         )}
+        {/* V17: CONFIRMADO is the terminal state. Only "Cancelar" remains as
+            the off-ramp; the former "Marcar OK" transition was removed. */}
         {slot.estado === "CONFIRMADO" && (
-          <>
-            <button
-              onClick={() => onUpdate({ estado: "OK" })}
-              className="text-xs px-2.5 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors font-medium"
-              disabled={isUpdating}
-            >
-              OK
-            </button>
-            <button
-              onClick={onRequestCancel}
-              className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
-              disabled={isUpdating}
-            >
-              Cancelar
-            </button>
-          </>
+          <button
+            onClick={onRequestCancel}
+            className="text-xs px-2 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
+            disabled={isUpdating}
+          >
+            Cancelar
+          </button>
         )}
 
         {/* More menu */}

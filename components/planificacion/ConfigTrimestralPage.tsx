@@ -18,6 +18,7 @@ import {
   actionInicializarConfigTrimestral,
   actionImportarConfigExcel,
 } from "@/actions/config-trimestral-actions";
+import { getRestricciones } from "@/actions/restricciones-actions";
 import { useSettings } from "@/hooks/use-settings";
 import type {
   ConfigTrimestralOut,
@@ -25,8 +26,22 @@ import type {
   ConfigBatchUpdateItem,
   ImportarConfigExcelResult,
 } from "@/types/config-trimestral";
+import type { Restriccion } from "@/types/restriccion";
 import { apiFetchBlob } from "@/lib/api-client";
 const DIAS_SEMANA = ["L", "M", "X", "J", "V"];
+
+// V16 — empresa rows show this badge if they have any active franja restriction.
+function _resumenFranjas(rs: Restriccion[]): string {
+  const horaria = rs.find((r) => r.clave === "franja_horaria");
+  const porDia = rs.filter((r) => r.clave === "franja_por_dia");
+  const partes: string[] = [];
+  if (horaria) partes.push(`franja_horaria: ${horaria.valor}`);
+  if (porDia.length > 0) {
+    const detalle = porDia.map((r) => r.valor.replace(":", " ")).join(", ");
+    partes.push(`franja_por_dia: ${detalle}`);
+  }
+  return partes.join(" · ");
+}
 
 export default function ConfigTrimestralPage() {
   const { settings, loading: loadingSettings } = useSettings();
@@ -40,6 +55,9 @@ export default function ConfigTrimestralPage() {
 
   // Dirty tracking: map of empresa_id -> modified fields
   const [modifiedRows, setModifiedRows] = useState<Map<number, ConfigBatchUpdateItem>>(new Map());
+
+  // V16: per-empresa franja restrictions for the QoL badge
+  const [franjasPorEmpresa, setFranjasPorEmpresa] = useState<Map<number, Restriccion[]>>(new Map());
 
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -74,9 +92,11 @@ export default function ConfigTrimestralPage() {
     if (!trimestre) return;
     setLoading(true);
     try {
-      const [configsResult, resumenResult] = await Promise.all([
+      // V16: load restrictions in parallel to compute the franja badge map
+      const [configsResult, resumenResult, restricciones] = await Promise.all([
         actionObtenerConfigsTrimestre(trimestre),
         actionObtenerConfigResumen(trimestre),
+        getRestricciones().catch(() => [] as Restriccion[]),
       ]);
 
       if (configsResult.error) {
@@ -91,6 +111,16 @@ export default function ConfigTrimestralPage() {
       } else {
         setResumen(resumenResult.data);
       }
+
+      // V16: build empresaId -> [franja restrictions]
+      const map = new Map<number, Restriccion[]>();
+      for (const r of restricciones) {
+        if (r.clave !== "franja_horaria" && r.clave !== "franja_por_dia") continue;
+        const arr = map.get(r.empresa_id) || [];
+        arr.push(r);
+        map.set(r.empresa_id, arr);
+      }
+      setFranjasPorEmpresa(map);
 
       // Clear modifications when loading new data
       setModifiedRows(new Map());
@@ -493,7 +523,22 @@ export default function ConfigTrimestralPage() {
                           : ""
                       }`}
                     >
-                      <td className="p-3 font-medium">{config.empresa_nombre}</td>
+                      <td className="p-3 font-medium">
+                        <span className="inline-flex items-center gap-2">
+                          {config.empresa_nombre}
+                          {franjasPorEmpresa.get(config.empresa_id)?.length ? (
+                            <Badge
+                              variant="secondary"
+                              title={_resumenFranjas(
+                                franjasPorEmpresa.get(config.empresa_id) || []
+                              )}
+                              className="cursor-help text-[10px] font-normal"
+                            >
+                              ⚙ restr. horaria
+                            </Badge>
+                          ) : null}
+                        </span>
+                      </td>
                       <td className="p-3 text-center">
                         <Select
                           value={getValue(config, "tipo_participacion") as string}

@@ -10,6 +10,7 @@ import {
   editarRestriccion,
   borrarRestriccion,
 } from "@/actions/restricciones-actions";
+import { FRANJAS_CANONICAS, DIAS_VALIDOS } from "@/types/restriccion";
 
 // ── Catálogo de claves para la UI ─────────────────────────────
 
@@ -42,6 +43,20 @@ const CLAVES = [
     descripcion: "Nº máximo de talleres extra por trimestre",
     tipo_default: "SOFT" as const,
     render_valor: "numero",
+  },
+  {
+    value: "franja_horaria",
+    label: "Franja horaria",
+    descripcion: "Restringe la empresa a una franja canónica (todos los días)",
+    tipo_default: "SOFT" as const,
+    render_valor: "franja",
+  },
+  {
+    value: "franja_por_dia",
+    label: "Franja por día",
+    descripcion: "Restringe la empresa a una franja en un día concreto",
+    tipo_default: "SOFT" as const,
+    render_valor: "franja_dia",
   },
 ] as const;
 
@@ -82,6 +97,9 @@ interface FormState {
   tipo: "HARD" | "SOFT";
   valor: string;
   taller_id: number | null;
+  // V16 — derived sub-fields used while composing valor for franja keys
+  franja: string;       // canonical "HH:MM-HH:MM"
+  dia: string;          // single L/M/X/J/V
   descripcion: string;
 }
 
@@ -90,6 +108,8 @@ const FORM_VACIO: FormState = {
   tipo: "HARD",
   valor: "",
   taller_id: null,
+  franja: "",
+  dia: "",
   descripcion: "",
 };
 
@@ -124,6 +144,17 @@ function RestriccionForm({
         next.valor =
           meta?.render_valor === "fixed" ? (meta as any).valor_fijo : "";
         next.taller_id = null;
+        next.franja = "";
+        next.dia = "";
+      }
+      // For franja keys: keep `valor` in sync with the composed sub-fields
+      if (field === "franja" || field === "dia") {
+        if (next.clave === "franja_horaria") {
+          next.valor = next.franja;
+        } else if (next.clave === "franja_por_dia") {
+          next.valor =
+            next.dia && next.franja ? `${next.dia}:${next.franja}` : "";
+        }
       }
       return next;
     });
@@ -216,6 +247,57 @@ function RestriccionForm({
       );
     }
 
+    if (claveMeta.render_valor === "franja") {
+      return (
+        <select
+          value={form.franja}
+          onChange={(e) => set("franja", e.target.value)}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          required
+        >
+          <option value="">Selecciona una franja...</option>
+          {FRANJAS_CANONICAS.map((f) => (
+            <option key={f} value={f}>
+              {f}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (claveMeta.render_valor === "franja_dia") {
+      return (
+        <div className="grid grid-cols-2 gap-2">
+          <select
+            value={form.dia}
+            onChange={(e) => set("dia", e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            required
+          >
+            <option value="">Día...</option>
+            {DIAS.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+          <select
+            value={form.franja}
+            onChange={(e) => set("franja", e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            required
+          >
+            <option value="">Franja...</option>
+            {FRANJAS_CANONICAS.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
+        </div>
+      );
+    }
+
     // fixed — no se muestra input, valor ya está seteado
     return (
       <p className="text-sm text-muted-foreground italic">
@@ -305,7 +387,9 @@ function RestriccionForm({
           disabled={
             loading ||
             (claveMeta?.render_valor !== "fixed" && !form.valor.trim()) ||
-            (form.clave === "solo_taller" && form.taller_id === null)
+            (form.clave === "solo_taller" && form.taller_id === null) ||
+            (form.clave === "franja_horaria" && !form.franja) ||
+            (form.clave === "franja_por_dia" && (!form.franja || !form.dia))
           }
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
         >
@@ -333,11 +417,24 @@ export function RestriccionesCrud({
   const [isPending, startTransition] = useTransition();
 
   function formDesdeRestriccion(r: Restriccion): FormState {
+    let franja = "";
+    let dia = "";
+    if (r.clave === "franja_horaria") {
+      franja = r.valor;
+    } else if (r.clave === "franja_por_dia") {
+      const idx = r.valor.indexOf(":");
+      if (idx > 0) {
+        dia = r.valor.slice(0, idx);
+        franja = r.valor.slice(idx + 1);
+      }
+    }
     return {
       clave: r.clave,
       tipo: r.tipo,
       valor: r.valor,
       taller_id: r.taller_id,
+      franja,
+      dia,
       descripcion: r.descripcion ?? "",
     };
   }
