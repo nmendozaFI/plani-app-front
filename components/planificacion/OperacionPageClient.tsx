@@ -7,7 +7,10 @@ import {
   actionActualizarSlotsBatch,
   actionObtenerResumen,
   actionImportarExcelCalendario,
+  actionImportarExcelCalendarioBulk,
   actionValidarAsignacion,
+  actionListarExtras,
+  actionBorrarSlotExtra,
 } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
@@ -16,8 +19,12 @@ import type {
   SlotCalendario,
   CalendarioGetResponse,
   CalendarioResumen,
+  CambioDetalle,
   ImportarExcelResult,
+  ImportarExcelBulkResult,
   EstadoSlot,
+  ListaExtrasResponse,
+  SlotExtraResponse,
 } from "@/types/calendario";
 import type { EmpresaSimple } from "@/types/empresa";
 import { toast } from "sonner";
@@ -34,6 +41,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +63,9 @@ const DIAS_LABEL: Record<string, string> = {
 // V17: dropped OK option. CONFIRMADO is the terminal state.
 const ESTADO_OPTIONS = ["Todos", "VACANTE", "PLANIFICADO", "CONFIRMADO", "CANCELADO"] as const;
 const PROGRAMA_OPTIONS = ["Todos", "EF", "IT"] as const;
+// V20: CONTINGENCIA exists in the schema but is rare and not part of day-to-day
+// planner filtering — deliberately excluded. "Solo BASE" / "Solo EXTRA" are exact.
+const TIPO_ASIGNACION_OPTIONS = ["Todos", "BASE", "EXTRA"] as const;
 
 // V17: CONFIRMADO inherits the former OK green palette (terminal state).
 const ESTADO_CONFIG: Record<string, { bg: string; border: string; text: string; leftBorder: string }> = {
@@ -149,13 +167,26 @@ export function OperacionPageClient() {
   // Filters
   const [filtroEstado, setFiltroEstado] = useState<string>("Todos");
   const [filtroPrograma, setFiltroPrograma] = useState<string>("Todos");
+  const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [filtroEmpresa, setFiltroEmpresa] = useState<string>("");
 
-  // Import Excel
+  // Import Excel — legacy UPDATE flow (preview + apply via /importar-excel-file)
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportarExcelResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Import Excel — V19 bulk INSERT flow (always wipes trimestre first)
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkImportResult, setBulkImportResult] = useState<ImportarExcelBulkResult | null>(null);
+
+  // V20: EXTRAS panel state (collapsible list of escuela-propia extra slots).
+  const [extrasData, setExtrasData] = useState<ListaExtrasResponse | null>(null);
+  const [extrasLoading, setExtrasLoading] = useState<boolean>(false);
+  const [extrasPanelExpanded, setExtrasPanelExpanded] = useState<boolean>(false);
+  const [deletingExtraId, setDeletingExtraId] = useState<number | null>(null);
+  const [confirmDeleteExtra, setConfirmDeleteExtra] = useState<SlotExtraResponse | null>(null);
 
   // Unified assignment modal state
   // Handles all assignment scenarios: warnings, motivo selection, or both
@@ -214,11 +245,51 @@ export function OperacionPageClient() {
     }
   }, [trimestre]);
 
+  // V20: load EXTRAS for the active trimestre. Silent failure — the panel is
+  // supplementary; a hiccup here must not block the main calendar.
+  const cargarExtras = useCallback(async () => {
+    if (!trimestre) return;
+    setExtrasLoading(true);
+    try {
+      const result = await actionListarExtras(trimestre);
+      if (!result.ok) throw new Error(result.error);
+      setExtrasData(result.data);
+    } catch (e: unknown) {
+      console.error("Error cargando EXTRAS:", e);
+      setExtrasData(null);
+    } finally {
+      setExtrasLoading(false);
+    }
+  }, [trimestre]);
+
   useEffect(() => {
     if (trimestre) {
       cargarDatos();
+      cargarExtras();
     }
-  }, [cargarDatos, trimestre]);
+  }, [cargarDatos, cargarExtras, trimestre]);
+
+  // V20: delete an EXTRA slot. Refreshes both the main grid (the row vanishes
+  // from there too) and the EXTRAS panel. Modal stays open on error so the
+  // planner can retry; toast surfaces the backend's detail message.
+  const handleDeleteExtra = useCallback(async (slot: SlotExtraResponse) => {
+    setDeletingExtraId(slot.id);
+    try {
+      const result = await actionBorrarSlotExtra(slot.id);
+      if (!result.ok) throw new Error(result.error);
+      toast.success(
+        `EXTRA borrado: S${slot.semana} ${slot.dia} ${slot.horario} — ${slot.empresa_nombre ?? "(sin empresa)"}`
+      );
+      setConfirmDeleteExtra(null);
+      await cargarDatos(true);
+      await cargarExtras();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Error al borrar EXTRA";
+      toast.error(msg);
+    } finally {
+      setDeletingExtraId(null);
+    }
+  }, [cargarDatos, cargarExtras]);
 
   // V17: switch trimestre. Persists selection, resets week/filters/selection
   // before re-fetching for the new trimestre.
@@ -228,9 +299,12 @@ export function OperacionPageClient() {
     setSelectedSlots(new Set());
     setFiltroEstado("Todos");
     setFiltroPrograma("Todos");
+    setFiltroTipo("Todos");
     setFiltroEmpresa("");
     setCalendario(null);
     setResumen(null);
+    setExtrasData(null);
+    setExtrasPanelExpanded(false);
     setTrimestre(next);
     try {
       window.localStorage.setItem(TRIMESTRE_STORAGE_KEY, next);
@@ -273,6 +347,9 @@ export function OperacionPageClient() {
     if (filtroPrograma !== "Todos") {
       slots = slots.filter(s => s.programa === filtroPrograma);
     }
+    if (filtroTipo !== "Todos") {
+      slots = slots.filter(s => s.tipo_asignacion === filtroTipo);
+    }
     if (filtroEmpresa.trim()) {
       const search = filtroEmpresa.toLowerCase();
       slots = slots.filter(s =>
@@ -287,7 +364,7 @@ export function OperacionPageClient() {
       if (diaA !== diaB) return diaA - diaB;
       return a.horario.localeCompare(b.horario);
     });
-  }, [calendario, semanaActual, filtroEstado, filtroPrograma, filtroEmpresa]);
+  }, [calendario, semanaActual, filtroEstado, filtroPrograma, filtroTipo, filtroEmpresa]);
 
   const totalSlotsWeek = useMemo(() => {
     if (!calendario) return 0;
@@ -297,6 +374,19 @@ export function OperacionPageClient() {
   const hasNotesInWeek = useMemo(() => {
     return slotsSemanales.some(s => s.notas);
   }, [slotsSemanales]);
+
+  // V20: group EXTRAS by semana for the collapsible panel.
+  const extrasPorSemana = useMemo(() => {
+    if (!extrasData) return [] as { semana: number; items: SlotExtraResponse[] }[];
+    const groups = new Map<number, SlotExtraResponse[]>();
+    for (const ex of extrasData.extras) {
+      if (!groups.has(ex.semana)) groups.set(ex.semana, []);
+      groups.get(ex.semana)!.push(ex);
+    }
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([semana, items]) => ({ semana, items }));
+  }, [extrasData]);
 
   // ── Actions ────────────────────────────────────────────────
 
@@ -311,6 +401,7 @@ export function OperacionPageClient() {
       if (!result.ok) throw new Error(result.error);
       toast.success("Slot actualizado");
       await cargarDatos(true);  // Preserve selected week
+      await cargarExtras();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Error al actualizar slot";
       toast.error(msg);
@@ -318,7 +409,7 @@ export function OperacionPageClient() {
     } finally {
       setUpdatingSlot(null);
     }
-  }, [trimestre, cargarDatos]);
+  }, [trimestre, cargarDatos, cargarExtras]);
 
   // Validate assignment before assigning a company
   const handleValidateAndAssign = useCallback(async (
@@ -425,6 +516,7 @@ export function OperacionPageClient() {
       toast.success(`${result.data.updated} slots actualizados`);
       setSelectedSlots(new Set());
       await cargarDatos(true);  // Preserve selected week
+      await cargarExtras();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Error al actualizar slots";
       toast.error(msg);
@@ -432,7 +524,7 @@ export function OperacionPageClient() {
     } finally {
       setLoading(false);
     }
-  }, [trimestre, selectedSlots, cargarDatos]);
+  }, [trimestre, selectedSlots, cargarDatos, cargarExtras]);
 
   const handleExport = useCallback(async () => {
     if (!trimestre) return;
@@ -485,6 +577,30 @@ export function OperacionPageClient() {
       setImporting(false);
     }
   }, [trimestre, cargarDatos]);
+
+  // V19 bulk INSERT path. Always wipeFirst=true here — the modal forces it.
+  const handleBulkImport = useCallback(async (file: File) => {
+    if (!trimestre) return;
+    setBulkImporting(true);
+    setBulkImportResult(null);
+    try {
+      const result = await actionImportarExcelCalendarioBulk(trimestre, file, true);
+      if (!result.ok) throw new Error(result.error);
+      const { insertados, vacantes, errores } = result.data;
+      const errSuffix = errores ? `, ${errores} errores` : "";
+      toast.success(`${insertados} insertados, ${vacantes} vacantes${errSuffix}`);
+      setBulkImportResult(result.data);
+      setShowBulkImportModal(false);
+      await cargarDatos(true);
+      await cargarExtras();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Error al cargar calendario";
+      toast.error(msg);
+      // Leave modal open on error so user can retry / cancel.
+    } finally {
+      setBulkImporting(false);
+    }
+  }, [trimestre, cargarDatos, cargarExtras]);
 
   const toggleSlotSelection = (slotId: number) => {
     setSelectedSlots(prev => {
@@ -564,11 +680,20 @@ export function OperacionPageClient() {
             </div>
           )}
           <button
+            onClick={() => setShowBulkImportModal(true)}
+            disabled={!trimestre}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+            title="Carga inicial del trimestre — borra todo y reinserta desde el Excel."
+          >
+            📦 Cargar calendario completo
+          </button>
+          <button
             onClick={() => setShowImportModal(true)}
             disabled={!trimestre}
             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+            title="Ajustes durante el trimestre — actualiza empresa, estado o confirmación de slots existentes."
           >
-            Importar Excel
+            ✏️ Actualizar slots
           </button>
           <button
             onClick={handleExport}
@@ -653,6 +778,67 @@ export function OperacionPageClient() {
           <SummaryCard label="Vacantes" value={resumen.vacantes} color="amber" />
           <SummaryCard label="Confirmados" value={resumen.confirmados} color="green" />
           <SummaryCard label="Cancelados" value={resumen.cancelados} color="red" />
+        </div>
+      )}
+
+      {/* V20: EXTRAS panel — collapsible list of escuela-propia extra slots. */}
+      {extrasData && extrasData.total > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50">
+          <button
+            onClick={() => setExtrasPanelExpanded(prev => !prev)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-amber-100/60 transition-colors rounded-lg"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-lg">⚠️</span>
+              <div className="text-left">
+                <div className="text-sm font-semibold text-amber-900">
+                  {extrasData.total} slot{extrasData.total === 1 ? "" : "s"} EXTRA detectado{extrasData.total === 1 ? "" : "s"}
+                </div>
+                <div className="text-xs text-amber-700">
+                  Asignaciones extra de empresas con escuela propia. Revisar y borrar las que no correspondan.
+                </div>
+              </div>
+            </div>
+            <svg
+              className={`h-5 w-5 text-amber-700 transition-transform ${extrasPanelExpanded ? "rotate-180" : ""}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {extrasPanelExpanded && (
+            <div className="border-t border-amber-200 px-4 py-3 space-y-3 max-h-96 overflow-y-auto">
+              {extrasPorSemana.map(({ semana, items }) => (
+                <div key={semana}>
+                  <div className="text-xs font-semibold text-amber-900 mb-1.5">
+                    Semana {semana} <span className="text-amber-600 font-normal">({items.length})</span>
+                  </div>
+                  <div className="space-y-1">
+                    {items.map(ex => (
+                      <div
+                        key={ex.id}
+                        className="flex items-center gap-3 rounded-md bg-white border border-amber-200 px-3 py-2 text-xs"
+                      >
+                        <span className="font-mono text-slate-500 w-12 shrink-0">{ex.dia} {ex.horario}</span>
+                        <span className="text-slate-700 truncate flex-1">{ex.taller_nombre}</span>
+                        <span className="font-medium text-slate-800 truncate flex-1">{ex.empresa_nombre ?? "—"}</span>
+                        <Badge variant="outline" className="shrink-0 text-[10px]">{ex.estado}</Badge>
+                        <button
+                          onClick={() => setConfirmDeleteExtra(ex)}
+                          disabled={deletingExtraId === ex.id}
+                          className="shrink-0 text-xs px-2 py-1 rounded text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Borrar este slot EXTRA"
+                        >
+                          {deletingExtraId === ex.id ? "Borrando..." : "Borrar"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -769,6 +955,16 @@ export function OperacionPageClient() {
               ))}
             </select>
 
+            <select
+              value={filtroTipo}
+              onChange={e => setFiltroTipo(e.target.value)}
+              className="text-sm rounded-md border border-slate-300 px-2 py-1.5 bg-white focus:ring-2 focus:ring-blue-500"
+            >
+              {TIPO_ASIGNACION_OPTIONS.map(opt => (
+                <option key={opt} value={opt}>{opt === "Todos" ? "Tipo" : opt}</option>
+              ))}
+            </select>
+
             <Input
               type="text"
               placeholder="Buscar empresa o taller..."
@@ -777,9 +973,9 @@ export function OperacionPageClient() {
               className="w-52 text-sm h-8"
             />
 
-            {(filtroEstado !== "Todos" || filtroPrograma !== "Todos" || filtroEmpresa) && (
+            {(filtroEstado !== "Todos" || filtroPrograma !== "Todos" || filtroTipo !== "Todos" || filtroEmpresa) && (
               <button
-                onClick={() => { setFiltroEstado("Todos"); setFiltroPrograma("Todos"); setFiltroEmpresa(""); }}
+                onClick={() => { setFiltroEstado("Todos"); setFiltroPrograma("Todos"); setFiltroTipo("Todos"); setFiltroEmpresa(""); }}
                 className="text-xs text-slate-500 hover:text-slate-700 underline"
               >
                 Limpiar filtros
@@ -876,10 +1072,10 @@ export function OperacionPageClient() {
         </div>
       )}
 
-      {/* Import Excel Modal */}
+      {/* Import Excel Modals — mounted only while open so internal state
+          (selectedFile, confirmText) resets cleanly between opens. */}
       {showImportModal && (
         <ImportExcelModal
-          trimestre={trimestre || ""}
           importing={importing}
           importResult={importResult}
           fileInputRef={fileInputRef}
@@ -889,6 +1085,52 @@ export function OperacionPageClient() {
           }}
           onConfirm={handleConfirmImport}
         />
+      )}
+
+      {showBulkImportModal && (
+        <BulkImportModal
+          trimestre={trimestre || ""}
+          importing={bulkImporting}
+          onClose={() => setShowBulkImportModal(false)}
+          onConfirm={handleBulkImport}
+        />
+      )}
+
+      {/* Bulk import result panel (visible after a bulk load finishes) */}
+      {bulkImportResult && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 flex items-start justify-between">
+          <div className="flex-1">
+            <h4 className="text-sm font-semibold text-blue-800 mb-1">
+              {bulkImportResult.insertados + bulkImportResult.vacantes > 0
+                ? `${bulkImportResult.insertados + bulkImportResult.vacantes} slots insertados`
+                : "Sin inserciones"}
+            </h4>
+            <p className="text-xs text-blue-600">
+              {bulkImportResult.total_procesados} filas procesadas
+              {bulkImportResult.insertados > 0 && `, ${bulkImportResult.insertados} planificados`}
+              {bulkImportResult.vacantes > 0 && `, ${bulkImportResult.vacantes} vacantes`}
+              {bulkImportResult.empresa_no_encontrada > 0 && `, ${bulkImportResult.empresa_no_encontrada} empresa(s) no encontrada(s)`}
+              {bulkImportResult.taller_no_encontrado > 0 && `, ${bulkImportResult.taller_no_encontrado} taller(es) no encontrado(s)`}
+              {bulkImportResult.errores > 0 && `, ${bulkImportResult.errores} errores`}
+              {bulkImportResult.wipe_first && " · trimestre previamente vaciado"}
+            </p>
+            {bulkImportResult.warnings.length > 0 && (
+              <details className="mt-2">
+                <summary className="text-xs text-amber-700 cursor-pointer">
+                  Ver {bulkImportResult.warnings.length} advertencia(s) / error(es) por fila
+                </summary>
+                <ul className="mt-1 text-xs text-amber-700 pl-4 list-disc max-h-48 overflow-y-auto">
+                  {bulkImportResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                </ul>
+              </details>
+            )}
+          </div>
+          <button onClick={() => setBulkImportResult(null)} className="text-blue-400 hover:text-blue-600 ml-2">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
       )}
 
       {/* Unified Assignment Modal - handles warnings and/or motivo selection */}
@@ -1058,6 +1300,54 @@ export function OperacionPageClient() {
           </div>
         </div>
       )}
+
+      {/* V20: confirm-delete EXTRA modal */}
+      {confirmDeleteExtra && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              ¿Borrar este slot EXTRA?
+            </h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Esta acción es permanente. El slot desaparecerá del calendario y no se puede deshacer.
+            </p>
+
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-5">
+              <div className="text-xs font-semibold text-amber-900 mb-1">
+                Slot a borrar
+              </div>
+              <div className="text-sm text-slate-800 space-y-0.5">
+                <div>
+                  <span className="font-mono text-slate-500">
+                    S{confirmDeleteExtra.semana} {confirmDeleteExtra.dia} {confirmDeleteExtra.horario}
+                  </span>
+                </div>
+                <div className="text-slate-700">{confirmDeleteExtra.taller_nombre}</div>
+                <div className="font-medium">
+                  {confirmDeleteExtra.empresa_nombre ?? "(sin empresa)"}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setConfirmDeleteExtra(null)}
+                disabled={deletingExtraId !== null}
+                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDeleteExtra(confirmDeleteExtra)}
+                disabled={deletingExtraId !== null}
+                className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deletingExtraId === confirmDeleteExtra.id ? "Borrando..." : "Borrar EXTRA"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1177,6 +1467,16 @@ function SlotRow({
       >
         {slot.programa}
       </Badge>
+
+      {/* V20: EXTRA badge — escuela-propia ad-hoc slot */}
+      {slot.tipo_asignacion === "EXTRA" && (
+        <Badge
+          variant="outline"
+          className="shrink-0 text-[10px] bg-amber-50 text-amber-700 border-amber-300"
+        >
+          EXTRA
+        </Badge>
+      )}
 
       {/* Empresa / Vacancy */}
       <div className="flex-1 min-w-0">
@@ -1377,17 +1677,22 @@ function SlotRow({
   );
 }
 
-// ── Import Excel Modal Component ─────────────────────────────
+// ── Import Excel Modal Component (legacy UPDATE flow) ────────
+//
+// Uses /importar-excel-file: dry-runs first to preview row-level diffs
+// (empresa / estado / confirmado), then applies on confirm.
+//
+// Known limitation: this endpoint indexes by (semana, taller_nombre) so it
+// cannot disambiguate shared slots (escuelas propias). The yellow callout
+// inside the dialog warns the planner about that.
 
 function ImportExcelModal({
-  trimestre,
   importing,
   importResult,
   fileInputRef,
   onClose,
   onConfirm,
 }: {
-  trimestre: string;
   importing: boolean;
   importResult: ImportarExcelResult | null;
   fileInputRef: React.RefObject<HTMLInputElement | null>;
@@ -1411,43 +1716,36 @@ function ImportExcelModal({
     }
   };
 
-  // When file is selected, trigger preview
-  useEffect(() => {
-    if (selectedFile && !importResult && !importing) {
-      // Trigger the parent handler for dry run
-      const input = fileInputRef.current;
-      if (input) {
-        const dt = new DataTransfer();
-        dt.items.add(selectedFile);
-        input.files = dt.files;
-        input.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-    }
-  }, [selectedFile, importResult, importing, fileInputRef]);
+  // Manually trigger the dry-run via the hidden file input that the parent
+  // owns. Click handler on "Previsualizar cambios" calls this.
+  const triggerDryRun = useCallback(() => {
+    if (!selectedFile) return;
+    const input = fileInputRef.current;
+    if (!input) return;
+    const dt = new DataTransfer();
+    dt.items.add(selectedFile);
+    input.files = dt.files;
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }, [selectedFile, fileInputRef]);
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>
-      <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 max-h-[80vh] overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800">Importar Excel</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Actualiza el calendario importando el excel editado ( usa el mismo formato que el exportado previamente desde el sistema)
-            </p>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Actualizar slots desde Excel</DialogTitle>
+          <DialogDescription>
+            Sube un Excel para actualizar empresa, estado o confirmación de slots existentes. Útil para ajustes durante el trimestre.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Yellow warning callout about shared-slot limitation */}
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
+          <p className="text-xs text-amber-800">
+            <strong>Limitación conocida</strong>: este modo no actualiza correctamente slots compartidos (escuelas propias con dos empresas en el mismo slot). Para editar esos slots, usa la edición directa en la tabla.
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="p-5 overflow-y-auto flex-1">
+        <div className="overflow-y-auto flex-1 -mx-1 px-1">
           {!importResult && !importing && (
             <div
               className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors cursor-pointer"
@@ -1499,36 +1797,7 @@ function ImportExcelModal({
 
               {/* All changes detail (estado, confirmado, empresa) */}
               {importResult.cambios_detalle && importResult.cambios_detalle.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] text-blue-700">
-                      {importResult.cambios_detalle.length}
-                    </span>
-                    Cambios detectados
-                  </h4>
-                  <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
-                    {importResult.cambios_detalle.map((cd, i) => (
-                      <div key={i} className="px-3 py-2 text-xs">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-slate-700">
-                            S{cd.semana} {cd.dia} — {cd.taller_nombre}
-                          </span>
-                          <Badge variant="outline" className="text-[9px]">
-                            {cd.campo}
-                          </Badge>
-                        </div>
-                        <div className="mt-1 flex items-center gap-2 text-slate-500">
-                          {cd.empresa_nombre && (
-                            <span className="text-slate-400 mr-1">{cd.empresa_nombre}:</span>
-                          )}
-                          <span className="text-red-600 line-through">{cd.valor_anterior}</span>
-                          <span>→</span>
-                          <span className="text-green-600 font-medium">{cd.valor_nuevo}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <CambiosDetallePanel cambios={importResult.cambios_detalle} />
               )}
 
               {/* Warnings */}
@@ -1563,25 +1832,244 @@ function ImportExcelModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+        <DialogFooter>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
           >
             Cancelar
           </button>
-          {importResult && importResult.actualizados > 0 && selectedFile && (
+          {!importResult ? (
             <button
-              onClick={() => onConfirm(selectedFile)}
-              disabled={importing}
-              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              type="button"
+              disabled={!selectedFile || importing}
+              onClick={triggerDryRun}
+              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {importing ? "Aplicando..." : `Aplicar ${importResult.actualizados} cambios`}
+              {importing ? "Analizando..." : "Previsualizar cambios"}
+            </button>
+          ) : (
+            <button
+              onClick={() => selectedFile && onConfirm(selectedFile)}
+              disabled={importing || !selectedFile || importResult.actualizados === 0}
+              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {importing
+                ? "Aplicando..."
+                : importResult.actualizados > 0
+                  ? `Aplicar ${importResult.actualizados} cambios`
+                  : "Aplicar cambios"}
             </button>
           )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Bulk INSERT modal (V19) ──────────────────────────────────
+//
+// Uses /importar-excel-bulk with wipe_first=true (the checkbox is shown
+// disabled-and-checked as a visual reminder, not a real toggle). Requires
+// the planner to type the trimestre code as confirmation before "Cargar"
+// becomes enabled.
+
+function BulkImportModal({
+  trimestre,
+  importing,
+  onClose,
+  onConfirm,
+}: {
+  trimestre: string;
+  importing: boolean;
+  onClose: () => void;
+  onConfirm: (file: File) => void;
+}) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [confirmText, setConfirmText] = useState("");
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setSelectedFile(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
+      setSelectedFile(file);
+    }
+  };
+
+  const handleAttemptedClose = useCallback(() => {
+    if (selectedFile && !importing) {
+      // Confirm discard before closing if user already picked a file.
+      if (!window.confirm("¿Descartar la carga?")) return;
+    }
+    onClose();
+  }, [selectedFile, importing, onClose]);
+
+  const canSubmit =
+    !!selectedFile &&
+    !importing &&
+    !!trimestre &&
+    confirmText.trim() === trimestre;
+
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) handleAttemptedClose(); }}>
+      <DialogContent
+        className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
+        onEscapeKeyDown={(e) => {
+          if (selectedFile && !importing) {
+            // Let our confirm prompt handle it instead of closing immediately.
+            e.preventDefault();
+            handleAttemptedClose();
+          }
+        }}
+        onPointerDownOutside={(e) => {
+          if (selectedFile && !importing) {
+            e.preventDefault();
+            handleAttemptedClose();
+          }
+        }}
+      >
+        <DialogHeader>
+          <DialogTitle>Cargar calendario completo</DialogTitle>
+          <DialogDescription>
+            Sube un Excel con el calendario completo del trimestre. Se borrarán todos los slots actuales antes de insertar los nuevos.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="overflow-y-auto flex-1 -mx-1 px-1 space-y-4">
+          {/* File picker */}
+          <div
+            className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors cursor-pointer"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={handleDrop}
+            onClick={() => document.getElementById("bulk-import-file-input")?.click()}
+          >
+            <input
+              id="bulk-import-file-input"
+              type="file"
+              accept=".xlsx,.xls"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
+            <div className="text-3xl mb-2">📦</div>
+            {selectedFile ? (
+              <>
+                <p className="text-sm font-medium text-slate-800">{selectedFile.name}</p>
+                <p className="text-xs text-slate-500 mt-0.5">Click para cambiar el archivo</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-slate-700 mb-1">
+                  Arrastra el Excel aquí o haz click para seleccionar
+                </p>
+                <p className="text-xs text-slate-500">Solo archivos .xlsx o .xls</p>
+              </>
+            )}
+          </div>
+
+          {/* Wipe-first checkbox: visual reinforcement, always checked + disabled */}
+          <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 cursor-not-allowed">
+            <Checkbox checked disabled className="mt-0.5" />
+            <div className="text-xs">
+              <div className="font-medium text-slate-700">Borrar trimestre antes de cargar</div>
+              <div className="text-slate-500 mt-0.5">
+                Se borrarán todos los slots actuales de <span className="font-mono font-semibold">{trimestre || "—"}</span>
+              </div>
+            </div>
+          </label>
+
+          {/* Trimestre confirmation text input */}
+          <div>
+            <label htmlFor="bulk-confirm-trimestre" className="block text-xs font-medium text-slate-600 mb-1">
+              Para confirmar, escribe el código del trimestre (<span className="font-mono">{trimestre || "—"}</span>)
+            </label>
+            <Input
+              id="bulk-confirm-trimestre"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder={trimestre || ""}
+              autoComplete="off"
+              spellCheck={false}
+              disabled={importing || !trimestre}
+            />
+          </div>
         </div>
+
+        <DialogFooter>
+          <button
+            onClick={handleAttemptedClose}
+            disabled={importing}
+            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={() => selectedFile && onConfirm(selectedFile)}
+            disabled={!canSubmit}
+            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {importing ? "Cargando..." : "Cargar"}
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Preview panel for legacy update modal ────────────────────
+//
+// Shows the first 20 cambios_detalle by default with a "Ver más" affordance.
+
+const CAMBIOS_INICIALES = 20;
+
+function CambiosDetallePanel({ cambios }: { cambios: CambioDetalle[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const visibles = expanded ? cambios : cambios.slice(0, CAMBIOS_INICIALES);
+  const restantes = cambios.length - visibles.length;
+
+  return (
+    <div>
+      <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1 text-[10px] text-blue-700">
+          {cambios.length}
+        </span>
+        Cambios detectados
+      </h4>
+      <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
+        {visibles.map((cd, i) => (
+          <div key={i} className="px-3 py-2 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-slate-700">
+                S{cd.semana} {cd.dia} — {cd.taller_nombre}
+              </span>
+              <Badge variant="outline" className="text-[9px]">
+                {cd.campo}
+              </Badge>
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-slate-500">
+              {cd.empresa_nombre && (
+                <span className="text-slate-400 mr-1">{cd.empresa_nombre}:</span>
+              )}
+              <span className="text-red-600 line-through">{cd.valor_anterior}</span>
+              <span>→</span>
+              <span className="text-green-600 font-medium">{cd.valor_nuevo}</span>
+            </div>
+          </div>
+        ))}
       </div>
+      {restantes > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="mt-1 text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
+        >
+          Ver más ({restantes} cambios restantes)
+        </button>
+      )}
     </div>
   );
 }

@@ -63,6 +63,7 @@ export default function ConfigTrimestralPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTipo, setFilterTipo] = useState<string>("all");
   const [filterSinFreq, setFilterSinFreq] = useState(false);
+  const [filterSoloEP, setFilterSoloEP] = useState(false);
 
   // Import modal state
   const [showImportModal, setShowImportModal] = useState(false);
@@ -149,9 +150,10 @@ export default function ConfigTrimestralPage() {
       if (filterSinFreq && (c.frecuencia_solicitada !== null && c.frecuencia_solicitada > 0)) {
         return false;
       }
+      if (filterSoloEP && !c.escuela_propia) return false;
       return true;
     });
-  }, [configs, searchTerm, filterTipo, filterSinFreq]);
+  }, [configs, searchTerm, filterTipo, filterSinFreq, filterSoloEP]);
 
   // Get current value (modified or original)
   const getValue = (config: ConfigTrimestralOut, field: keyof ConfigBatchUpdateItem) => {
@@ -496,6 +498,13 @@ export default function ConfigTrimestralPage() {
               />
               Sin frecuencia
             </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={filterSoloEP}
+                onCheckedChange={(c) => setFilterSoloEP(!!c)}
+              />
+              Solo EP
+            </label>
           </div>
 
           {/* Table */}
@@ -506,6 +515,12 @@ export default function ConfigTrimestralPage() {
                   <tr className="border-b bg-muted/50">
                     <th className="text-left p-3 font-medium">Empresa</th>
                     <th className="text-center p-3 font-medium w-24">Tipo</th>
+                    <th
+                      className="text-center p-3 font-medium w-16"
+                      title="Escuela propia — habilita a la empresa a tener slots EXTRA en este trimestre"
+                    >
+                      EP
+                    </th>
                     <th className="text-center p-3 font-medium w-20">Freq</th>
                     <th className="text-center p-3 font-medium w-40">Dias</th>
                     <th className="text-center p-3 font-medium w-20">Turno</th>
@@ -555,6 +570,14 @@ export default function ConfigTrimestralPage() {
                             <SelectItem value="AMBAS">AMBAS</SelectItem>
                           </SelectContent>
                         </Select>
+                      </td>
+                      <td className="p-3 text-center">
+                        <Checkbox
+                          checked={(getValue(config, "escuela_propia") as boolean) ?? false}
+                          onCheckedChange={(c) =>
+                            handleFieldChange(config.empresa_id, "escuela_propia", !!c)
+                          }
+                        />
                       </td>
                       <td className="p-3 text-center">
                         <Input

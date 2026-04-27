@@ -5,7 +5,7 @@
  */
 
 import { apiFetch, apiFetchBlob, apiUpload } from "./api-client";
-import type { ValidarAsignacionResult } from "@/types/calendario";
+import type { EstadoSlot, ValidarAsignacionResult } from "@/types/calendario";
 import type {
   SemanaConfigOut,
   SemanaConfigUpdate,
@@ -35,6 +35,10 @@ export type {
   SlotBatchUpdateItem,
   EmpresaCambiada,
   ImportarExcelResult,
+  ImportarExcelBulkResult,
+  FilaExtraInsertada,
+  SlotExtraResponse,
+  ListaExtrasResponse,
   ValidarAsignacionResult,
 } from "@/types/calendario";
 
@@ -104,6 +108,8 @@ import type {
   SlotUpdateInput,
   SlotBatchUpdateItem,
   ImportarExcelResult,
+  ImportarExcelBulkResult,
+  ListaExtrasResponse,
 } from "@/types/calendario";
 
 import type { AnalisisResponse } from "@/types/analisis";
@@ -269,6 +275,53 @@ export async function importarExcelCalendario(
   return apiUpload<ImportarExcelResult>(
     `/api/calendario/${trimestre}/importar-excel-file?dry_run=${dryRun}`,
     formData
+  );
+}
+
+// V19: bulk INSERT importer (use for initial trimestre load).
+// Backend: POST /api/calendario/{trimestre}/importar-excel-bulk
+//   form: multipart file
+//   query: dry_run (bool), wipe_first (bool)
+// When wipe_first=false and rows already exist for the trimestre, the backend
+// responds 409. Callers should set wipe_first=true to replace the whole trimestre.
+export async function importarExcelCalendarioBulk(
+  trimestre: string,
+  file: File,
+  wipeFirst: boolean = false,
+  dryRun: boolean = false
+): Promise<ImportarExcelBulkResult> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const qs = `?dry_run=${dryRun}&wipe_first=${wipeFirst}`;
+  return apiUpload<ImportarExcelBulkResult>(
+    `/api/calendario/${trimestre}/importar-excel-bulk${qs}`,
+    formData
+  );
+}
+
+// V20: list EXTRA slots for a trimestre.
+// GET /api/calendario/{trimestre}/extras?estado=PLANIFICADO&estado=CONFIRMADO
+// estados optional; when omitted or empty, the backend returns all estados.
+export async function listarExtras(
+  trimestre: string,
+  estados?: EstadoSlot[]
+): Promise<ListaExtrasResponse> {
+  let qs = "";
+  if (estados && estados.length > 0) {
+    qs = "?" + estados.map((e) => `estado=${encodeURIComponent(e)}`).join("&");
+  }
+  return apiFetch<ListaExtrasResponse>(
+    `/api/calendario/${trimestre}/extras${qs}`
+  );
+}
+
+// V20: delete an EXTRA slot.
+// DELETE /api/planificacion/{slotId}/extra
+// Backend returns 400 if the row is not EXTRA, 404 if it doesn't exist.
+export async function borrarSlotExtra(slotId: number): Promise<void> {
+  await apiFetch<{ deleted_id: number; tipo_asignacion: string }>(
+    `/api/planificacion/${slotId}/extra`,
+    { method: "DELETE" }
   );
 }
 

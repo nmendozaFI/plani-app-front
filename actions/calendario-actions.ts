@@ -10,16 +10,22 @@ import {
   obtenerAnalisis,
   cerrarTrimestre,
   importarExcelCalendario,
+  importarExcelCalendarioBulk,
+  listarExtras,
+  borrarSlotExtra,
 } from "@/lib/api";
 import { apiFetchServer } from "@/lib/api-client";
 import type {
   CalendarioOutput,
+  EstadoSlot,
   SlotCalendario,
   CalendarioResumen,
   CalendarioGetResponse,
   SlotUpdateInput,
   SlotBatchUpdateItem,
   ImportarExcelResult,
+  ImportarExcelBulkResult,
+  ListaExtrasResponse,
   ValidarAsignacionResult,
 } from "@/types/calendario";
 import type { AnalisisResponse } from "@/types/analisis";
@@ -132,6 +138,50 @@ export async function actionImportarExcelCalendario(
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al importar Excel";
+    return { ok: false, error: msg };
+  }
+}
+
+// V19: bulk INSERT calendar import.
+// wipeFirst=true → backend deletes all planificacion rows for the trimestre first.
+// wipeFirst=false + rows already exist → backend returns 409; surface to caller.
+export async function actionImportarExcelCalendarioBulk(
+  trimestre: string,
+  file: File,
+  wipeFirst: boolean = false
+): Promise<ActionResult<ImportarExcelBulkResult>> {
+  try {
+    const data = await importarExcelCalendarioBulk(trimestre, file, wipeFirst, false);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al importar Excel (bulk)";
+    return { ok: false, error: msg };
+  }
+}
+
+// ── EXTRAS (V20) ─────────────────────────────────────────────
+
+export async function actionListarExtras(
+  trimestre: string,
+  estados?: EstadoSlot[]
+): Promise<ActionResult<ListaExtrasResponse>> {
+  try {
+    const data = await listarExtras(trimestre, estados);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al listar EXTRAS";
+    return { ok: false, error: msg };
+  }
+}
+
+export async function actionBorrarSlotExtra(
+  slotId: number
+): Promise<ActionResult<{ slot_id: number }>> {
+  try {
+    await borrarSlotExtra(slotId);
+    return { ok: true, data: { slot_id: slotId } };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al borrar slot EXTRA";
     return { ok: false, error: msg };
   }
 }

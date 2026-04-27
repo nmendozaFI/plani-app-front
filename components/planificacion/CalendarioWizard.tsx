@@ -5,10 +5,9 @@ import { useState, useCallback, useMemo } from "react";
 import {
   actionGenerarCalendario,
   actionObtenerCalendario,
-  actionImportarExcelCalendario,
 } from "@/actions/calendario-actions";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
-import type { CalendarioOutput, SlotCalendario, ImportarExcelResult } from "@/lib/api";
+import type { CalendarioOutput, SlotCalendario } from "@/lib/api";
 import { apiFetchBlob } from "@/lib/api-client";
 import { WarningsPanel } from "./WarningsPanel";
 
@@ -80,11 +79,6 @@ export function CalendarioWizard() {
   const [filtroVacante, setFiltroVacante] = useState<FiltroVacante>("todas");
   const [semanaSeleccionada, setSemanaSeleccionada] = useState<number | null>(null);
 
-  // Import Excel
-  const [showImport, setShowImport] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<ImportarExcelResult | null>(null);
-
   const handleGenerar = useCallback(async () => {
     if (!trimestre) return;
     setLoading(true); setError(null);
@@ -124,35 +118,6 @@ export function CalendarioWizard() {
       a.download = `calendario_${trimestre}.xlsx`;
       a.click();
     } catch (e: any) { setError(e.message); }
-  }, [trimestre]);
-
-  const handleImportFile = useCallback(async (file: File) => {
-    if (!trimestre) return;
-    setImporting(true);
-    setImportResult(null);
-    setError(null);
-    try {
-      const result = await actionImportarExcelCalendario(trimestre, file, false);
-      if (!result.ok) throw new Error(result.error);
-      setImportResult(result.data);
-      // Reload calendario after import
-      if (result.data.actualizados > 0) {
-        const calResult = await actionObtenerCalendario(trimestre);
-        if (calResult.ok) {
-          setCalendario({
-            trimestre: calResult.data.trimestre, status: "IMPORTADO", tiempo_segundos: 0,
-            total_slots: calResult.data.total_slots,
-            total_ef: calResult.data.slots.filter((s: any) => s.programa === "EF").length,
-            total_it: calResult.data.slots.filter((s: any) => s.programa === "IT").length,
-            slots: calResult.data.slots, inviolables_pct: 100, preferentes_pct: 100, warnings: [],
-          });
-        }
-      }
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setImporting(false);
-    }
   }, [trimestre]);
 
   // ── Stats ───────────────────────────────────────────────────
@@ -445,23 +410,6 @@ export function CalendarioWizard() {
               )}
             </div>
 
-            <label className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50 cursor-pointer">
-              <input
-                type="file"
-                accept=".xlsx,.xls"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImportFile(file);
-                  e.target.value = "";
-                }}
-                disabled={importing}
-              />
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-              </svg>
-              {importing ? "Importando..." : "Importar Excel"}
-            </label>
             <button onClick={handleExport}
               className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm hover:bg-slate-50">
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -470,37 +418,6 @@ export function CalendarioWizard() {
               Exportar Excel
             </button>
           </div>
-
-          {/* Import Result Toast */}
-          {importResult && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 flex items-start justify-between">
-              <div>
-                <h4 className="text-sm font-semibold text-blue-800 mb-1">
-                  {importResult.actualizados > 0 ? `${importResult.actualizados} slots actualizados` : "Sin cambios"}
-                </h4>
-                <p className="text-xs text-blue-600">
-                  {importResult.total_procesados} filas procesadas
-                  {importResult.errores > 0 && `, ${importResult.errores} errores`}
-                  {importResult.empresas_cambiadas.length > 0 && `, ${importResult.empresas_cambiadas.length} empresas cambiadas`}
-                </p>
-                {importResult.warnings.length > 0 && (
-                  <details className="mt-2">
-                    <summary className="text-xs text-amber-700 cursor-pointer">
-                      {importResult.warnings.length} advertencias
-                    </summary>
-                    <ul className="mt-1 text-xs text-amber-600 pl-4 list-disc">
-                      {importResult.warnings.slice(0, 5).map((w, i) => <li key={i}>{w}</li>)}
-                    </ul>
-                  </details>
-                )}
-              </div>
-              <button onClick={() => setImportResult(null)} className="text-blue-400 hover:text-blue-600">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
 
           {/* ═══ VISTA SEMANAL ═══ */}
           {vista === "semanal" && (

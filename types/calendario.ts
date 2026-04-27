@@ -151,3 +151,56 @@ export interface ImportarExcelResult {
   cambios_detalle: CambioDetalle[];
   warnings: string[];
 }
+
+// V19: bulk INSERT calendar importer — response of
+// POST /api/calendario/{trimestre}/importar-excel-bulk
+// V20: extras_insertados / extras_detalle added for escuela-propia EXTRA rows.
+export interface ImportarExcelBulkResult {
+  trimestre: string;
+  total_procesados: number;
+  insertados: number;
+  vacantes: number;
+  extras_insertados: number;
+  extras_detalle: FilaExtraInsertada[];
+  empresa_no_encontrada: number;
+  taller_no_encontrado: number;
+  errores: number;
+  warnings: string[];
+  dry_run: boolean;
+  wipe_first: boolean;
+}
+
+// V20: detail of an EXTRA slot inserted via the bulk importer.
+// planificacion_id is null in dry_run mode (row not committed).
+export interface FilaExtraInsertada {
+  planificacion_id: number | null;
+  semana: number;
+  dia: string;
+  horario: string;
+  taller_nombre: string;
+  empresa_nombre: string;
+  fila_excel: number;
+}
+
+// V20: one EXTRA row in GET /api/calendario/{trimestre}/extras.
+export interface SlotExtraResponse {
+  id: number;
+  semana: number;
+  dia: string;
+  horario: string;
+  taller_nombre: string;
+  empresa_id: number | null;
+  empresa_nombre: string | null;
+  estado: EstadoSlot;
+  confirmado: boolean;
+  notas: string | null;
+  motivo_cambio: string | null;
+  created_at: string;
+}
+
+// V20: response of GET /api/calendario/{trimestre}/extras.
+export interface ListaExtrasResponse {
+  trimestre: string;
+  total: number;
+  extras: SlotExtraResponse[];
+}
