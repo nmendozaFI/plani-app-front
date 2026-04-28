@@ -39,6 +39,8 @@ export type {
   FilaExtraInsertada,
   SlotExtraResponse,
   ListaExtrasResponse,
+  CrearSlotExtraInput,
+  EditarSlotExtraInput,
   ValidarAsignacionResult,
 } from "@/types/calendario";
 
@@ -77,6 +79,8 @@ export type {
   CerrarTrimestreResult,
   ImportarConfigExcelResult,
   ImportPreviewItem,
+  EmpresaEP,
+  ListaEmpresasEPResponse,
 } from "@/types/config-trimestral";
 
 export type {
@@ -110,6 +114,9 @@ import type {
   ImportarExcelResult,
   ImportarExcelBulkResult,
   ListaExtrasResponse,
+  SlotExtraResponse,
+  CrearSlotExtraInput,
+  EditarSlotExtraInput,
 } from "@/types/calendario";
 
 import type { AnalisisResponse } from "@/types/analisis";
@@ -145,6 +152,7 @@ import type {
   InicializarConfigResult,
   CerrarTrimestreResult,
   ImportarConfigExcelResult,
+  ListaEmpresasEPResponse,
 } from "@/types/config-trimestral";
 
 import type {
@@ -322,6 +330,41 @@ export async function borrarSlotExtra(slotId: number): Promise<void> {
   await apiFetch<{ deleted_id: number; tipo_asignacion: string }>(
     `/api/planificacion/${slotId}/extra`,
     { method: "DELETE" }
+  );
+}
+
+// V21: create an EXTRA slot.
+// POST /api/planificacion/{trimestre}/extra
+// Backend validates the AND-rule (empresa is EP in trimestre AND there is a
+// colliding slot from another empresa). Errors as { detail: string } and the
+// apiFetch wrapper surfaces detail as Error.message verbatim.
+export async function crearSlotExtra(
+  trimestre: string,
+  body: CrearSlotExtraInput
+): Promise<SlotExtraResponse> {
+  return apiFetch<SlotExtraResponse>(
+    `/api/planificacion/${trimestre}/extra`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    }
+  );
+}
+
+// V21: edit an EXTRA slot's empresa and/or notas.
+// PATCH /api/planificacion/{slotId}/extra
+// Backend rejects (422) if body is empty; (400) if slot is not EXTRA;
+// (404) if it doesn't exist.
+export async function editarSlotExtra(
+  slotId: number,
+  body: EditarSlotExtraInput
+): Promise<SlotExtraResponse> {
+  return apiFetch<SlotExtraResponse>(
+    `/api/planificacion/${slotId}/extra`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }
   );
 }
 
@@ -530,6 +573,17 @@ export async function importarConfigExcel(
   return apiUpload<ImportarConfigExcelResult>(
     `/api/config-trimestral/${trimestre}/importar-excel`,
     formData
+  );
+}
+
+// V21 / F3a: list empresas with escuelaPropia=true (and activa=true) for the
+// trimestre. Backend filters and returns alphabetically by nombre.
+// GET /api/config-trimestral/{trimestre}/empresas-ep
+export async function listarEmpresasEP(
+  trimestre: string
+): Promise<ListaEmpresasEPResponse> {
+  return apiFetch<ListaEmpresasEPResponse>(
+    `/api/config-trimestral/${trimestre}/empresas-ep`
   );
 }
 

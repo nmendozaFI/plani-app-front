@@ -14,7 +14,9 @@ import {
 } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
-import { exportarExcel, obtenerEmpresas } from "@/lib/api";
+import { exportarExcel, obtenerEmpresas, obtenerTalleres } from "@/lib/api";
+import { CrearExtraModal } from "./extras/CrearExtraModal";
+import type { TallerOut } from "@/types/taller";
 import type {
   SlotCalendario,
   CalendarioGetResponse,
@@ -188,6 +190,11 @@ export function OperacionPageClient() {
   const [deletingExtraId, setDeletingExtraId] = useState<number | null>(null);
   const [confirmDeleteExtra, setConfirmDeleteExtra] = useState<SlotExtraResponse | null>(null);
 
+  // V21 / F3b: Crear EXTRA modal — talleres are loaded once for the catalog
+  // Select; the modal handles its own empresas-EP fetch (cached per session).
+  const [showCrearExtraModal, setShowCrearExtraModal] = useState<boolean>(false);
+  const [talleres, setTalleres] = useState<TallerOut[]>([]);
+
   // Unified assignment modal state
   // Handles all assignment scenarios: warnings, motivo selection, or both
   const [assignModal, setAssignModal] = useState<{
@@ -216,16 +223,18 @@ export function OperacionPageClient() {
     setLoading(true);
     setError(null);
     try {
-      const [calResult, resResult, empList] = await Promise.all([
+      const [calResult, resResult, empList, tallerList] = await Promise.all([
         actionObtenerCalendario(trimestre),
         actionObtenerResumen(trimestre),
         obtenerEmpresas(),
+        obtenerTalleres(undefined, true), // V21 / F3b: catalog feeds CrearExtraModal Select
       ]);
       if (!calResult.ok) throw new Error(calResult.error);
       if (!resResult.ok) throw new Error(resResult.error);
       setCalendario(calResult.data);
       setResumen(resResult.data);
       setEmpresas(empList);
+      setTalleres(tallerList);
 
       // Only set week on initial load or if current week is invalid
       if (calResult.data.slots.length > 0) {
@@ -781,33 +790,58 @@ export function OperacionPageClient() {
         </div>
       )}
 
-      {/* V20: EXTRAS panel — collapsible list of escuela-propia extra slots. */}
-      {extrasData && extrasData.total > 0 && (
+      {/* V20 panel + V21/F3b "Añadir EXTRA" button. Header always renders when
+          extrasData has loaded so the planner can create the first EXTRA on a
+          fresh trimestre (total=0); chevron only shown when total>0 since
+          there's nothing to expand otherwise. */}
+      {extrasData && (
         <div className="rounded-lg border border-amber-200 bg-amber-50">
-          <button
-            onClick={() => setExtrasPanelExpanded(prev => !prev)}
-            className="w-full flex items-center justify-between px-4 py-3 hover:bg-amber-100/60 transition-colors rounded-lg"
-          >
-            <div className="flex items-center gap-3">
+          <div className="w-full flex items-center gap-2 px-4 py-3 hover:bg-amber-100/60 transition-colors rounded-lg">
+            <button
+              type="button"
+              onClick={() => setExtrasPanelExpanded(prev => !prev)}
+              disabled={extrasData.total === 0}
+              className="flex items-center gap-3 flex-1 text-left disabled:cursor-default"
+              aria-expanded={extrasData.total > 0 ? extrasPanelExpanded : undefined}
+            >
               <span className="text-lg">⚠️</span>
-              <div className="text-left">
+              <div>
                 <div className="text-sm font-semibold text-amber-900">
-                  {extrasData.total} slot{extrasData.total === 1 ? "" : "s"} EXTRA detectado{extrasData.total === 1 ? "" : "s"}
+                  {extrasData.total} slot{extrasData.total === 1 ? "" : "s"} EXTRA{" "}
+                  {extrasData.total === 0 ? "en este trimestre" : `detectado${extrasData.total === 1 ? "" : "s"}`}
                 </div>
                 <div className="text-xs text-amber-700">
                   Asignaciones extra de empresas con escuela propia. Revisar y borrar las que no correspondan.
                 </div>
               </div>
-            </div>
-            <svg
-              className={`h-5 w-5 text-amber-700 transition-transform ${extrasPanelExpanded ? "rotate-180" : ""}`}
-              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCrearExtraModal(true)}
+              disabled={!trimestre}
+              className="shrink-0 rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Crear un slot EXTRA puntual"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
+              + Añadir EXTRA
+            </button>
+            {extrasData.total > 0 && (
+              <button
+                type="button"
+                onClick={() => setExtrasPanelExpanded(prev => !prev)}
+                className="shrink-0 p-1 rounded hover:bg-amber-100"
+                aria-label={extrasPanelExpanded ? "Colapsar panel EXTRA" : "Expandir panel EXTRA"}
+              >
+                <svg
+                  className={`h-5 w-5 text-amber-700 transition-transform ${extrasPanelExpanded ? "rotate-180" : ""}`}
+                  fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            )}
+          </div>
 
-          {extrasPanelExpanded && (
+          {extrasPanelExpanded && extrasData.total > 0 && (
             <div className="border-t border-amber-200 px-4 py-3 space-y-3 max-h-96 overflow-y-auto">
               {extrasPorSemana.map(({ semana, items }) => (
                 <div key={semana}>
@@ -1348,6 +1382,33 @@ export function OperacionPageClient() {
           </div>
         </div>
       )}
+
+      {/* V21 / F3b: create-EXTRA modal. onSuccess refreshes both the main grid
+          (where the new slot needs to appear) and the EXTRAS panel — same
+          double-refresh shape as handleDeleteExtra. */}
+      {trimestre && (
+        <CrearExtraModal
+          trimestre={trimestre}
+          open={showCrearExtraModal}
+          onOpenChange={setShowCrearExtraModal}
+          onSuccess={() => {
+            void cargarDatos(true);
+            void cargarExtras();
+          }}
+          talleres={talleres}
+          slotsExistentes={
+            calendario
+              ? calendario.slots.map(s => ({
+                  semana: s.semana,
+                  dia: s.dia,
+                  horario: s.horario,
+                  empresa_id: s.empresa_id,
+                  empresa_nombre: s.empresa_nombre,
+                }))
+              : []
+          }
+        />
+      )}
     </div>
   );
 }
@@ -1682,9 +1743,9 @@ function SlotRow({
 // Uses /importar-excel-file: dry-runs first to preview row-level diffs
 // (empresa / estado / confirmado), then applies on confirm.
 //
-// Known limitation: this endpoint indexes by (semana, taller_nombre) so it
-// cannot disambiguate shared slots (escuelas propias). The yellow callout
-// inside the dialog warns the planner about that.
+// V21 / Deuda 4: shared-slot disambiguation now happens server-side via
+// "Empresa Original" (col G) primary match + fallback to col F. The previous
+// "Limitación conocida" callout was removed when that landed.
 
 function ImportExcelModal({
   importing,
@@ -1737,13 +1798,6 @@ function ImportExcelModal({
             Sube un Excel para actualizar empresa, estado o confirmación de slots existentes. Útil para ajustes durante el trimestre.
           </DialogDescription>
         </DialogHeader>
-
-        {/* Yellow warning callout about shared-slot limitation */}
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5">
-          <p className="text-xs text-amber-800">
-            <strong>Limitación conocida</strong>: este modo no actualiza correctamente slots compartidos (escuelas propias con dos empresas en el mismo slot). Para editar esos slots, usa la edición directa en la tabla.
-          </p>
-        </div>
 
         <div className="overflow-y-auto flex-1 -mx-1 px-1">
           {!importResult && !importing && (

@@ -204,3 +204,24 @@ export interface ListaExtrasResponse {
   total: number;
   extras: SlotExtraResponse[];
 }
+
+// V21: input for POST /api/planificacion/{trimestre}/extra.
+// Backend validates the AND-rule (empresa is escuelaPropia in trimestre AND
+// there is a colliding slot from another empresa) before inserting.
+export interface CrearSlotExtraInput {
+  empresa_id: number;
+  semana: number; // 1..13
+  dia: string;
+  horario: string;
+  taller_id: number;
+  programa: "EF" | "IT";
+  notas?: string | null;
+}
+
+// V21: input for PATCH /api/planificacion/{slotId}/extra.
+// Both fields optional but the backend rejects (422) if both are omitted.
+// notas: empty string clears it; null/undefined leaves it untouched.
+export interface EditarSlotExtraInput {
+  empresa_id?: number;
+  notas?: string | null;
+}

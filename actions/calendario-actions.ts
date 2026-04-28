@@ -13,6 +13,8 @@ import {
   importarExcelCalendarioBulk,
   listarExtras,
   borrarSlotExtra,
+  crearSlotExtra,
+  editarSlotExtra,
 } from "@/lib/api";
 import { apiFetchServer } from "@/lib/api-client";
 import type {
@@ -26,6 +28,9 @@ import type {
   ImportarExcelResult,
   ImportarExcelBulkResult,
   ListaExtrasResponse,
+  SlotExtraResponse,
+  CrearSlotExtraInput,
+  EditarSlotExtraInput,
   ValidarAsignacionResult,
 } from "@/types/calendario";
 import type { AnalisisResponse } from "@/types/analisis";
@@ -182,6 +187,35 @@ export async function actionBorrarSlotExtra(
     return { ok: true, data: { slot_id: slotId } };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al borrar slot EXTRA";
+    return { ok: false, error: msg };
+  }
+}
+
+// V21: create one EXTRA slot. The backend's detail message (regla AND, EP,
+// colisión, duplicado) is propagated verbatim so the UI can show it as-is.
+export async function actionCrearSlotExtra(
+  trimestre: string,
+  body: CrearSlotExtraInput
+): Promise<ActionResult<SlotExtraResponse>> {
+  try {
+    const data = await crearSlotExtra(trimestre, body);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al crear slot EXTRA";
+    return { ok: false, error: msg };
+  }
+}
+
+// V21: edit empresa and/or notas of an existing EXTRA slot.
+export async function actionEditarSlotExtra(
+  slotId: number,
+  body: EditarSlotExtraInput
+): Promise<ActionResult<SlotExtraResponse>> {
+  try {
+    const data = await editarSlotExtra(slotId, body);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al editar slot EXTRA";
     return { ok: false, error: msg };
   }
 }

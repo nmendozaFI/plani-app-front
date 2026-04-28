@@ -94,3 +94,18 @@ export interface ImportarConfigExcelResult {
   warnings: string[];
   dry_run: boolean;
 }
+
+// V21 / F3a: empresas con escuelaPropia=true (and activa=true) for the trimestre.
+// Feeds the empresa Select in the "Añadir EXTRA" modal.
+export interface EmpresaEP {
+  id: number;
+  nombre: string;
+  tipo: "EF" | "IT" | "AMBAS";
+  activa: boolean;
+}
+
+export interface ListaEmpresasEPResponse {
+  trimestre: string;
+  total: number;
+  empresas: EmpresaEP[];
+}
