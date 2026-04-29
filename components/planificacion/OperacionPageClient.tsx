@@ -111,6 +111,29 @@ function getWeekDateRange(trimestre: string, semana: number): string {
   return `${weekStart.getDate()} - ${weekEnd.getDate()} ${months[weekEnd.getMonth()]} ${year}`;
 }
 
+// V22: per-day "DD/MM" label next to the weekday header in Operación.
+// Mirrors getWeekDateRange's quarter→first-Monday math, then adds the
+// weekday offset (L=0..V=4). Pure local-Date math — no UTC parsing.
+const DIA_OFFSET: Record<string, number> = { L: 0, M: 1, X: 2, J: 3, V: 4 };
+
+function getDayDateLabel(trimestre: string, semana: number, dia: string): string {
+  const offset = DIA_OFFSET[dia];
+  if (offset === undefined) return "";
+  const [yearStr, qStr] = trimestre.split("-Q");
+  const year = parseInt(yearStr);
+  const quarter = parseInt(qStr);
+  const quarterStart = new Date(year, (quarter - 1) * 3, 1);
+  const dayOfWeek = quarterStart.getDay();
+  const daysUntilMonday = dayOfWeek === 0 ? 1 : (dayOfWeek === 1 ? 0 : 8 - dayOfWeek);
+  const firstMonday = new Date(quarterStart);
+  firstMonday.setDate(quarterStart.getDate() + daysUntilMonday);
+  const target = new Date(firstMonday);
+  target.setDate(firstMonday.getDate() + (semana - 1) * 7 + offset);
+  const dd = String(target.getDate()).padStart(2, "0");
+  const mm = String(target.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}`;
+}
+
 // ══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════
@@ -1073,7 +1096,14 @@ export function OperacionPageClient() {
             return (
               <div key={dia} className="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden">
                 <div className="bg-slate-100 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-slate-700">{DIAS_LABEL[dia]}</h3>
+                  <h3 className="text-sm font-semibold text-slate-700">
+                    {DIAS_LABEL[dia]}
+                    {trimestre && (
+                      <span className="ml-2 text-slate-400 font-normal">
+                        {getDayDateLabel(trimestre, semanaActual, dia)}
+                      </span>
+                    )}
+                  </h3>
                   <span className="text-xs text-slate-400">{slotsDelDia.length} slots</span>
                 </div>
                 <div className="divide-y divide-slate-100">
