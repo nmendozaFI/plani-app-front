@@ -359,8 +359,8 @@ enum EstadoTaller {
 enum TipoAsignacion {
   BASE
   EXTRA
-  DOBLE // V22 (Cambio A): semana intensiva de empresa con escuelaPropia=true. Ad-hoc, paralelo al solver — no consume frecuencia, no valida colisión.
   CONTINGENCIA
+  DOBLE // V22 (Cambio A): semana intensiva de empresa con escuelaPropia=true. Ad-hoc, paralelo al solver — no consume frecuencia, no valida colisión.
 }
 
 // Global application settings (singleton table with id=1)
