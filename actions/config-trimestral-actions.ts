@@ -8,6 +8,7 @@ import {
   inicializarConfigTrimestral,
   importarConfigExcel,
   listarEmpresasEP,
+  listarEmpresasPermiteExtras,
 } from "@/lib/api";
 import type {
   ConfigTrimestralUpdate,
@@ -86,8 +87,7 @@ export async function actionImportarConfigExcel(
 
 // V21 / F3a: list empresas with escuelaPropia=true for the trimestre. Uses
 // the F2 ActionResult<T> wrapper (older actions in this file still use the
-// legacy { data, error } shape). The modal "Añadir EXTRA" calls this on mount
-// to populate its empresa Select.
+// legacy { data, error } shape). The DOBLE-related UI (Fase 6b) uses this.
 export async function actionListarEmpresasEP(
   trimestre: string
 ): Promise<ActionResult<ListaEmpresasEPResponse>> {
@@ -96,6 +96,25 @@ export async function actionListarEmpresasEP(
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al listar empresas EP";
+    return { ok: false, error: msg };
+  }
+}
+
+// V22 (Cambio A): list empresas with permiteExtras=true for the trimestre.
+// Replaces the EP fetch in CrearExtraModal — the gate for EXTRA creation moved
+// from escuelaPropia to permiteExtras in Fase 5. Same response shape as
+// /empresas-ep so the modal Select can render unchanged.
+export async function actionListarEmpresasPermiteExtras(
+  trimestre: string
+): Promise<ActionResult<ListaEmpresasEPResponse>> {
+  try {
+    const data = await listarEmpresasPermiteExtras(trimestre);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg =
+      e instanceof Error
+        ? e.message
+        : "Error al listar empresas con permiteExtras";
     return { ok: false, error: msg };
   }
 }

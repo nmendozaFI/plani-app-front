@@ -9,6 +9,7 @@ export interface ConfigTrimestralOut {
   empresa_nombre: string;
   tipo_participacion: string; // EF, IT, AMBAS
   escuela_propia: boolean;
+  permite_extras: boolean; // V22 (Cambio A): gate para crear slots EXTRA
   frecuencia_solicitada: number | null;
   disponibilidad_dias: string; // "L,M,X,J,V"
   turno_preferido: string | null; // "M", "T", null
@@ -20,6 +21,7 @@ export interface ConfigTrimestralOut {
 export interface ConfigTrimestralUpdate {
   tipo_participacion?: string;
   escuela_propia?: boolean;
+  permite_extras?: boolean; // V22 (Cambio A)
   frecuencia_solicitada?: number | null;
   disponibilidad_dias?: string;
   turno_preferido?: string | null;
@@ -32,6 +34,7 @@ export interface ConfigBatchUpdateItem {
   empresa_id: number;
   tipo_participacion?: string;
   escuela_propia?: boolean;
+  permite_extras?: boolean; // V22 (Cambio A)
   frecuencia_solicitada?: number | null;
   disponibilidad_dias?: string;
   turno_preferido?: string | null;
@@ -57,6 +60,7 @@ export interface ConfigTrimestralResumen {
   con_frecuencia: number;
   sin_frecuencia: number;
   escuela_propia: number;
+  permite_extras: number; // V22 (Cambio A): count of CTs with permiteExtras=true
 }
 
 export interface InicializarConfigResult {

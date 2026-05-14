@@ -28,6 +28,7 @@ export interface SlotCalendario {
   empresa_id: number | null;
   empresa_id_original: number | null;  // Solver's original assignment (never changes)
   empresa_nombre: string | null;
+  empresa_nombre_original?: string | null;  // Nombre de la empresa originalmente asignada — surfaced for the "Canceló: X" badge when motivo_cambio=EMPRESA_CANCELO
   programa: string;
   taller_id: number;
   taller_nombre: string;
@@ -224,4 +225,66 @@ export interface CrearSlotExtraInput {
 export interface EditarSlotExtraInput {
   empresa_id?: number;
   notas?: string | null;
+}
+
+// ── V22 (Cambio A): DOBLE types ──────────────────────────────────
+
+// One DOBLE row returned by POST/PATCH/GET in the doble router.
+// Same shape as SlotExtraResponse plus taller_id and programa (so the UI can
+// render the programa badge without re-joining).
+export interface SlotDobleResponse {
+  id: number;
+  semana: number;
+  dia: string;
+  horario: string;
+  taller_id: number;
+  taller_nombre: string;
+  programa: string; // "EF" | "IT" — left as string to mirror tipo_asignacion convention
+  empresa_id: number | null;
+  empresa_nombre: string | null;
+  estado: EstadoSlot;
+  confirmado: boolean;
+  notas: string | null;
+  created_at: string;
+}
+
+// Response of GET /api/planificacion/{trimestre}/dobles.
+export interface ListaDoblesResponse {
+  trimestre: string;
+  total: number;
+  dobles: SlotDobleResponse[];
+}
+
+// Input for POST /api/planificacion/{trimestre}/doble.
+// Decision 4 of Cambio A: backend only checks empresa-activa + empresa-EP +
+// taller-exists. NO collision check, NO programa check, NO duplicate check.
+export interface CrearSlotDobleInput {
+  empresa_id: number;
+  semana: number; // 1..13
+  dia: string;
+  horario: string;
+  taller_id: number;
+  notas?: string | null;
+}
+
+// Input for PATCH /api/planificacion/{slotId}/doble.
+// All fields optional; backend rejects 422 if none are set. Editable: empresa,
+// taller, semana, día, horario, notas — much more permissive than EXTRA.
+export interface EditarSlotDobleInput {
+  empresa_id?: number;
+  taller_id?: number;
+  semana?: number;
+  dia?: string;
+  horario?: string;
+  notas?: string | null;
+}
+
+// Response of DELETE /api/planificacion/{trimestre}/extras-doble?confirmar=true.
+// Reports how many rows each bucket lost so the caller can confirm the cleanup
+// happened. BASE/CONTINGENCIA are never touched by this endpoint.
+export interface CleanupExtrasDobleResult {
+  trimestre: string;
+  confirmar: boolean;
+  extras_eliminados: number;
+  dobles_eliminados: number;
 }

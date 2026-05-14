@@ -63,8 +63,8 @@ export type EstadoTaller = (typeof EstadoTaller)[keyof typeof EstadoTaller]
 export const TipoAsignacion = {
   BASE: 'BASE',
   EXTRA: 'EXTRA',
-  DOBLE: 'DOBLE',
-  CONTINGENCIA: 'CONTINGENCIA'
+  CONTINGENCIA: 'CONTINGENCIA',
+  DOBLE: 'DOBLE'
 } as const
 
 export type TipoAsignacion = (typeof TipoAsignacion)[keyof typeof TipoAsignacion]

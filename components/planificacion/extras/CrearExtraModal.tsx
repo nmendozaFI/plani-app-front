@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
-import { actionListarEmpresasEP } from "@/actions/config-trimestral-actions";
+import { actionListarEmpresasPermiteExtras } from "@/actions/config-trimestral-actions";
 import { actionCrearSlotExtra } from "@/actions/calendario-actions";
 import type { EmpresaEP } from "@/types/config-trimestral";
 import type { TallerOut } from "@/types/taller";
@@ -71,8 +71,10 @@ export function CrearExtraModal({
   const [notas, setNotas] = useState<string>("");
   const [submitting, setSubmitting] = useState<boolean>(false);
 
-  // Empresas EP cache (session): loaded on first open, kept across close/reopen
-  // so the planner doesn't pay the round-trip every time.
+  // V22 (Cambio A): cache of empresas with permiteExtras=true. Loaded on first
+  // open, kept across close/reopen so the planner doesn't pay the round-trip
+  // every time. Variable name kept `empresasEP` for diff minimality, but the
+  // source endpoint now is /empresas-permite-extras (Fase 5 gate alignment).
   const [empresasEP, setEmpresasEP] = useState<EmpresaEP[]>([]);
   const [empresasEPLoading, setEmpresasEPLoading] = useState<boolean>(false);
   const [empresasEPError, setEmpresasEPError] = useState<string | null>(null);
@@ -103,20 +105,20 @@ export function CrearExtraModal({
     let cancelled = false;
     fetchInFlight.current = true;
     setEmpresasEPLoading(true);
-    console.debug(`[CrearExtraModal] cargando empresas EP de ${trimestre}`);
+    console.debug(`[CrearExtraModal] cargando empresas con permiteExtras de ${trimestre}`);
 
-    actionListarEmpresasEP(trimestre)
+    actionListarEmpresasPermiteExtras(trimestre)
       .then((result) => {
         if (cancelled) return;
         if (result.ok) {
           console.debug(
-            `[CrearExtraModal] empresas EP cargadas: ${result.data.empresas.length}`,
+            `[CrearExtraModal] empresas permiteExtras cargadas: ${result.data.empresas.length}`,
           );
           setEmpresasEP(result.data.empresas);
           setEmpresasEPError(null);
         } else {
           console.debug(
-            `[CrearExtraModal] error cargando empresas EP: ${result.error}`,
+            `[CrearExtraModal] error cargando empresas permiteExtras: ${result.error}`,
           );
           setEmpresasEPError(result.error);
         }
@@ -250,9 +252,9 @@ export function CrearExtraModal({
         <DialogHeader>
           <DialogTitle>Añadir EXTRA puntual</DialogTitle>
           <DialogDescription>
-            Crea un slot EXTRA para una empresa con escuela propia. El backend
-            valida que haya colisión existente con otra empresa en el mismo
-            horario.
+            Crea un slot EXTRA para una empresa con permiteExtras activado en
+            este trimestre. El backend valida que haya colisión existente con
+            otra empresa en el mismo horario.
           </DialogDescription>
         </DialogHeader>
 
@@ -264,7 +266,7 @@ export function CrearExtraModal({
             </label>
             {empresasEPError ? (
               <div className="text-xs text-red-700 border border-red-200 bg-red-50 rounded p-2">
-                No se pudieron cargar empresas EP: {empresasEPError}
+                No se pudieron cargar empresas: {empresasEPError}
               </div>
             ) : (
               <Select
@@ -276,15 +278,15 @@ export function CrearExtraModal({
                   <SelectValue
                     placeholder={
                       empresasEPLoading
-                        ? "Cargando empresas EP..."
-                        : "Selecciona empresa con escuela propia"
+                        ? "Cargando empresas..."
+                        : "Selecciona empresa con permiteExtras"
                     }
                   />
                 </SelectTrigger>
                 <SelectContent>
                   {empresasEP.length === 0 && !empresasEPLoading ? (
                     <div className="px-2 py-1.5 text-xs text-slate-500">
-                      No hay empresas EP en este trimestre.
+                      No hay empresas con permiteExtras en este trimestre.
                     </div>
                   ) : (
                     empresasEP.map((e) => (

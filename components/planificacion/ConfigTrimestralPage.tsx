@@ -64,6 +64,7 @@ export default function ConfigTrimestralPage() {
   const [filterTipo, setFilterTipo] = useState<string>("all");
   const [filterSinFreq, setFilterSinFreq] = useState(false);
   const [filterSoloEP, setFilterSoloEP] = useState(false);
+  const [filterSoloPE, setFilterSoloPE] = useState(false); // V22 (Cambio A): filtro "Solo permite extras"
 
   // Import modal state
   const [showImportModal, setShowImportModal] = useState(false);
@@ -151,9 +152,10 @@ export default function ConfigTrimestralPage() {
         return false;
       }
       if (filterSoloEP && !c.escuela_propia) return false;
+      if (filterSoloPE && !c.permite_extras) return false;
       return true;
     });
-  }, [configs, searchTerm, filterTipo, filterSinFreq, filterSoloEP]);
+  }, [configs, searchTerm, filterTipo, filterSinFreq, filterSoloEP, filterSoloPE]);
 
   // Get current value (modified or original)
   const getValue = (config: ConfigTrimestralOut, field: keyof ConfigBatchUpdateItem) => {
@@ -438,6 +440,9 @@ export default function ConfigTrimestralPage() {
               {resumen?.escuela_propia ? (
                 <span>{resumen.escuela_propia} escuela propia</span>
               ) : null}
+              {resumen?.permite_extras ? (
+                <span>{resumen.permite_extras} permite extras</span>
+              ) : null}
             </div>
             {modifiedRows.size > 0 && (
               <div className="flex items-center gap-2">
@@ -505,6 +510,13 @@ export default function ConfigTrimestralPage() {
               />
               Solo EP
             </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={filterSoloPE}
+                onCheckedChange={(c) => setFilterSoloPE(!!c)}
+              />
+              Solo PE
+            </label>
           </div>
 
           {/* Table */}
@@ -517,9 +529,15 @@ export default function ConfigTrimestralPage() {
                     <th className="text-center p-3 font-medium w-24">Tipo</th>
                     <th
                       className="text-center p-3 font-medium w-16"
-                      title="Escuela propia — habilita a la empresa a tener slots EXTRA en este trimestre"
+                      title="Escuela propia — habilita a la empresa a tener slots DOBLE (semana intensiva) en este trimestre"
                     >
                       EP
+                    </th>
+                    <th
+                      className="text-center p-3 font-medium w-16"
+                      title="Permite Extras — habilita a la empresa a recibir slots EXTRA (sobre su frecuencia regular) en este trimestre"
+                    >
+                      PE
                     </th>
                     <th className="text-center p-3 font-medium w-20">Freq</th>
                     <th className="text-center p-3 font-medium w-40">Dias</th>
@@ -576,6 +594,14 @@ export default function ConfigTrimestralPage() {
                           checked={(getValue(config, "escuela_propia") as boolean) ?? false}
                           onCheckedChange={(c) =>
                             handleFieldChange(config.empresa_id, "escuela_propia", !!c)
+                          }
+                        />
+                      </td>
+                      <td className="p-3 text-center">
+                        <Checkbox
+                          checked={(getValue(config, "permite_extras") as boolean) ?? false}
+                          onCheckedChange={(c) =>
+                            handleFieldChange(config.empresa_id, "permite_extras", !!c)
                           }
                         />
                       </td>

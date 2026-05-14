@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import Link from "next/link";
 import {
   actionObtenerCalendario,
   actionActualizarSlot,
@@ -11,6 +12,7 @@ import {
   actionValidarAsignacion,
   actionListarExtras,
   actionBorrarSlotExtra,
+  actionListarDobles,
 } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
@@ -27,6 +29,8 @@ import type {
   EstadoSlot,
   ListaExtrasResponse,
   SlotExtraResponse,
+  ListaDoblesResponse,
+  SlotDobleResponse,
 } from "@/types/calendario";
 import type { EmpresaSimple } from "@/types/empresa";
 import { toast } from "sonner";
@@ -213,6 +217,12 @@ export function OperacionPageClient() {
   const [deletingExtraId, setDeletingExtraId] = useState<number | null>(null);
   const [confirmDeleteExtra, setConfirmDeleteExtra] = useState<SlotExtraResponse | null>(null);
 
+  // V22 (Cambio A, Fase 6b): DOBLE read-only data. Drives the "D" badge in the
+  // semana selector and the collapsible "Doble de esta semana" section at the
+  // bottom of the calendar grid. Edits/creation happen in /planificacion/doble.
+  const [doblesData, setDoblesData] = useState<ListaDoblesResponse | null>(null);
+  const [doblesSemanaExpanded, setDoblesSemanaExpanded] = useState<boolean>(false);
+
   // V21 / F3b: Crear EXTRA modal — talleres are loaded once for the catalog
   // Select; the modal handles its own empresas-EP fetch (cached per session).
   const [showCrearExtraModal, setShowCrearExtraModal] = useState<boolean>(false);
@@ -294,12 +304,27 @@ export function OperacionPageClient() {
     }
   }, [trimestre]);
 
+  // V22 (Cambio A, Fase 6b): load DOBLEs for the active trimestre. Silent
+  // failure mirrors the EXTRAS panel — the calendar grid renders regardless.
+  const cargarDobles = useCallback(async () => {
+    if (!trimestre) return;
+    try {
+      const result = await actionListarDobles(trimestre);
+      if (!result.ok) throw new Error(result.error);
+      setDoblesData(result.data);
+    } catch (e: unknown) {
+      console.error("Error cargando DOBLEs:", e);
+      setDoblesData(null);
+    }
+  }, [trimestre]);
+
   useEffect(() => {
     if (trimestre) {
       cargarDatos();
       cargarExtras();
+      cargarDobles();
     }
-  }, [cargarDatos, cargarExtras, trimestre]);
+  }, [cargarDatos, cargarExtras, cargarDobles, trimestre]);
 
   // V20: delete an EXTRA slot. Refreshes both the main grid (the row vanishes
   // from there too) and the EXTRAS panel. Modal stays open on error so the
@@ -337,6 +362,8 @@ export function OperacionPageClient() {
     setResumen(null);
     setExtrasData(null);
     setExtrasPanelExpanded(false);
+    setDoblesData(null);
+    setDoblesSemanaExpanded(false);
     setTrimestre(next);
     try {
       window.localStorage.setItem(TRIMESTRE_STORAGE_KEY, next);
@@ -419,6 +446,31 @@ export function OperacionPageClient() {
       .sort(([a], [b]) => a - b)
       .map(([semana, items]) => ({ semana, items }));
   }, [extrasData]);
+
+  // V22 (Cambio A, Fase 6b): counts of DOBLE rows per semana, used to render
+  // the small "D" badge on the week selector buttons.
+  const doblesCountPorSemana = useMemo(() => {
+    const counts = new Map<number, number>();
+    if (!doblesData) return counts;
+    for (const d of doblesData.dobles) {
+      counts.set(d.semana, (counts.get(d.semana) ?? 0) + 1);
+    }
+    return counts;
+  }, [doblesData]);
+
+  // DOBLE rows for the currently selected week, sorted (día, horario, empresa).
+  const doblesEstaSemana = useMemo(() => {
+    if (!doblesData) return [] as SlotDobleResponse[];
+    return doblesData.dobles
+      .filter(d => d.semana === semanaActual)
+      .sort((a, b) => {
+        const diaA = DIAS_ORDEN.indexOf(a.dia as typeof DIAS_ORDEN[number]);
+        const diaB = DIAS_ORDEN.indexOf(b.dia as typeof DIAS_ORDEN[number]);
+        if (diaA !== diaB) return diaA - diaB;
+        if (a.horario !== b.horario) return a.horario.localeCompare(b.horario);
+        return (a.empresa_nombre ?? "").localeCompare(b.empresa_nombre ?? "");
+      });
+  }, [doblesData, semanaActual]);
 
   // ── Actions ────────────────────────────────────────────────
 
@@ -727,6 +779,18 @@ export function OperacionPageClient() {
           >
             ✏️ Actualizar slots
           </button>
+          {/* Always-visible entry point to the CrearExtraModal. When the trimestre has 0
+              EXTRAs the amber panel is hidden, so this button is the only way to
+              create the first one. When EXTRAs exist there is also a button inside
+              the panel (kept for proximity to the list). */}
+          <button
+            onClick={() => setShowCrearExtraModal(true)}
+            disabled={!trimestre}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+            title="Crear un slot EXTRA puntual"
+          >
+            + Añadir EXTRA
+          </button>
           <button
             onClick={handleExport}
             disabled={!trimestre}
@@ -813,11 +877,10 @@ export function OperacionPageClient() {
         </div>
       )}
 
-      {/* V20 panel + V21/F3b "Añadir EXTRA" button. Header always renders when
-          extrasData has loaded so the planner can create the first EXTRA on a
-          fresh trimestre (total=0); chevron only shown when total>0 since
-          there's nothing to expand otherwise. */}
-      {extrasData && (
+      {/* V20 amber EXTRA panel. Only renders when the trimestre has at least
+          one EXTRA — the planner's entry point to create the first EXTRA on a
+          fresh trimestre is the "+ Añadir EXTRA" button in the page header. */}
+      {extrasData && extrasData.total > 0 && (
         <div className="rounded-lg border border-amber-200 bg-amber-50">
           <div className="w-full flex items-center gap-2 px-4 py-3 hover:bg-amber-100/60 transition-colors rounded-lg">
             <button
@@ -834,7 +897,7 @@ export function OperacionPageClient() {
                   {extrasData.total === 0 ? "en este trimestre" : `detectado${extrasData.total === 1 ? "" : "s"}`}
                 </div>
                 <div className="text-xs text-amber-700">
-                  Asignaciones extra de empresas con escuela propia. Revisar y borrar las que no correspondan.
+                  Slots EXTRA: talleres adicionales a la frecuencia regular de la empresa.
                 </div>
               </div>
             </button>
@@ -945,13 +1008,18 @@ export function OperacionPageClient() {
               const isActive = semanaActual === sem;
               const isComplete = stats.confirmados === stats.total && stats.total > 0;
               const hasCancel = stats.cancelados > 0;
+              const dobleCount = doblesCountPorSemana.get(sem) ?? 0;
               const dateRange = trimestre ? getWeekDateRange(trimestre, sem) : "";
+              const titleParts = [dateRange];
+              if (stats.vacantes > 0) titleParts.push(`${stats.vacantes} vacantes`);
+              if (dobleCount > 0) titleParts.push(`${dobleCount} DOBLE`);
+              const title = titleParts.filter(Boolean).join(" — ");
 
               return (
                 <button
                   key={sem}
                   onClick={() => setSemanaActual(sem)}
-                  title={`${dateRange}${stats.vacantes > 0 ? ` - ${stats.vacantes} vacantes` : ""}`}
+                  title={title}
                   className={`relative flex flex-col items-center rounded-lg px-3 py-2 text-xs transition-all border min-w-13 ${
                     isActive
                       ? "border-blue-400 bg-blue-100 shadow-sm ring-2 ring-blue-200"
@@ -966,6 +1034,17 @@ export function OperacionPageClient() {
                   )}
                   {hasCancel && !isComplete && (
                     <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-red-400" />
+                  )}
+                  {/* V22 (Cambio A, Fase 6b): yellow "D" badge when this week
+                      has at least one DOBLE. Positioned at top-left so it
+                      never collides with the ✓ / red dot top-right. */}
+                  {dobleCount > 0 && (
+                    <span
+                      className="absolute -top-1 -left-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-yellow-400 px-1 text-[8px] font-bold text-yellow-900 ring-1 ring-yellow-600"
+                      title={`${dobleCount} taller${dobleCount === 1 ? "" : "es"} DOBLE en esta semana`}
+                    >
+                      D{dobleCount > 1 ? `·${dobleCount}` : ""}
+                    </span>
                   )}
 
                   <span className={`font-bold ${isActive ? "text-blue-700" : stats.vacantes > 0 ? "text-amber-800" : "text-slate-600"}`}>
@@ -1131,6 +1210,86 @@ export function OperacionPageClient() {
           {slotsSemanales.length === 0 && (
             <div className="text-center py-12 text-slate-400">
               No hay slots que coincidan con los filtros
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* V22 (Cambio A, Fase 6b): collapsible DOBLE-de-esta-semana section.
+          Read-only here — edits and creation live in /planificacion/doble. */}
+      {calendario && doblesEstaSemana.length > 0 && (
+        <div className="rounded-lg border border-yellow-300 bg-yellow-50">
+          <div className="w-full flex items-center gap-2 px-4 py-3 hover:bg-yellow-100/60 transition-colors rounded-lg">
+            <button
+              type="button"
+              onClick={() => setDoblesSemanaExpanded(prev => !prev)}
+              className="flex items-center gap-3 flex-1 text-left"
+              aria-expanded={doblesSemanaExpanded}
+            >
+              <span className="text-lg">📒</span>
+              <div>
+                <div className="text-sm font-semibold text-yellow-900">
+                  Doble ({doblesEstaSemana.length} taller{doblesEstaSemana.length === 1 ? "" : "es"})
+                </div>
+                <div className="text-xs text-yellow-800">
+                  Semana intensiva ad-hoc de empresas con escuela propia. Lectura aquí; edición en gestión Doble.
+                </div>
+              </div>
+            </button>
+            <Link
+              href="/planificacion/doble"
+              className="shrink-0 rounded-md border border-yellow-400 bg-white px-3 py-1.5 text-xs font-medium text-yellow-900 hover:bg-yellow-100 transition-colors"
+              title="Ir a la página de gestión de DOBLE"
+            >
+              Editar en gestión Doble →
+            </Link>
+            <button
+              type="button"
+              onClick={() => setDoblesSemanaExpanded(prev => !prev)}
+              className="shrink-0 p-1 rounded hover:bg-yellow-100"
+              aria-label={doblesSemanaExpanded ? "Colapsar sección DOBLE" : "Expandir sección DOBLE"}
+            >
+              <svg
+                className={`h-5 w-5 text-yellow-700 transition-transform ${doblesSemanaExpanded ? "rotate-180" : ""}`}
+                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+
+          {doblesSemanaExpanded && (
+            <div className="border-t border-yellow-300 px-4 py-3 max-h-96 overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-left text-yellow-900 border-b border-yellow-300">
+                    <th className="py-1.5 pr-3 font-medium">Día</th>
+                    <th className="py-1.5 pr-3 font-medium">Horario</th>
+                    <th className="py-1.5 pr-3 font-medium">Taller</th>
+                    <th className="py-1.5 pr-3 font-medium">Programa</th>
+                    <th className="py-1.5 pr-3 font-medium">Empresa</th>
+                    <th className="py-1.5 pr-3 font-medium">Estado</th>
+                    <th className="py-1.5 font-medium">Notas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {doblesEstaSemana.map(d => (
+                    <tr key={d.id} className="border-b border-yellow-200 last:border-b-0">
+                      <td className="py-1.5 pr-3 font-mono text-slate-700">{d.dia}</td>
+                      <td className="py-1.5 pr-3 font-mono text-slate-700">{d.horario}</td>
+                      <td className="py-1.5 pr-3 text-slate-800">{d.taller_nombre}</td>
+                      <td className="py-1.5 pr-3">
+                        <Badge variant="outline" className="text-[10px]">{d.programa}</Badge>
+                      </td>
+                      <td className="py-1.5 pr-3 text-slate-800">{d.empresa_nombre ?? "—"}</td>
+                      <td className="py-1.5 pr-3">
+                        <Badge variant="outline" className="text-[10px]">{d.estado}</Badge>
+                      </td>
+                      <td className="py-1.5 text-slate-600">{d.notas ?? ""}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -1619,6 +1778,22 @@ function SlotRow({
             {slot.motivo_cambio === "EMPRESA_CANCELO" && (
               <Badge variant="outline" className="shrink-0 text-[10px] bg-red-50 text-red-600 border-red-200">
                 Empresa canceló
+              </Badge>
+            )}
+            {/* Companion badge surfacing WHICH empresa canceled. Only shown for
+                EMPRESA_CANCELO (decision badge for DECISION_PLANIFICADOR doesn't
+                imply a real cancellation) and only when the slot was actually
+                reassigned away from the original — same-empresa edits keep the
+                row visually clean. */}
+            {slot.motivo_cambio === "EMPRESA_CANCELO" &&
+              slot.empresa_nombre_original &&
+              slot.empresa_id_original !== slot.empresa_id && (
+              <Badge
+                variant="outline"
+                className="shrink-0 text-[10px] bg-red-50/40 text-red-700 border-red-200"
+                title={`Empresa originalmente asignada: ${slot.empresa_nombre_original}`}
+              >
+                Canceló: {slot.empresa_nombre_original}
               </Badge>
             )}
             {slot.motivo_cambio === "DECISION_PLANIFICADOR" && (
