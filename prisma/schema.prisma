@@ -200,6 +200,7 @@ model ConfigTrimestral {
   trimestre              String
   tipoParticipacion      Programa     @default(AMBAS)
   escuelaPropia          Boolean      @default(false)
+  permiteExtras          Boolean      @default(false) // V22 (Cambio A): empresa puede recibir slots EXTRA en este trimestre. Inicializado desde Empresa.aceptaExtras al crear la CT.
   frecuenciaSolicitada   Int?
   frecuenciaEF           Int? // Explicit EF workshops requested (from master import)
   frecuenciaIT           Int? // Explicit IT workshops requested (from master import)
@@ -358,6 +359,7 @@ enum EstadoTaller {
 enum TipoAsignacion {
   BASE
   EXTRA
+  DOBLE // V22 (Cambio A): semana intensiva de empresa con escuelaPropia=true. Ad-hoc, paralelo al solver — no consume frecuencia, no valida colisión.
   CONTINGENCIA
 }
 

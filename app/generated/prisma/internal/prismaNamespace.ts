@@ -1956,6 +1956,7 @@ export const ConfigTrimestralScalarFieldEnum = {
   trimestre: 'trimestre',
   tipoParticipacion: 'tipoParticipacion',
   escuelaPropia: 'escuelaPropia',
+  permiteExtras: 'permiteExtras',
   frecuenciaSolicitada: 'frecuenciaSolicitada',
   frecuenciaEF: 'frecuenciaEF',
   frecuenciaIT: 'frecuenciaIT',
