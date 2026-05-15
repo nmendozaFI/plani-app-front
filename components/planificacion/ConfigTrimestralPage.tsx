@@ -64,6 +64,7 @@ export default function ConfigTrimestralPage() {
   const [filterTipo, setFilterTipo] = useState<string>("all");
   const [filterSinFreq, setFilterSinFreq] = useState(false);
   const [filterSoloEP, setFilterSoloEP] = useState(false);
+  const [filterSoloPE, setFilterSoloPE] = useState(false); // V22 (Cambio A): filtro "Solo permite extras"
 
   // Import modal state
   const [showImportModal, setShowImportModal] = useState(false);
@@ -147,13 +148,19 @@ export default function ConfigTrimestralPage() {
       if (filterTipo !== "all" && c.tipo_participacion !== filterTipo) {
         return false;
       }
-      if (filterSinFreq && (c.frecuencia_solicitada !== null && c.frecuencia_solicitada > 0)) {
-        return false;
+      if (filterSinFreq) {
+        // V24 (Cambio B, D2/D7): "sin frecuencia" pasa a significar "ambos
+        // frecuencia_ef y frecuencia_it NULL o 0" — esas empresas se omiten
+        // de la matriz semáforo. frecuencia_solicitada es cementerio.
+        const ef = c.frecuencia_ef ?? 0;
+        const it = c.frecuencia_it ?? 0;
+        if (ef > 0 || it > 0) return false;
       }
       if (filterSoloEP && !c.escuela_propia) return false;
+      if (filterSoloPE && !c.permite_extras) return false;
       return true;
     });
-  }, [configs, searchTerm, filterTipo, filterSinFreq, filterSoloEP]);
+  }, [configs, searchTerm, filterTipo, filterSinFreq, filterSoloEP, filterSoloPE]);
 
   // Get current value (modified or original)
   const getValue = (config: ConfigTrimestralOut, field: keyof ConfigBatchUpdateItem) => {
@@ -438,6 +445,9 @@ export default function ConfigTrimestralPage() {
               {resumen?.escuela_propia ? (
                 <span>{resumen.escuela_propia} escuela propia</span>
               ) : null}
+              {resumen?.permite_extras ? (
+                <span>{resumen.permite_extras} permite extras</span>
+              ) : null}
             </div>
             {modifiedRows.size > 0 && (
               <div className="flex items-center gap-2">
@@ -505,6 +515,13 @@ export default function ConfigTrimestralPage() {
               />
               Solo EP
             </label>
+            <label className="flex items-center gap-2 text-sm cursor-pointer">
+              <Checkbox
+                checked={filterSoloPE}
+                onCheckedChange={(c) => setFilterSoloPE(!!c)}
+              />
+              Solo PE
+            </label>
           </div>
 
           {/* Table */}
@@ -517,11 +534,28 @@ export default function ConfigTrimestralPage() {
                     <th className="text-center p-3 font-medium w-24">Tipo</th>
                     <th
                       className="text-center p-3 font-medium w-16"
-                      title="Escuela propia — habilita a la empresa a tener slots EXTRA en este trimestre"
+                      title="Escuela propia — habilita a la empresa a tener slots DOBLE (semana intensiva) en este trimestre"
                     >
                       EP
                     </th>
-                    <th className="text-center p-3 font-medium w-20">Freq</th>
+                    <th
+                      className="text-center p-3 font-medium w-16"
+                      title="Permite Extras — habilita a la empresa a recibir slots EXTRA (sobre su frecuencia regular) en este trimestre"
+                    >
+                      PE
+                    </th>
+                    <th
+                      className="text-center p-3 font-medium w-20"
+                      title="Frecuencia EF — talleres EF asignados a la empresa este trimestre. Vacío = no participa en EF."
+                    >
+                      Freq EF
+                    </th>
+                    <th
+                      className="text-center p-3 font-medium w-20"
+                      title="Frecuencia IT — talleres IT asignados a la empresa este trimestre. Vacío = no participa en IT."
+                    >
+                      Freq IT
+                    </th>
                     <th className="text-center p-3 font-medium w-40">Dias</th>
                     <th className="text-center p-3 font-medium w-20">Turno</th>
                     <th className="text-center p-3 font-medium w-20">Vol.</th>
@@ -580,17 +614,45 @@ export default function ConfigTrimestralPage() {
                         />
                       </td>
                       <td className="p-3 text-center">
+                        <Checkbox
+                          checked={(getValue(config, "permite_extras") as boolean) ?? false}
+                          onCheckedChange={(c) =>
+                            handleFieldChange(config.empresa_id, "permite_extras", !!c)
+                          }
+                        />
+                      </td>
+                      {/* V24 (Cambio B): inputs separados Freq EF y Freq IT.
+                          Vacío = NULL en BD = empresa NO entra a la matriz
+                          semáforo si AMBOS están vacíos (decisión D2). Uno
+                          solo NULL = ese tipo en 0 (decisión D3). */}
+                      <td className="p-3 text-center">
                         <Input
                           type="number"
                           min={0}
                           max={20}
                           className="h-8 w-16 text-center"
-                          value={getValue(config, "frecuencia_solicitada") as number || ""}
+                          value={(getValue(config, "frecuencia_ef") as number | null | undefined) ?? ""}
                           onChange={(e) =>
                             handleFieldChange(
                               config.empresa_id,
-                              "frecuencia_solicitada",
-                              e.target.value ? parseInt(e.target.value) : null
+                              "frecuencia_ef",
+                              e.target.value === "" ? null : parseInt(e.target.value)
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="p-3 text-center">
+                        <Input
+                          type="number"
+                          min={0}
+                          max={20}
+                          className="h-8 w-16 text-center"
+                          value={(getValue(config, "frecuencia_it") as number | null | undefined) ?? ""}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              config.empresa_id,
+                              "frecuencia_it",
+                              e.target.value === "" ? null : parseInt(e.target.value)
                             )
                           }
                         />
@@ -817,10 +879,10 @@ function ImportConfigModal({
 
           {importResult && (
             <div className="space-y-4">
-              {/* Format badge */}
+              {/* V24 (Cambio B, B4.5): formato único 10-col split EF/IT. */}
               <div className="flex items-center gap-3">
-                <Badge variant={importResult.formato_detectado === "ideal" ? "default" : "secondary"}>
-                  Formato detectado: {importResult.formato_detectado === "ideal" ? "Sistema" : "Planificador"}
+                <Badge variant="default">
+                  Formato V24 split EF/IT
                 </Badge>
                 <span className="text-xs text-slate-500">
                   {importResult.total_procesados} filas procesadas
@@ -843,7 +905,7 @@ function ImportConfigModal({
                 </div>
               </div>
 
-              {/* Preview table */}
+              {/* Preview table — V24 columnas: Freq EF, Freq IT, EP, PE. */}
               {importResult.preview.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-slate-700 mb-2">
@@ -854,13 +916,10 @@ function ImportConfigModal({
                       <thead>
                         <tr className="bg-slate-50 border-b">
                           <th className="text-left p-2 font-medium">Empresa</th>
-                          {importResult.formato_detectado === "legacy" ? (
-                            <>
-                              <th className="text-center p-2 font-medium w-14">EF</th>
-                              <th className="text-center p-2 font-medium w-14">IT</th>
-                            </>
-                          ) : null}
-                          <th className="text-center p-2 font-medium w-16">Freq</th>
+                          <th className="text-center p-2 font-medium w-14">EF</th>
+                          <th className="text-center p-2 font-medium w-14">IT</th>
+                          <th className="text-center p-2 font-medium w-12">EP</th>
+                          <th className="text-center p-2 font-medium w-12">PE</th>
                           <th className="text-center p-2 font-medium w-16">Tipo</th>
                           <th className="text-left p-2 font-medium">Notas</th>
                         </tr>
@@ -869,15 +928,22 @@ function ImportConfigModal({
                         {importResult.preview.slice(0, 20).map((item) => (
                           <tr key={item.empresa_id} className="border-b hover:bg-slate-50">
                             <td className="p-2 font-medium">{item.nombre}</td>
-                            {importResult.formato_detectado === "legacy" ? (
-                              <>
-                                <td className="p-2 text-center text-blue-600">{item.detalle_ef || "-"}</td>
-                                <td className="p-2 text-center text-green-600">{item.detalle_it || "-"}</td>
-                              </>
-                            ) : null}
-                            <td className="p-2 text-center font-semibold">{item.frecuencia}</td>
+                            <td className="p-2 text-center text-blue-600">
+                              {item.frecuencia_ef ?? "-"}
+                            </td>
+                            <td className="p-2 text-center text-green-600">
+                              {item.frecuencia_it ?? "-"}
+                            </td>
+                            <td className="p-2 text-center">
+                              {item.escuela_propia ? "✓" : "·"}
+                            </td>
+                            <td className="p-2 text-center">
+                              {item.permite_extras ? "✓" : "·"}
+                            </td>
                             <td className="p-2 text-center">{item.tipo || "-"}</td>
-                            <td className="p-2 text-slate-500 truncate max-w-[200px]">{item.notas || "-"}</td>
+                            <td className="p-2 text-slate-500 truncate max-w-[200px]">
+                              {item.notas || "-"}
+                            </td>
                           </tr>
                         ))}
                       </tbody>

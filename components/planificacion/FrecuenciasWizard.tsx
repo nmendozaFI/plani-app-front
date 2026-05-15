@@ -502,7 +502,27 @@ export function FrecuenciasWizard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {empresasFiltradas.length === 0 ? (
+                  {empresasEdit.length === 0 ? (
+                    // V24 (Cambio B, decisión D2): la matriz semáforo solo
+                    // incluye empresas con frecuenciaEF o frecuenciaIT explícitos
+                    // en CT. Si todas las CTs del trimestre tienen ambos NULL,
+                    // /calcular devuelve 0 empresas — guiamos al planificador.
+                    <tr>
+                      <td
+                        colSpan={9}
+                        className="px-4 py-12 text-center text-sm text-slate-500"
+                      >
+                        Sin empresas para la matriz.{" "}
+                        <a
+                          href="/configuracion-trimestral"
+                          className="text-blue-600 underline hover:text-blue-700"
+                        >
+                          Configura Freq EF / Freq IT en Config Trimestral
+                        </a>{" "}
+                        para que las empresas aparezcan aquí (al menos una de las dos).
+                      </td>
+                    </tr>
+                  ) : empresasFiltradas.length === 0 ? (
                     <tr>
                       <td
                         colSpan={9}
@@ -773,6 +793,18 @@ export function FrecuenciasWizard() {
                   {confirmacion.total_ef} EF + {confirmacion.total_it} IT ={" "}
                   {confirmacion.total_ef + confirmacion.total_it} talleres
                 </p>
+                {/* V24 (Cambio B, D5): surface empresas omitidas para que el
+                    planificador sepa que algunas empresas no entraron al
+                    insert por tener talleres_ef=0 y talleres_it=0. */}
+                {(confirmacion.empresas_omitidas ?? 0) > 0 && (
+                  <p className="mt-1 text-xs text-emerald-700/80">
+                    {confirmacion.empresas_omitidas} empresa
+                    {confirmacion.empresas_omitidas === 1 ? "" : "s"}{" "}
+                    omitida
+                    {confirmacion.empresas_omitidas === 1 ? "" : "s"}{" "}
+                    (sin talleres asignados).
+                  </p>
+                )}
               </div>
             </div>
           </div>

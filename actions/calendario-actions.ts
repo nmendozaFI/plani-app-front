@@ -15,6 +15,11 @@ import {
   borrarSlotExtra,
   crearSlotExtra,
   editarSlotExtra,
+  crearSlotDoble,
+  listarDobles,
+  editarSlotDoble,
+  borrarSlotDoble,
+  cleanupExtrasDoble,
 } from "@/lib/api";
 import { apiFetchServer } from "@/lib/api-client";
 import type {
@@ -31,6 +36,11 @@ import type {
   SlotExtraResponse,
   CrearSlotExtraInput,
   EditarSlotExtraInput,
+  SlotDobleResponse,
+  ListaDoblesResponse,
+  CrearSlotDobleInput,
+  EditarSlotDobleInput,
+  CleanupExtrasDobleResult,
   ValidarAsignacionResult,
 } from "@/types/calendario";
 import type { AnalisisResponse } from "@/types/analisis";
@@ -216,6 +226,84 @@ export async function actionEditarSlotExtra(
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al editar slot EXTRA";
+    return { ok: false, error: msg };
+  }
+}
+
+// ── V22 (Cambio A): DOBLE CRUD ───────────────────────────────
+// Decision 4: backend only gates by escuelaPropia + empresa-activa + taller.
+// No collision, no programa check, no duplicate check — frontend trusts the
+// detail message from the backend and surfaces it verbatim on error.
+
+export async function actionCrearDoble(
+  trimestre: string,
+  body: CrearSlotDobleInput
+): Promise<ActionResult<SlotDobleResponse>> {
+  try {
+    const data = await crearSlotDoble(trimestre, body);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al crear slot DOBLE";
+    return { ok: false, error: msg };
+  }
+}
+
+// Optional filters: semana (1..13) and empresaId.
+// Empty list → 200 (NOT 404) when no DOBLE rows match.
+export async function actionListarDobles(
+  trimestre: string,
+  filters?: { semana?: number; empresaId?: number }
+): Promise<ActionResult<ListaDoblesResponse>> {
+  try {
+    const data = await listarDobles(trimestre, filters);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al listar DOBLEs";
+    return { ok: false, error: msg };
+  }
+}
+
+// Full-freedom PATCH: empresa, taller, semana, día, horario, notas.
+// Backend rejects (422) if body has no fields set.
+export async function actionEditarDoble(
+  slotId: number,
+  body: EditarSlotDobleInput
+): Promise<ActionResult<SlotDobleResponse>> {
+  try {
+    const data = await editarSlotDoble(slotId, body);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al editar slot DOBLE";
+    return { ok: false, error: msg };
+  }
+}
+
+// Guarded to tipoAsignacion='DOBLE': 400 if it's not, 404 if id unknown.
+export async function actionBorrarDoble(
+  slotId: number
+): Promise<ActionResult<{ slot_id: number }>> {
+  try {
+    await borrarSlotDoble(slotId);
+    return { ok: true, data: { slot_id: slotId } };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al borrar slot DOBLE";
+    return { ok: false, error: msg };
+  }
+}
+
+// Bulk cleanup of EXTRA+DOBLE for a trimestre. Caller must pass
+// confirmar=true; the backend returns 400 if it's false. BASE/CONTINGENCIA
+// rows are untouched.
+export async function actionCleanupExtrasDoble(
+  trimestre: string,
+  confirmar: boolean
+): Promise<ActionResult<CleanupExtrasDobleResult>> {
+  try {
+    const data = await cleanupExtrasDoble(trimestre, confirmar);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg =
+      e instanceof Error ? e.message : "Error al ejecutar cleanup extras-doble";
     return { ok: false, error: msg };
   }
 }

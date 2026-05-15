@@ -9,7 +9,10 @@ export interface ConfigTrimestralOut {
   empresa_nombre: string;
   tipo_participacion: string; // EF, IT, AMBAS
   escuela_propia: boolean;
-  frecuencia_solicitada: number | null;
+  permite_extras: boolean; // V22 (Cambio A): gate para crear slots EXTRA
+  frecuencia_solicitada: number | null; // V24 (Cambio B, D7): cementerio — backend lo deja pero ya no se lee/escribe en UI
+  frecuencia_ef: number | null; // V24 (Cambio B): input planificadora para matriz semáforo
+  frecuencia_it: number | null; // V24 (Cambio B): idem
   disponibilidad_dias: string; // "L,M,X,J,V"
   turno_preferido: string | null; // "M", "T", null
   voluntarios_disponibles: number;
@@ -20,7 +23,10 @@ export interface ConfigTrimestralOut {
 export interface ConfigTrimestralUpdate {
   tipo_participacion?: string;
   escuela_propia?: boolean;
+  permite_extras?: boolean; // V22 (Cambio A)
   frecuencia_solicitada?: number | null;
+  frecuencia_ef?: number | null; // V24 (Cambio B)
+  frecuencia_it?: number | null; // V24 (Cambio B)
   disponibilidad_dias?: string;
   turno_preferido?: string | null;
   voluntarios_disponibles?: number;
@@ -32,7 +38,10 @@ export interface ConfigBatchUpdateItem {
   empresa_id: number;
   tipo_participacion?: string;
   escuela_propia?: boolean;
+  permite_extras?: boolean; // V22 (Cambio A)
   frecuencia_solicitada?: number | null;
+  frecuencia_ef?: number | null; // V24 (Cambio B)
+  frecuencia_it?: number | null; // V24 (Cambio B)
   disponibilidad_dias?: string;
   turno_preferido?: string | null;
   voluntarios_disponibles?: number;
@@ -57,6 +66,7 @@ export interface ConfigTrimestralResumen {
   con_frecuencia: number;
   sin_frecuencia: number;
   escuela_propia: number;
+  permite_extras: number; // V22 (Cambio A): count of CTs with permiteExtras=true
 }
 
 export interface InicializarConfigResult {
@@ -75,19 +85,26 @@ export interface CerrarTrimestreResult {
   preview: boolean;
 }
 
+// V24 (Cambio B, B4.5): preview item del bulk CT importer en formato
+// 10-columnas (Empresa | Freq EF | Freq IT | Tipo | Dias | Turno |
+// Voluntarios | Escuela Propia | Permite Extras | Notas).
 export interface ImportPreviewItem {
   empresa_id: number;
   nombre: string;
-  frecuencia: number;
+  frecuencia_ef: number | null;
+  frecuencia_it: number | null;
   tipo: string | null;
+  dias: string | null;
+  turno: string | null; // "M" | "T" | null
+  voluntarios: number | null;
+  escuela_propia: boolean;
+  permite_extras: boolean;
   notas: string | null;
-  detalle_ef: number | null;
-  detalle_it: number | null;
 }
 
 export interface ImportarConfigExcelResult {
   trimestre: string;
-  formato_detectado: "ideal" | "legacy";
+  formato_detectado: "v24-split-efit"; // único formato aceptado en V24+
   total_procesados: number;
   aplicados: number;
   preview: ImportPreviewItem[];

@@ -68,4 +68,8 @@ export interface ConfirmarOutput {
     talleres_it: number;
     total: number;
   }[];
+  // V24 (Cambio B, decisión D5): contador de empresas con talleres_ef=0 y
+  // talleres_it=0 que NO se insertaron en la tabla `frecuencia`. Campo
+  // optional para compat con respuestas pre-V24 (donde no existía).
+  empresas_omitidas?: number;
 }

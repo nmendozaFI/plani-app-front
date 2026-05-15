@@ -41,6 +41,11 @@ export type {
   ListaExtrasResponse,
   CrearSlotExtraInput,
   EditarSlotExtraInput,
+  SlotDobleResponse,
+  ListaDoblesResponse,
+  CrearSlotDobleInput,
+  EditarSlotDobleInput,
+  CleanupExtrasDobleResult,
   ValidarAsignacionResult,
 } from "@/types/calendario";
 
@@ -117,6 +122,11 @@ import type {
   SlotExtraResponse,
   CrearSlotExtraInput,
   EditarSlotExtraInput,
+  SlotDobleResponse,
+  ListaDoblesResponse,
+  CrearSlotDobleInput,
+  EditarSlotDobleInput,
+  CleanupExtrasDobleResult,
 } from "@/types/calendario";
 
 import type { AnalisisResponse } from "@/types/analisis";
@@ -368,6 +378,78 @@ export async function editarSlotExtra(
   );
 }
 
+// ── V22 (Cambio A): DOBLE CRUD ────────────────────────────────
+// Separate router, same prefix as EXTRA. Decision 4: backend gates only by
+// escuelaPropia (and empresa activa + taller exists). No collision check, no
+// programa coherence, no duplicate check.
+
+// POST /api/planificacion/{trimestre}/doble
+export async function crearSlotDoble(
+  trimestre: string,
+  body: CrearSlotDobleInput
+): Promise<SlotDobleResponse> {
+  return apiFetch<SlotDobleResponse>(
+    `/api/planificacion/${trimestre}/doble`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    }
+  );
+}
+
+// GET /api/planificacion/{trimestre}/dobles?semana=&empresa_id=
+// Both query params optional. Order: (semana, dia, horario, empresa_nombre).
+export async function listarDobles(
+  trimestre: string,
+  filters?: { semana?: number; empresaId?: number }
+): Promise<ListaDoblesResponse> {
+  const params = new URLSearchParams();
+  if (filters?.semana != null) params.set("semana", String(filters.semana));
+  if (filters?.empresaId != null) params.set("empresa_id", String(filters.empresaId));
+  const qs = params.toString();
+  return apiFetch<ListaDoblesResponse>(
+    `/api/planificacion/${trimestre}/dobles${qs ? `?${qs}` : ""}`
+  );
+}
+
+// PATCH /api/planificacion/{slotId}/doble
+// Body must have at least one field (422 otherwise). Slot must be DOBLE (400).
+export async function editarSlotDoble(
+  slotId: number,
+  body: EditarSlotDobleInput
+): Promise<SlotDobleResponse> {
+  return apiFetch<SlotDobleResponse>(
+    `/api/planificacion/${slotId}/doble`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }
+  );
+}
+
+// DELETE /api/planificacion/{slotId}/doble
+// Guarded to tipoAsignacion='DOBLE' (400 otherwise; 404 if id unknown).
+export async function borrarSlotDoble(slotId: number): Promise<void> {
+  await apiFetch<{ deleted_id: number; tipo_asignacion: string }>(
+    `/api/planificacion/${slotId}/doble`,
+    { method: "DELETE" }
+  );
+}
+
+// DELETE /api/planificacion/{trimestre}/extras-doble?confirmar=true
+// Bulk wipe of EXTRA + DOBLE for a trimestre. Requires `confirmar=true`,
+// otherwise the backend returns 400. BASE/CONTINGENCIA are never touched.
+// Used by Fase 7 cleanup of Q2 legacy-EXTRA rows.
+export async function cleanupExtrasDoble(
+  trimestre: string,
+  confirmar: boolean
+): Promise<CleanupExtrasDobleResult> {
+  return apiFetch<CleanupExtrasDobleResult>(
+    `/api/planificacion/${trimestre}/extras-doble?confirmar=${confirmar}`,
+    { method: "DELETE" }
+  );
+}
+
 // ── Empresas ─────────────────────────────────────────────────
 
 export async function obtenerEmpresas(): Promise<EmpresaSimple[]> {
@@ -584,6 +666,20 @@ export async function listarEmpresasEP(
 ): Promise<ListaEmpresasEPResponse> {
   return apiFetch<ListaEmpresasEPResponse>(
     `/api/config-trimestral/${trimestre}/empresas-ep`
+  );
+}
+
+// V22 (Cambio A): list empresas with permiteExtras=true (and activa=true) for
+// the trimestre. Feeds the CrearExtraModal empresa Select. Same response shape
+// as /empresas-ep (the API reuses ListaEmpresasEPResponse to avoid a duplicate
+// type); the semantics differ — this is the EXTRA gate, /empresas-ep is the
+// DOBLE gate.
+// GET /api/config-trimestral/{trimestre}/empresas-permite-extras
+export async function listarEmpresasPermiteExtras(
+  trimestre: string
+): Promise<ListaEmpresasEPResponse> {
+  return apiFetch<ListaEmpresasEPResponse>(
+    `/api/config-trimestral/${trimestre}/empresas-permite-extras`
   );
 }
 
