@@ -8,12 +8,14 @@ import {
   inicializarConfigTrimestral,
   importarConfigExcel,
   listarEmpresasEP,
+  listarEmpresasDoble,
   listarEmpresasPermiteExtras,
 } from "@/lib/api";
 import type {
   ConfigTrimestralUpdate,
   ConfigBatchUpdateItem,
   ListaEmpresasEPResponse,
+  ListaEmpresasDobleResponse,
 } from "@/types/config-trimestral";
 import type { ActionResult } from "@/types/actions";
 
@@ -96,6 +98,23 @@ export async function actionListarEmpresasEP(
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al listar empresas EP";
+    return { ok: false, error: msg };
+  }
+}
+
+// V25 Cambio C (Capa 4): list empresas DOBLE-elegibles. Espejo de
+// `actionListarEmpresasEP` pero apunta al endpoint nuevo `/empresas-doble`,
+// que filtra por el flag estructural `empresa.puedeSerDoble`. Usado por
+// DoblePageClient para poblar el listado de empresas habilitadas para
+// asignación DOBLE.
+export async function actionListarEmpresasDoble(
+  trimestre: string
+): Promise<ActionResult<ListaEmpresasDobleResponse>> {
+  try {
+    const data = await listarEmpresasDoble(trimestre);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al listar empresas DOBLE";
     return { ok: false, error: msg };
   }
 }

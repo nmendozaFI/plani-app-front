@@ -20,6 +20,10 @@ export interface Empresa {
   turnoPreferido: string | null;
   activa: boolean;
   esNueva: boolean;
+  // V25 Cambio C: 3 flags estructurales nuevos.
+  esContratante: boolean;
+  puedeSerEP: boolean;
+  puedeSerDoble: boolean;
   notas: string | null;
 }
 
@@ -46,6 +50,10 @@ export interface EmpresaCreateInput {
   tieneBolsa?: boolean;
   turnoPreferido?: string | null;
   esNueva?: boolean;
+  // V25 Cambio C
+  esContratante?: boolean;
+  puedeSerEP?: boolean;
+  puedeSerDoble?: boolean;
   notas?: string | null;
 }
 
@@ -65,6 +73,10 @@ export interface EmpresaUpdateInput {
   tieneBolsa?: boolean;
   turnoPreferido?: string | null;
   esNueva?: boolean;
+  // V25 Cambio C
+  esContratante?: boolean;
+  puedeSerEP?: boolean;
+  puedeSerDoble?: boolean;
   notas?: string | null;
 }
 

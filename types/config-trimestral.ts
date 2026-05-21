@@ -112,8 +112,9 @@ export interface ImportarConfigExcelResult {
   dry_run: boolean;
 }
 
-// V21 / F3a: empresas con escuelaPropia=true (and activa=true) for the trimestre.
-// Feeds the empresa Select in the "Añadir EXTRA" modal.
+// V21 / F3a: empresas elegibles EP. V25 Cambio C (Capa 3): el filtro pasó de
+// `CT.escuelaPropia=true` al flag estructural `empresa.puedeSerEP=true`. El
+// path mantiene `{trimestre}` por compat con frontend pero queda decorativo.
 export interface EmpresaEP {
   id: number;
   nombre: string;
@@ -125,4 +126,22 @@ export interface ListaEmpresasEPResponse {
   trimestre: string;
   total: number;
   empresas: EmpresaEP[];
+}
+
+// V25 Cambio C (Capa 4): empresas elegibles para asignación DOBLE. Filtro:
+// `empresa.puedeSerDoble=true AND empresa.activa=true`. Backend reusa la
+// misma forma del response model (ListaEmpresasEPResponse) — aquí el type
+// es independiente por claridad semántica (la página DOBLE no debería
+// importar nada con "EP" en el nombre).
+export interface EmpresaDoble {
+  id: number;
+  nombre: string;
+  tipo: "EF" | "IT" | "AMBAS";
+  activa: boolean;
+}
+
+export interface ListaEmpresasDobleResponse {
+  trimestre: string;
+  total: number;
+  empresas: EmpresaDoble[];
 }

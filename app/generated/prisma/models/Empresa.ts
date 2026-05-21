@@ -55,6 +55,9 @@ export type EmpresaMinAggregateOutputType = {
   turnoPreferido: string | null
   activa: boolean | null
   esNueva: boolean | null
+  esContratante: boolean | null
+  puedeSerEP: boolean | null
+  puedeSerDoble: boolean | null
   notas: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -75,6 +78,9 @@ export type EmpresaMaxAggregateOutputType = {
   turnoPreferido: string | null
   activa: boolean | null
   esNueva: boolean | null
+  esContratante: boolean | null
+  puedeSerEP: boolean | null
+  puedeSerDoble: boolean | null
   notas: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -95,6 +101,9 @@ export type EmpresaCountAggregateOutputType = {
   turnoPreferido: number
   activa: number
   esNueva: number
+  esContratante: number
+  puedeSerEP: number
+  puedeSerDoble: number
   notas: number
   createdAt: number
   updatedAt: number
@@ -131,6 +140,9 @@ export type EmpresaMinAggregateInputType = {
   turnoPreferido?: true
   activa?: true
   esNueva?: true
+  esContratante?: true
+  puedeSerEP?: true
+  puedeSerDoble?: true
   notas?: true
   createdAt?: true
   updatedAt?: true
@@ -151,6 +163,9 @@ export type EmpresaMaxAggregateInputType = {
   turnoPreferido?: true
   activa?: true
   esNueva?: true
+  esContratante?: true
+  puedeSerEP?: true
+  puedeSerDoble?: true
   notas?: true
   createdAt?: true
   updatedAt?: true
@@ -171,6 +186,9 @@ export type EmpresaCountAggregateInputType = {
   turnoPreferido?: true
   activa?: true
   esNueva?: true
+  esContratante?: true
+  puedeSerEP?: true
+  puedeSerDoble?: true
   notas?: true
   createdAt?: true
   updatedAt?: true
@@ -278,6 +296,9 @@ export type EmpresaGroupByOutputType = {
   turnoPreferido: string | null
   activa: boolean
   esNueva: boolean
+  esContratante: boolean
+  puedeSerEP: boolean
+  puedeSerDoble: boolean
   notas: string | null
   createdAt: Date
   updatedAt: Date
@@ -321,6 +342,9 @@ export type EmpresaWhereInput = {
   turnoPreferido?: Prisma.StringNullableFilter<"Empresa"> | string | null
   activa?: Prisma.BoolFilter<"Empresa"> | boolean
   esNueva?: Prisma.BoolFilter<"Empresa"> | boolean
+  esContratante?: Prisma.BoolFilter<"Empresa"> | boolean
+  puedeSerEP?: Prisma.BoolFilter<"Empresa"> | boolean
+  puedeSerDoble?: Prisma.BoolFilter<"Empresa"> | boolean
   notas?: Prisma.StringNullableFilter<"Empresa"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
@@ -347,6 +371,9 @@ export type EmpresaOrderByWithRelationInput = {
   turnoPreferido?: Prisma.SortOrderInput | Prisma.SortOrder
   activa?: Prisma.SortOrder
   esNueva?: Prisma.SortOrder
+  esContratante?: Prisma.SortOrder
+  puedeSerEP?: Prisma.SortOrder
+  puedeSerDoble?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -376,6 +403,9 @@ export type EmpresaWhereUniqueInput = Prisma.AtLeast<{
   turnoPreferido?: Prisma.StringNullableFilter<"Empresa"> | string | null
   activa?: Prisma.BoolFilter<"Empresa"> | boolean
   esNueva?: Prisma.BoolFilter<"Empresa"> | boolean
+  esContratante?: Prisma.BoolFilter<"Empresa"> | boolean
+  puedeSerEP?: Prisma.BoolFilter<"Empresa"> | boolean
+  puedeSerDoble?: Prisma.BoolFilter<"Empresa"> | boolean
   notas?: Prisma.StringNullableFilter<"Empresa"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Empresa"> | Date | string
@@ -402,6 +432,9 @@ export type EmpresaOrderByWithAggregationInput = {
   turnoPreferido?: Prisma.SortOrderInput | Prisma.SortOrder
   activa?: Prisma.SortOrder
   esNueva?: Prisma.SortOrder
+  esContratante?: Prisma.SortOrder
+  puedeSerEP?: Prisma.SortOrder
+  puedeSerDoble?: Prisma.SortOrder
   notas?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -430,6 +463,9 @@ export type EmpresaScalarWhereWithAggregatesInput = {
   turnoPreferido?: Prisma.StringNullableWithAggregatesFilter<"Empresa"> | string | null
   activa?: Prisma.BoolWithAggregatesFilter<"Empresa"> | boolean
   esNueva?: Prisma.BoolWithAggregatesFilter<"Empresa"> | boolean
+  esContratante?: Prisma.BoolWithAggregatesFilter<"Empresa"> | boolean
+  puedeSerEP?: Prisma.BoolWithAggregatesFilter<"Empresa"> | boolean
+  puedeSerDoble?: Prisma.BoolWithAggregatesFilter<"Empresa"> | boolean
   notas?: Prisma.StringNullableWithAggregatesFilter<"Empresa"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Empresa"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Empresa"> | Date | string
@@ -449,6 +485,9 @@ export type EmpresaCreateInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -475,6 +514,9 @@ export type EmpresaUncheckedCreateInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -500,6 +542,9 @@ export type EmpresaUpdateInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -526,6 +571,9 @@ export type EmpresaUncheckedUpdateInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -552,6 +600,9 @@ export type EmpresaCreateManyInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -571,6 +622,9 @@ export type EmpresaUpdateManyMutationInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -591,6 +645,9 @@ export type EmpresaUncheckedUpdateManyInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -611,6 +668,9 @@ export type EmpresaCountOrderByAggregateInput = {
   turnoPreferido?: Prisma.SortOrder
   activa?: Prisma.SortOrder
   esNueva?: Prisma.SortOrder
+  esContratante?: Prisma.SortOrder
+  puedeSerEP?: Prisma.SortOrder
+  puedeSerDoble?: Prisma.SortOrder
   notas?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -638,6 +698,9 @@ export type EmpresaMaxOrderByAggregateInput = {
   turnoPreferido?: Prisma.SortOrder
   activa?: Prisma.SortOrder
   esNueva?: Prisma.SortOrder
+  esContratante?: Prisma.SortOrder
+  puedeSerEP?: Prisma.SortOrder
+  puedeSerDoble?: Prisma.SortOrder
   notas?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -658,6 +721,9 @@ export type EmpresaMinOrderByAggregateInput = {
   turnoPreferido?: Prisma.SortOrder
   activa?: Prisma.SortOrder
   esNueva?: Prisma.SortOrder
+  esContratante?: Prisma.SortOrder
+  puedeSerEP?: Prisma.SortOrder
+  puedeSerDoble?: Prisma.SortOrder
   notas?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -808,6 +874,9 @@ export type EmpresaCreateWithoutCiudadesInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -833,6 +902,9 @@ export type EmpresaUncheckedCreateWithoutCiudadesInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -873,6 +945,9 @@ export type EmpresaUpdateWithoutCiudadesInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -898,6 +973,9 @@ export type EmpresaUncheckedUpdateWithoutCiudadesInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -922,6 +1000,9 @@ export type EmpresaCreateWithoutRestriccionesInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -947,6 +1028,9 @@ export type EmpresaUncheckedCreateWithoutRestriccionesInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -987,6 +1071,9 @@ export type EmpresaUpdateWithoutRestriccionesInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1012,6 +1099,9 @@ export type EmpresaUncheckedUpdateWithoutRestriccionesInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1036,6 +1126,9 @@ export type EmpresaCreateWithoutConfigsTrimestreInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1061,6 +1154,9 @@ export type EmpresaUncheckedCreateWithoutConfigsTrimestreInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1101,6 +1197,9 @@ export type EmpresaUpdateWithoutConfigsTrimestreInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1126,6 +1225,9 @@ export type EmpresaUncheckedUpdateWithoutConfigsTrimestreInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1150,6 +1252,9 @@ export type EmpresaCreateWithoutFrecuenciasInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1175,6 +1280,9 @@ export type EmpresaUncheckedCreateWithoutFrecuenciasInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1215,6 +1323,9 @@ export type EmpresaUpdateWithoutFrecuenciasInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1240,6 +1351,9 @@ export type EmpresaUncheckedUpdateWithoutFrecuenciasInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1264,6 +1378,9 @@ export type EmpresaCreateWithoutHistoricoInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1289,6 +1406,9 @@ export type EmpresaUncheckedCreateWithoutHistoricoInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1329,6 +1449,9 @@ export type EmpresaUpdateWithoutHistoricoInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1354,6 +1477,9 @@ export type EmpresaUncheckedUpdateWithoutHistoricoInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1378,6 +1504,9 @@ export type EmpresaCreateWithoutPlanificacionesInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1403,6 +1532,9 @@ export type EmpresaUncheckedCreateWithoutPlanificacionesInput = {
   turnoPreferido?: string | null
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1443,6 +1575,9 @@ export type EmpresaUpdateWithoutPlanificacionesInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1468,6 +1603,9 @@ export type EmpresaUncheckedUpdateWithoutPlanificacionesInput = {
   turnoPreferido?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   esNueva?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  esContratante?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerEP?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  puedeSerDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   notas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1569,6 +1707,9 @@ export type EmpresaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   turnoPreferido?: boolean
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1596,6 +1737,9 @@ export type EmpresaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   turnoPreferido?: boolean
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1616,6 +1760,9 @@ export type EmpresaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   turnoPreferido?: boolean
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -1636,12 +1783,15 @@ export type EmpresaSelectScalar = {
   turnoPreferido?: boolean
   activa?: boolean
   esNueva?: boolean
+  esContratante?: boolean
+  puedeSerEP?: boolean
+  puedeSerDoble?: boolean
   notas?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EmpresaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "tipo" | "semaforo" | "scoreV3" | "fiabilidadReciente" | "esComodin" | "aceptaExtras" | "maxExtrasTrimestre" | "prioridadReduccion" | "tieneBolsa" | "turnoPreferido" | "activa" | "esNueva" | "notas" | "createdAt" | "updatedAt", ExtArgs["result"]["empresa"]>
+export type EmpresaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "tipo" | "semaforo" | "scoreV3" | "fiabilidadReciente" | "esComodin" | "aceptaExtras" | "maxExtrasTrimestre" | "prioridadReduccion" | "tieneBolsa" | "turnoPreferido" | "activa" | "esNueva" | "esContratante" | "puedeSerEP" | "puedeSerDoble" | "notas" | "createdAt" | "updatedAt", ExtArgs["result"]["empresa"]>
 export type EmpresaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   configsTrimestre?: boolean | Prisma.Empresa$configsTrimestreArgs<ExtArgs>
   ciudades?: boolean | Prisma.Empresa$ciudadesArgs<ExtArgs>
@@ -1679,6 +1829,9 @@ export type $EmpresaPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     turnoPreferido: string | null
     activa: boolean
     esNueva: boolean
+    esContratante: boolean
+    puedeSerEP: boolean
+    puedeSerDoble: boolean
     notas: string | null
     createdAt: Date
     updatedAt: Date
@@ -2125,6 +2278,9 @@ export interface EmpresaFieldRefs {
   readonly turnoPreferido: Prisma.FieldRef<"Empresa", 'String'>
   readonly activa: Prisma.FieldRef<"Empresa", 'Boolean'>
   readonly esNueva: Prisma.FieldRef<"Empresa", 'Boolean'>
+  readonly esContratante: Prisma.FieldRef<"Empresa", 'Boolean'>
+  readonly puedeSerEP: Prisma.FieldRef<"Empresa", 'Boolean'>
+  readonly puedeSerDoble: Prisma.FieldRef<"Empresa", 'Boolean'>
   readonly notas: Prisma.FieldRef<"Empresa", 'String'>
   readonly createdAt: Prisma.FieldRef<"Empresa", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Empresa", 'DateTime'>

@@ -84,6 +84,9 @@ model Empresa {
   turnoPreferido     String?
   activa             Boolean            @default(true)
   esNueva            Boolean            @default(false)
+  esContratante      Boolean            @default(false) // V25 Cambio C: prioriza talleres con esContratante=true (regla C7).
+  puedeSerEP         Boolean            @default(false) // V25 Cambio C: capacidad estructural EP, independiente de CT.escuelaPropia.
+  puedeSerDoble      Boolean            @default(false) // V25 Cambio C: capacidad estructural Doble. Sin contraparte en CT (decisión §11.3).
   notas              String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt

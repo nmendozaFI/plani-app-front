@@ -442,6 +442,31 @@ export function EmpresasPageClient() {
                                 NEW
                               </span>
                             )}
+                            {/* V25 Cambio C: 3 flags estructurales. */}
+                            {emp.esContratante && (
+                              <span
+                                className="rounded bg-indigo-100 px-1 py-0.5 text-[9px] font-bold text-indigo-700"
+                                title="Es contratante (prioriza talleres del catálogo contratante)"
+                              >
+                                C
+                              </span>
+                            )}
+                            {emp.puedeSerEP && (
+                              <span
+                                className="rounded bg-orange-100 px-1 py-0.5 text-[9px] font-bold text-orange-700"
+                                title="Puede ser Escuela Propia (concentra talleres en una semana)"
+                              >
+                                EP
+                              </span>
+                            )}
+                            {emp.puedeSerDoble && (
+                              <span
+                                className="rounded bg-yellow-100 px-1 py-0.5 text-[9px] font-bold text-yellow-700"
+                                title="Puede ser Doble (2+ talleres misma empresa misma semana)"
+                              >
+                                D
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td
@@ -608,6 +633,19 @@ function EmpresaDetalle({
           <DetailField label="Bolsa" value={emp.tieneBolsa ? "Sí" : "No"} />
           <DetailField label="Score V3" value={emp.scoreV3.toFixed(2)} />
           <DetailField label="Es nueva" value={emp.esNueva ? "Sí" : "No"} />
+          {/* V25 Cambio C: 3 flags estructurales. */}
+          <DetailField
+            label="Es contratante"
+            value={emp.esContratante ? "Sí" : "No"}
+          />
+          <DetailField
+            label="Puede ser EP"
+            value={emp.puedeSerEP ? "Sí" : "No"}
+          />
+          <DetailField
+            label="Puede ser Doble"
+            value={emp.puedeSerDoble ? "Sí" : "No"}
+          />
         </div>
 
         {emp.notas && (
@@ -746,6 +784,10 @@ function EmpresaForm({
     tieneBolsa: initial?.tieneBolsa ?? false,
     turnoPreferido: initial?.turnoPreferido || "",
     esNueva: initial?.esNueva ?? false,
+    // V25 Cambio C: 3 flags estructurales.
+    esContratante: initial?.esContratante ?? false,
+    puedeSerEP: initial?.puedeSerEP ?? false,
+    puedeSerDoble: initial?.puedeSerDoble ?? false,
     notas: initial?.notas || "",
   });
 
@@ -771,6 +813,10 @@ function EmpresaForm({
       tieneBolsa: form.tieneBolsa,
       turnoPreferido: form.turnoPreferido || null,
       esNueva: form.esNueva,
+      // V25 Cambio C: 3 flags estructurales.
+      esContratante: form.esContratante,
+      puedeSerEP: form.puedeSerEP,
+      puedeSerDoble: form.puedeSerDoble,
       notas: form.notas || null,
     };
     onSubmit(data);
@@ -910,6 +956,33 @@ function EmpresaForm({
             onChange={(v) => set("esNueva", v)}
             hint="Empresa incorporada recientemente (reducción 50% primer año)"
           />
+        </div>
+
+        {/* V25 Cambio C: Elegibilidades estructurales ───────────── */}
+        <div>
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+            Elegibilidades
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <CheckboxField
+              label="Es contratante"
+              checked={form.esContratante}
+              onChange={(v) => set("esContratante", v)}
+              hint="Prioriza talleres del catálogo contratante"
+            />
+            <CheckboxField
+              label="Puede ser Escuela Propia (EP)"
+              checked={form.puedeSerEP}
+              onChange={(v) => set("puedeSerEP", v)}
+              hint="Permite concentrar todos los talleres en una semana"
+            />
+            <CheckboxField
+              label="Puede ser Doble"
+              checked={form.puedeSerDoble}
+              onChange={(v) => set("puedeSerDoble", v)}
+              hint="Permite asignar 2+ talleres en la misma semana"
+            />
+          </div>
         </div>
 
         {/* Notas */}

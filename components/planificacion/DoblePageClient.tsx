@@ -12,13 +12,13 @@ import {
   actionEditarDoble,
   actionBorrarDoble,
 } from "@/actions/calendario-actions";
-import { actionListarEmpresasEP } from "@/actions/config-trimestral-actions";
+import { actionListarEmpresasDoble } from "@/actions/config-trimestral-actions";
 import type {
   SlotDobleResponse,
   CrearSlotDobleInput,
   EditarSlotDobleInput,
 } from "@/types/calendario";
-import type { EmpresaEP } from "@/types/config-trimestral";
+import type { EmpresaDoble } from "@/types/config-trimestral";
 import type { TallerOut } from "@/types/taller";
 
 import { Button } from "@/components/ui/button";
@@ -104,8 +104,11 @@ export function DoblePageClient() {
   }, [settings]);
 
   // ── Data state ───────────────────────────────────────────────
-  const [empresasEP, setEmpresasEP] = useState<EmpresaEP[]>([]);
-  const [empresasEPError, setEmpresasEPError] = useState<string | null>(null);
+  // V25 Cambio C (Capa 4): listado migrado de `/empresas-ep` (CT.escuelaPropia)
+  // a `/empresas-doble` (empresa.puedeSerDoble). EP y Doble son ahora
+  // ortogonales — el listado de Doble no se mezcla más con el de EP.
+  const [empresasDoble, setEmpresasDoble] = useState<EmpresaDoble[]>([]);
+  const [empresasDobleError, setEmpresasDobleError] = useState<string | null>(null);
   const [dobles, setDobles] = useState<SlotDobleResponse[]>([]);
   const [doblesLoading, setDoblesLoading] = useState<boolean>(false);
   const [talleres, setTalleres] = useState<TallerOut[]>([]);
@@ -122,15 +125,15 @@ export function DoblePageClient() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   // ── Data loaders ─────────────────────────────────────────────
-  const cargarEmpresasEP = useCallback(async () => {
+  const cargarEmpresasDoble = useCallback(async () => {
     if (!trimestre) return;
-    const result = await actionListarEmpresasEP(trimestre);
+    const result = await actionListarEmpresasDoble(trimestre);
     if (result.ok) {
-      setEmpresasEP(result.data.empresas);
-      setEmpresasEPError(null);
+      setEmpresasDoble(result.data.empresas);
+      setEmpresasDobleError(null);
     } else {
-      setEmpresasEP([]);
-      setEmpresasEPError(result.error);
+      setEmpresasDoble([]);
+      setEmpresasDobleError(result.error);
     }
   }, [trimestre]);
 
@@ -161,11 +164,11 @@ export function DoblePageClient() {
 
   useEffect(() => {
     if (trimestre) {
-      cargarEmpresasEP();
+      cargarEmpresasDoble();
       cargarDobles();
       cargarTalleres();
     }
-  }, [trimestre, cargarEmpresasEP, cargarDobles, cargarTalleres]);
+  }, [trimestre, cargarEmpresasDoble, cargarDobles, cargarTalleres]);
 
   // ── Computed views ───────────────────────────────────────────
 
@@ -339,8 +342,9 @@ export function DoblePageClient() {
             Gestión Doble
           </h1>
           <p className="mt-1 text-sm text-slate-600">
-            Talleres añadidos en semanas intensivas para empresas con escuela
-            propia. Ad-hoc — no consumen frecuencia, no validan colisión.
+            Talleres añadidos ad-hoc para empresas habilitadas con{" "}
+            <code className="font-mono text-xs">puedeSerDoble</code> en su
+            ficha. No consumen frecuencia, no validan colisión.
           </p>
         </div>
         <Link
@@ -414,33 +418,34 @@ export function DoblePageClient() {
         </div>
       </div>
 
-      {/* Empresas EP load error */}
-      {empresasEPError && (
+      {/* Empresas Doble load error */}
+      {empresasDobleError && (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-          Error al cargar empresas con escuela propia: {empresasEPError}
+          Error al cargar empresas elegibles para Doble: {empresasDobleError}
         </div>
       )}
 
-      {/* Empty state when no EP empresas */}
-      {!empresasEPError && empresasEP.length === 0 && trimestre && (
+      {/* Empty state when no DOBLE-eligible empresas */}
+      {!empresasDobleError && empresasDoble.length === 0 && trimestre && (
         <div className="rounded-md border border-slate-200 bg-white p-8 text-center">
           <p className="text-sm text-slate-600">
-            No hay empresas con <span className="font-medium">escuela propia</span> en {trimestre}.
+            No hay empresas elegibles para Doble.
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            Configura el flag <code className="font-mono">escuelaPropia</code> en Configuración Trimestral primero.
+            Marca el flag <code className="font-mono">puedeSerDoble</code> en
+            la ficha de la empresa (sección Empresas) para habilitarla.
           </p>
           <Link
-            href="/configuracion-trimestral"
+            href="/planificacion/empresas"
             className="mt-3 inline-block text-sm text-blue-600 hover:underline"
           >
-            Ir a Configuración Trimestral →
+            Ir a Empresas →
           </Link>
         </div>
       )}
 
       {/* Empresa cards */}
-      {empresasEP.map(emp => {
+      {empresasDoble.map(emp => {
         const items = doblesPorEmpresa.get(emp.id) ?? [];
         return (
           <Card key={emp.id} className="border-slate-200">
@@ -538,10 +543,10 @@ export function DoblePageClient() {
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Empresa con escuela propia" />
+                  <SelectValue placeholder="Empresa elegible para Doble" />
                 </SelectTrigger>
                 <SelectContent>
-                  {empresasEP.map(e => (
+                  {empresasDoble.map(e => (
                     <SelectItem key={e.id} value={String(e.id)}>
                       {e.nombre}{" "}
                       <span className="text-slate-500 text-xs">({e.tipo})</span>

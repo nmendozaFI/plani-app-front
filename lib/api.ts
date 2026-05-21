@@ -86,6 +86,9 @@ export type {
   ImportPreviewItem,
   EmpresaEP,
   ListaEmpresasEPResponse,
+  // V25 Cambio C (Capa 4): tipos nuevos para /empresas-doble.
+  EmpresaDoble,
+  ListaEmpresasDobleResponse,
 } from "@/types/config-trimestral";
 
 export type {
@@ -163,6 +166,7 @@ import type {
   CerrarTrimestreResult,
   ImportarConfigExcelResult,
   ListaEmpresasEPResponse,
+  ListaEmpresasDobleResponse,
 } from "@/types/config-trimestral";
 
 import type {
@@ -658,8 +662,11 @@ export async function importarConfigExcel(
   );
 }
 
-// V21 / F3a: list empresas with escuelaPropia=true (and activa=true) for the
-// trimestre. Backend filters and returns alphabetically by nombre.
+// V21 / F3a: list empresas EP-elegibles. V25 Cambio C (Capa 3): el filtro
+// migró de `CT.escuelaPropia=true` al flag estructural `empresa.puedeSerEP`.
+// El `{trimestre}` del path es decorativo (el filtro NO lo usa) pero se
+// mantiene en la firma para no romper consumidores frontend y porque el
+// endpoint vive bajo el prefijo de config-trimestral.
 // GET /api/config-trimestral/{trimestre}/empresas-ep
 export async function listarEmpresasEP(
   trimestre: string
@@ -669,11 +676,24 @@ export async function listarEmpresasEP(
   );
 }
 
+// V25 Cambio C (Capa 4): list empresas DOBLE-elegibles. Filtro:
+// `empresa.puedeSerDoble=true AND empresa.activa=true`. Análogo a EP — el
+// `{trimestre}` es decorativo. Decisión §11.3 V25: Doble no tiene
+// contraparte en CT — el gate vive solo en la ficha de empresa.
+// GET /api/config-trimestral/{trimestre}/empresas-doble
+export async function listarEmpresasDoble(
+  trimestre: string
+): Promise<ListaEmpresasDobleResponse> {
+  return apiFetch<ListaEmpresasDobleResponse>(
+    `/api/config-trimestral/${trimestre}/empresas-doble`
+  );
+}
+
 // V22 (Cambio A): list empresas with permiteExtras=true (and activa=true) for
 // the trimestre. Feeds the CrearExtraModal empresa Select. Same response shape
 // as /empresas-ep (the API reuses ListaEmpresasEPResponse to avoid a duplicate
-// type); the semantics differ — this is the EXTRA gate, /empresas-ep is the
-// DOBLE gate.
+// type); the semantics differ — this is the EXTRA gate, persistente por
+// trimestre. El gate DOBLE migró a /empresas-doble (V25 Capa 4).
 // GET /api/config-trimestral/{trimestre}/empresas-permite-extras
 export async function listarEmpresasPermiteExtras(
   trimestre: string
