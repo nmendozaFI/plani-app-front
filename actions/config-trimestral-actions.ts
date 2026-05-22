@@ -10,12 +10,14 @@ import {
   listarEmpresasEP,
   listarEmpresasDoble,
   listarEmpresasPermiteExtras,
+  validarConfigTrimestral,
 } from "@/lib/api";
 import type {
   ConfigTrimestralUpdate,
   ConfigBatchUpdateItem,
   ListaEmpresasEPResponse,
   ListaEmpresasDobleResponse,
+  ValidarCTResponse,
 } from "@/types/config-trimestral";
 import type { ActionResult } from "@/types/actions";
 
@@ -134,6 +136,21 @@ export async function actionListarEmpresasPermiteExtras(
       e instanceof Error
         ? e.message
         : "Error al listar empresas con permiteExtras";
+    return { ok: false, error: msg };
+  }
+}
+
+// V27: pre-validación de Config Trimestral. Informativa — el caller decide
+// qué hacer (no bloquea generación). Usa ActionResult (no el patrón legacy
+// del módulo) para consistencia con calendario-actions y el resto V26+.
+export async function actionValidarConfigTrimestral(
+  trimestre: string
+): Promise<ActionResult<ValidarCTResponse>> {
+  try {
+    const data = await validarConfigTrimestral(trimestre);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al validar configuración";
     return { ok: false, error: msg };
   }
 }

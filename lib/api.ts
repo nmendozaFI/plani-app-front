@@ -90,6 +90,8 @@ export type {
   ImportPreviewItem,
   EmpresaEP,
   ListaEmpresasEPResponse,
+  ValidacionItem,
+  ValidarCTResponse,
   // V25 Cambio C (Capa 4): tipos nuevos para /empresas-doble.
   EmpresaDoble,
   ListaEmpresasDobleResponse,
@@ -174,6 +176,7 @@ import type {
   ImportarConfigExcelResult,
   ListaEmpresasEPResponse,
   ListaEmpresasDobleResponse,
+  ValidarCTResponse,
 } from "@/types/config-trimestral";
 
 import type {
@@ -646,6 +649,15 @@ export async function obtenerConfigsTrimestre(
 ): Promise<ConfigTrimestralListResponse> {
   return apiFetch<ConfigTrimestralListResponse>(
     `/api/config-trimestral/${trimestre}`
+  );
+}
+
+// V27: pre-validación CT. GET sin params; backend hace el catálogo unión.
+export async function validarConfigTrimestral(
+  trimestre: string
+): Promise<ValidarCTResponse> {
+  return apiFetch<ValidarCTResponse>(
+    `/api/config-trimestral/${trimestre}/validar`
   );
 }
 

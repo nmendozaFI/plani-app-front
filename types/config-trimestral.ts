@@ -128,6 +128,26 @@ export interface ListaEmpresasEPResponse {
   empresas: EmpresaEP[];
 }
 
+// V27: pre-validación de Config Trimestral. Las severidades vienen como
+// strings literales del backend (no enums) para mantener el response simple.
+// El `tipo` discrimina la sub-categoría dentro de la severidad.
+export interface ValidacionItem {
+  empresa_id: number;
+  empresa_nombre: string;
+  severidad: "error" | "warning";
+  tipo: string;
+  detalle: string;
+  sugerencia: string;
+}
+
+export interface ValidarCTResponse {
+  trimestre: string;
+  total_empresas_revisadas: number;
+  errores: ValidacionItem[];
+  warnings: ValidacionItem[];
+  resumen: string;
+}
+
 // V25 Cambio C (Capa 4): empresas elegibles para asignación DOBLE. Filtro:
 // `empresa.puedeSerDoble=true AND empresa.activa=true`. Backend reusa la
 // misma forma del response model (ListaEmpresasEPResponse) — aquí el type

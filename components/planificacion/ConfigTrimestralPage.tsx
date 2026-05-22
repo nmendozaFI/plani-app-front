@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Loader2, Save, X, Copy, Plus, Search, Settings2, Download, Upload } from "lucide-react";
+import { Loader2, Save, X, Copy, Plus, Search, Settings2, Download, Upload, ShieldCheck } from "lucide-react";
 import { getTrimestreAnterior } from "@/utils/trimestres";
 import {
   actionObtenerConfigsTrimestre,
@@ -17,6 +17,7 @@ import {
   actionActualizarConfigsBatch,
   actionInicializarConfigTrimestral,
   actionImportarConfigExcel,
+  actionValidarConfigTrimestral,
 } from "@/actions/config-trimestral-actions";
 import { getRestricciones } from "@/actions/restricciones-actions";
 import { useSettings } from "@/hooks/use-settings";
@@ -25,7 +26,9 @@ import type {
   ConfigTrimestralResumen,
   ConfigBatchUpdateItem,
   ImportarConfigExcelResult,
+  ValidarCTResponse,
 } from "@/types/config-trimestral";
+import { ValidacionCTModal } from "./ValidacionCTModal";
 import type { Restriccion } from "@/types/restriccion";
 import { apiFetchBlob } from "@/lib/api-client";
 const DIAS_SEMANA = ["L", "M", "X", "J", "V"];
@@ -71,6 +74,15 @@ export default function ConfigTrimestralPage() {
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportarConfigExcelResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // V27: pre-validación CT. `validacionResult` se queda como cache de la
+  // última corrida — al cerrar y reabrir sin re-validar muestra lo último.
+  // `empresaHighlightId` se setea al hacer click en una empresa del modal y
+  // se limpia con setTimeout para que el highlight amber dure ~2s.
+  const [validacionLoading, setValidacionLoading] = useState(false);
+  const [validacionResult, setValidacionResult] = useState<ValidarCTResponse | null>(null);
+  const [showValidacionModal, setShowValidacionModal] = useState(false);
+  const [empresaHighlightId, setEmpresaHighlightId] = useState<number | null>(null);
 
   // Set trimestre when settings load
   useEffect(() => {
@@ -320,6 +332,51 @@ export default function ConfigTrimestralPage() {
 
   const isRowModified = (empresaId: number) => modifiedRows.has(empresaId);
 
+  // V27: dispara la pre-validación CT y abre el modal con el resultado. El
+  // modal es informativo — no bloquea generación. Aunque la CT esté vacía
+  // (0 empresas) se muestra el modal en estado verde con resumen "0
+  // empresas revisadas, sin inconsistencias".
+  const handleValidar = useCallback(async () => {
+    if (!trimestre || validacionLoading) return;
+    setValidacionLoading(true);
+    try {
+      const result = await actionValidarConfigTrimestral(trimestre);
+      if (!result.ok) throw new Error(result.error);
+      setValidacionResult(result.data);
+      setShowValidacionModal(true);
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Error al validar configuración";
+      toast.error(msg);
+    } finally {
+      setValidacionLoading(false);
+    }
+  }, [trimestre, validacionLoading]);
+
+  // V27: click en una empresa del modal de validación → cierra el modal y
+  // scrollea/resalta la fila. Si la empresa quedó fuera por filtros activos,
+  // toast info para que la planificadora los limpie manualmente (más claro
+  // que un wipe automático que sorprenda).
+  const handleClickEmpresaEnTabla = useCallback(
+    (empresaId: number) => {
+      const visible = filteredConfigs.some((c) => c.empresa_id === empresaId);
+      if (!visible) {
+        const config = configs.find((c) => c.empresa_id === empresaId);
+        const nombre = config?.empresa_nombre ?? `id=${empresaId}`;
+        toast.info(`${nombre} está oculta por filtros activos; quitalos para verla.`);
+        return;
+      }
+      const el = document.getElementById(`empresa-${empresaId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      setEmpresaHighlightId(empresaId);
+      window.setTimeout(() => {
+        setEmpresaHighlightId((prev) => (prev === empresaId ? null : prev));
+      }, 2000);
+    },
+    [filteredConfigs, configs],
+  );
+
   if (loadingSettings) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -350,6 +407,20 @@ export default function ConfigTrimestralPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleValidar}
+            disabled={loading || validacionLoading || !trimestre}
+            title="Detecta inconsistencias antes de generar el calendario"
+          >
+            {validacionLoading ? (
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+            ) : (
+              <ShieldCheck className="h-4 w-4 mr-1" />
+            )}
+            Validar configuración
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -566,10 +637,13 @@ export default function ConfigTrimestralPage() {
                   {filteredConfigs.map((config) => (
                     <tr
                       key={config.id}
-                      className={`border-b hover:bg-muted/30 ${
-                        isRowModified(config.empresa_id)
-                          ? "border-l-4 border-l-amber-400 bg-amber-50/50"
-                          : ""
+                      id={`empresa-${config.empresa_id}`}
+                      className={`border-b hover:bg-muted/30 transition-colors ${
+                        empresaHighlightId === config.empresa_id
+                          ? "bg-amber-100 ring-2 ring-amber-300"
+                          : isRowModified(config.empresa_id)
+                            ? "border-l-4 border-l-amber-400 bg-amber-50/50"
+                            : ""
                       }`}
                     >
                       <td className="p-3 font-medium">
@@ -774,6 +848,13 @@ export default function ConfigTrimestralPage() {
           onApply={handleApplyImport}
         />
       )}
+
+      <ValidacionCTModal
+        isOpen={showValidacionModal}
+        result={validacionResult}
+        onClose={() => setShowValidacionModal(false)}
+        onClickEmpresa={handleClickEmpresaEnTabla}
+      />
     </div>
   );
 }
