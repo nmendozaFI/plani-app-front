@@ -143,3 +143,41 @@ export function nombreMes(monthIdx: number, full: boolean = true): string {
   if (monthIdx < 0 || monthIdx > 11) return "";
   return (full ? MONTHS_FULL : MONTHS_ABREV)[monthIdx];
 }
+
+/**
+ * V26 (fixes post-validación): mes y año donde cae el lunes de la semana N
+ * del trimestre. Criterio "lunes de la semana" elegido por simplicidad — una
+ * semana lun-vie que cruza meses se considera siempre del mes del lunes, sin
+ * ambigüedad. Devuelve null si la semana no es válida (día fuera del rango
+ * del trimestre).
+ */
+export function mesDeLaSemana(
+  trimestre: string,
+  semana: number,
+): { year: number; monthIdx: number } | null {
+  const lunes = getDateForSlot(trimestre, semana, "L");
+  if (!lunes) return null;
+  return { year: lunes.getFullYear(), monthIdx: lunes.getMonth() };
+}
+
+/**
+ * V26 (fixes post-validación): primera semana del trimestre cuyo lunes cae
+ * dentro del mes dado. Espejo del criterio de `mesDeLaSemana`. Devuelve null
+ * si el mes está fuera del trimestre — el caller debe usar este null para
+ * deshabilitar la flecha de navegación correspondiente.
+ */
+export function primeraSemanaDelMes(
+  trimestre: string,
+  year: number,
+  monthIdx: number,
+  semanasTotal: number = 13,
+): number | null {
+  for (let s = 1; s <= semanasTotal; s++) {
+    const lunes = getDateForSlot(trimestre, s, "L");
+    if (!lunes) continue;
+    if (lunes.getFullYear() === year && lunes.getMonth() === monthIdx) {
+      return s;
+    }
+  }
+  return null;
+}

@@ -14,7 +14,7 @@ import type {
   SlotCalendario,
   SlotUpdateInput,
 } from "@/types/calendario";
-import type { EmpresaSimple } from "@/types/empresa";
+import type { EmpresaFull } from "@/types/empresa";
 import type { TallerOut } from "@/types/taller";
 
 /**
@@ -47,7 +47,7 @@ interface EditarSlotModalProps {
   isOpen: boolean;
   slot: SlotCalendario | null;
   trimestre: string;
-  empresas: EmpresaSimple[];
+  empresas: EmpresaFull[];
   talleres: TallerOut[];
   onClose: () => void;
   onSuccess: () => void | Promise<void>;

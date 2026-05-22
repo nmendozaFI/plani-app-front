@@ -17,11 +17,15 @@ import {
 } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
-import { exportarExcel, obtenerEmpresas, obtenerTalleres } from "@/lib/api";
+import { exportarExcel, obtenerEmpresasFull, obtenerTalleres } from "@/lib/api";
 import { getWeekDateRange, getDayDateLabel } from "@/lib/fecha-trimestre";
 import { CrearExtraModal } from "./extras/CrearExtraModal";
 import { CalendarioMensualView } from "./CalendarioMensualView";
 import { AssignmentModal } from "./AssignmentModal";
+import { EditarSlotModal } from "./EditarSlotModal";
+import { useSlotEditModal } from "@/hooks/use-slot-edit-modal";
+import { CrearSlotModal } from "./CrearSlotModal";
+import { useCrearSlotModal } from "@/hooks/use-crear-slot-modal";
 import type { TallerOut } from "@/types/taller";
 import type {
   SlotCalendario,
@@ -37,7 +41,7 @@ import type {
   ListaDoblesResponse,
   SlotDobleResponse,
 } from "@/types/calendario";
-import type { EmpresaSimple } from "@/types/empresa";
+import type { EmpresaFull } from "@/types/empresa";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -152,7 +156,7 @@ export function OperacionPageClient() {
   const [error, setError] = useState<string | null>(null);
   const [calendario, setCalendario] = useState<CalendarioGetResponse | null>(null);
   const [resumen, setResumen] = useState<CalendarioResumen | null>(null);
-  const [empresas, setEmpresas] = useState<EmpresaSimple[]>([]);
+  const [empresas, setEmpresas] = useState<EmpresaFull[]>([]);
   const [semanaActual, setSemanaActual] = useState<number>(1);
   const [selectedSlots, setSelectedSlots] = useState<Set<number>>(new Set());
   const [updatingSlot, setUpdatingSlot] = useState<number | null>(null);
@@ -266,7 +270,7 @@ export function OperacionPageClient() {
         await Promise.all([
           actionObtenerCalendario(trimestre),
           actionObtenerResumen(trimestre),
-          obtenerEmpresas(),
+          obtenerEmpresasFull({ activa: true }),
           obtenerTalleres(undefined, true), // V21 / F3b: catalog feeds CrearExtraModal Select
           actionListarFestivos(trimestre),
         ]);
@@ -477,14 +481,33 @@ export function OperacionPageClient() {
     return matches;
   }, [calendario, filtroEmpresa]);
 
-  // V26: handler invocado desde la vista mensual al clickear un mini-card.
-  // Cambia a vista semanal en la semana correcta y resalta el slot por
-  // SLOT_HIGHLIGHT_MS para que la planificadora lo encuentre fácil.
+  // V26: handler legacy — usado mientras la mensual era read-only. Cambia a
+  // vista semanal con el slot resaltado. Hoy el click en mini-card abre el
+  // EditarSlotModal directamente; este callback queda disponible por si otro
+  // contexto necesita la navegación "ir a lista".
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const irASlotEnLista = useCallback((slot: SlotCalendario) => {
     setVista("semanal");
     setSemanaActual(slot.semana);
     setSlotResaltadoId(slot.id);
   }, []);
+
+  // V26 (Paso 3): refresh de calendario + extras tras editar/eliminar desde
+  // el EditarSlotModal. Preservamos la semana actual para que la vista lista
+  // no salte al S1 cada vez. En vista mensual no afecta — el mes navegado
+  // se mantiene en state del propio CalendarioMensualView.
+  const refrescarTrasEdicion = useCallback(async () => {
+    await cargarDatos(true);
+    await cargarExtras();
+  }, [cargarDatos, cargarExtras]);
+
+  const { openEditModal, modalProps: editSlotModalProps } = useSlotEditModal({
+    onRefresh: refrescarTrasEdicion,
+  });
+
+  const { openCrearModal, modalProps: crearSlotModalProps } = useCrearSlotModal({
+    onRefresh: refrescarTrasEdicion,
+  });
 
   const hasNotesInWeek = useMemo(() => {
     return slotsSemanales.some(s => s.notas);
@@ -1303,8 +1326,9 @@ export function OperacionPageClient() {
         </div>
       )}
 
-      {/* V26: vista calendario mensual. Click en mini-card navega a la
-          vista semanal con el slot resaltado (sin modal nuevo). */}
+      {/* V26 (Paso 3): vista calendario mensual. Click en mini-card abre el
+          EditarSlotModal — el `irASlotEnLista` original queda disponible para
+          otros contextos pero ya no se cablea acá. */}
       {calendario && vista === "mensual" && trimestre && (
         <div className="rounded-lg bg-white p-4 border border-slate-200">
           <CalendarioMensualView
@@ -1313,7 +1337,10 @@ export function OperacionPageClient() {
             festivos={festivos}
             slotsVisibles={slotsVisiblesMensual}
             slotsHighlighted={slotsHighlightedMensual}
-            onClickSlot={irASlotEnLista}
+            semanaActual={semanaActual}
+            onSemanaChange={setSemanaActual}
+            onClickSlot={openEditModal}
+            onCreateClick={openCrearModal}
           />
         </div>
       )}
@@ -1475,6 +1502,28 @@ export function OperacionPageClient() {
         }}
       />
 
+      {/* V26 (Paso 3): modal unificado de edición de slot, disparado desde el
+          click en mini-card de la vista mensual. */}
+      {trimestre && (
+        <EditarSlotModal
+          {...editSlotModalProps}
+          trimestre={trimestre}
+          empresas={empresas}
+          talleres={talleres}
+        />
+      )}
+
+      {/* V26 (Paso 4): modal de creación de slot, disparado desde el botón
+          "+ HH:MM" de una franja libre en la vista mensual. */}
+      {trimestre && (
+        <CrearSlotModal
+          {...crearSlotModalProps}
+          trimestre={trimestre}
+          empresas={empresas}
+          talleres={talleres}
+        />
+      )}
+
       {/* Cancel Slot Modal (separate from reassignment) */}
       {cancelModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
@@ -1635,7 +1684,7 @@ function SlotRow({
   onRequestCancel,
 }: {
   slot: SlotCalendario;
-  empresas: EmpresaSimple[];
+  empresas: EmpresaFull[];
   isSelected: boolean;
   isUpdating: boolean;
   showNotes: boolean;
