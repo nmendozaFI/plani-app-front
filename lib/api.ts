@@ -31,6 +31,7 @@ export type {
   CalendarioOutput,
   CalendarioResumen,
   CalendarioGetResponse,
+  ListaFestivosResponse,
   SlotUpdateInput,
   SlotBatchUpdateItem,
   EmpresaCambiada,
@@ -47,6 +48,9 @@ export type {
   EditarSlotDobleInput,
   CleanupExtrasDobleResult,
   ValidarAsignacionResult,
+  // V26 (edición unificada): create/delete genéricos sobre /api/calendario.
+  CrearSlotInput,
+  EliminarSlotResult,
 } from "@/types/calendario";
 
 export type {
@@ -117,6 +121,7 @@ import type {
   SlotCalendario,
   CalendarioResumen,
   CalendarioGetResponse,
+  ListaFestivosResponse,
   SlotUpdateInput,
   SlotBatchUpdateItem,
   ImportarExcelResult,
@@ -130,6 +135,8 @@ import type {
   CrearSlotDobleInput,
   EditarSlotDobleInput,
   CleanupExtrasDobleResult,
+  CrearSlotInput,
+  EliminarSlotResult,
 } from "@/types/calendario";
 
 import type { AnalisisResponse } from "@/types/analisis";
@@ -224,6 +231,13 @@ export async function obtenerCalendario(trimestre: string) {
   );
 }
 
+// V26: festivos del trimestre para la vista calendario mensual.
+export async function obtenerFestivos(trimestre: string) {
+  return apiFetch<ListaFestivosResponse>(
+    `/api/calendario/${trimestre}/festivos`,
+  );
+}
+
 export async function exportarExcel(trimestre: string): Promise<Blob> {
   return apiFetchBlob(`/api/calendario/${trimestre}/exportar-excel`, { method: "POST" });
 }
@@ -241,6 +255,41 @@ export async function actualizarSlot(
       method: "PATCH",
       body: JSON.stringify(data),
     }
+  );
+}
+
+// V26 (edición unificada): crea un slot puntual (BASE o EXTRA) reemplazando
+// el flujo Excel→bulk para empresas que confirman tarde o cambios no
+// planificados originalmente. El backend valida:
+//   1. Empresa existe + activa.
+//   2. Taller existe + activo; programa coincide con el del taller.
+//   3. Franja (semana, día, horario) no tiene ya 2 programas distintos (409).
+//   4. Si tipo_asignacion='EXTRA': empresa tiene permiteExtras=true (422).
+// Errores se propagan como `Error.message` con el detail del backend.
+export async function crearSlot(
+  trimestre: string,
+  body: CrearSlotInput,
+): Promise<SlotCalendario> {
+  return apiFetch<SlotCalendario>(
+    `/api/calendario/${trimestre}/slots`,
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+  );
+}
+
+// V26 (edición unificada): borra un slot cualquiera (BASE o EXTRA). A
+// diferencia de DELETE /planificacion/{id}/extra (V20), este endpoint no
+// filtra por tipoAsignacion. 409 si el trimestre ya está cerrado (tiene
+// histórico). El response trae metadata útil para el toast post-action.
+export async function eliminarSlot(
+  trimestre: string,
+  slotId: number,
+): Promise<EliminarSlotResult> {
+  return apiFetch<EliminarSlotResult>(
+    `/api/calendario/${trimestre}/slots/${slotId}`,
+    { method: "DELETE" },
   );
 }
 

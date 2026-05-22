@@ -19,6 +19,11 @@ export interface FrecuenciaEmpresa {
   prioridad_reduccion: string;
   ciudades_activas: string[];
   restricciones: RestriccionInline[];
+  // V26: campo sugerido por el backend cuando CT.frecuenciaEF / frecuenciaIT
+  // es NULL. El wizard pinta un badge "sugerido" al lado del input. Optional
+  // por compat con backends pre-V26.
+  sugerido_ef?: boolean;
+  sugerido_it?: boolean;
 }
 
 export interface RecorteDetalle {

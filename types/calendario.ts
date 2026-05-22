@@ -55,6 +55,20 @@ export interface CalendarioOutput {
   warnings: string[];
 }
 
+// V26: festivos del trimestre. Endpoint dedicado para la vista calendario
+// mensual (marca celdas como festivo en gris claro). El frontend mapea
+// (semana, dia) → fecha real con los helpers de lib/fecha-trimestre.
+export interface Festivo {
+  semana: number;
+  dia: string;       // "L" | "M" | "X" | "J" | "V"
+  motivo: string;
+}
+
+export interface ListaFestivosResponse {
+  trimestre: string;
+  festivos: Festivo[];
+}
+
 // Phase 3: Operacion types
 export interface CalendarioResumen {
   trimestre: string;
@@ -86,6 +100,10 @@ export interface SlotUpdateInput {
   empresa_id?: number | null;
   notas?: string | null;
   motivo_cambio?: string | null;  // EMPRESA_CANCELO | DECISION_PLANIFICADOR
+  // V26 (edición unificada): el modal de edición puede sustituir el taller
+  // del slot por cualquier otro del catálogo activo. El backend devuelve
+  // taller_nombre/programa derivados vía JOIN; no hay que pasarlos aquí.
+  taller_id?: number;
 }
 
 export interface SlotBatchUpdateItem {
@@ -287,4 +305,31 @@ export interface CleanupExtrasDobleResult {
   confirmar: boolean;
   extras_eliminados: number;
   dobles_eliminados: number;
+}
+
+// ── V26 (edición unificada de slots) ─────────────────────────────
+
+// Input para POST /api/calendario/{trimestre}/slots — crear un slot puntual
+// (BASE o EXTRA) desde la UI Operación, reemplazando el flujo Excel→bulk.
+// El gate EXTRA (permiteExtras) solo se aplica cuando tipo_asignacion='EXTRA'.
+export interface CrearSlotInput {
+  empresa_id: number;
+  semana: number;  // 1..13
+  dia: string;
+  horario: string;
+  taller_id: number;
+  programa: "EF" | "IT";
+  tipo_asignacion: "BASE" | "EXTRA";
+  notas?: string | null;
+}
+
+// Response de DELETE /api/calendario/{trimestre}/slots/{slotId} — genérico
+// BASE/EXTRA. Devuelve metadata del slot borrado para que el toast post-action
+// pueda explicarle a la planificadora qué quedó descuadrado (motivo previo,
+// confirmación previa, etc.). 409 si el trimestre ya está cerrado.
+export interface EliminarSlotResult {
+  deleted_id: number;
+  tipo_asignacion: string;
+  had_motivo_cambio: boolean;
+  was_confirmado: boolean;
 }

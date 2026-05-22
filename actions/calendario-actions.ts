@@ -3,8 +3,11 @@
 import {
   generarCalendario,
   obtenerCalendario,
+  obtenerFestivos,
   actualizarSlot,
   actualizarSlotsBatch,
+  crearSlot,
+  eliminarSlot,
   validarAsignacion,
   obtenerResumenOperacion,
   obtenerAnalisis,
@@ -28,6 +31,7 @@ import type {
   SlotCalendario,
   CalendarioResumen,
   CalendarioGetResponse,
+  ListaFestivosResponse,
   SlotUpdateInput,
   SlotBatchUpdateItem,
   ImportarExcelResult,
@@ -42,6 +46,8 @@ import type {
   EditarSlotDobleInput,
   CleanupExtrasDobleResult,
   ValidarAsignacionResult,
+  CrearSlotInput,
+  EliminarSlotResult,
 } from "@/types/calendario";
 import type { AnalisisResponse } from "@/types/analisis";
 import type { ActionResult } from "@/types/actions";
@@ -71,6 +77,19 @@ export async function actionObtenerCalendario(
   }
 }
 
+// V26: festivos del trimestre, consumidos por la vista calendario mensual.
+export async function actionListarFestivos(
+  trimestre: string,
+): Promise<ActionResult<ListaFestivosResponse>> {
+  try {
+    const data = await obtenerFestivos(trimestre);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al obtener festivos";
+    return { ok: false, error: msg };
+  }
+}
+
 // ── Operación (Fase 3) ───────────────────────────────────────
 
 export async function actionActualizarSlot(
@@ -96,6 +115,39 @@ export async function actionActualizarSlotsBatch(
     return { ok: true, data: result };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al actualizar slots";
+    return { ok: false, error: msg };
+  }
+}
+
+// V26 (edición unificada): crea un slot puntual (BASE o EXTRA) desde la UI
+// Operación. Reemplaza el Excel→bulk para añadidos mid-trimestre. El detail
+// del backend (franja ocupada, permiteExtras, programa incoherente) se
+// propaga verbatim para que el modal lo muestre tal cual.
+export async function actionCrearSlot(
+  trimestre: string,
+  body: CrearSlotInput,
+): Promise<ActionResult<SlotCalendario>> {
+  try {
+    const data = await crearSlot(trimestre, body);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al crear slot";
+    return { ok: false, error: msg };
+  }
+}
+
+// V26 (edición unificada): borra un slot cualquiera (BASE o EXTRA). 409 si
+// el trimestre ya está cerrado. Devuelve metadata del slot borrado para que
+// el toast post-action explique qué pasó.
+export async function actionEliminarSlot(
+  trimestre: string,
+  slotId: number,
+): Promise<ActionResult<EliminarSlotResult>> {
+  try {
+    const data = await eliminarSlot(trimestre, slotId);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al eliminar slot";
     return { ok: false, error: msg };
   }
 }

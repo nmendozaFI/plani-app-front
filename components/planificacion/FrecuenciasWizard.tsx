@@ -503,23 +503,23 @@ export function FrecuenciasWizard() {
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {empresasEdit.length === 0 ? (
-                    // V24 (Cambio B, decisión D2): la matriz semáforo solo
-                    // incluye empresas con frecuenciaEF o frecuenciaIT explícitos
-                    // en CT. Si todas las CTs del trimestre tienen ambos NULL,
-                    // /calcular devuelve 0 empresas — guiamos al planificador.
+                    // V26: la matriz incluye TODAS las empresas activas con
+                    // CT del trimestre, incluso si freqEF/freqIT son NULL
+                    // (esas se pintan como sugeridas con badge). 0 filas
+                    // significa que no hay ninguna CT cargada — guiamos.
                     <tr>
                       <td
                         colSpan={9}
                         className="px-4 py-12 text-center text-sm text-slate-500"
                       >
-                        Sin empresas para la matriz.{" "}
+                        Sin empresas con configuración trimestral.{" "}
                         <a
                           href="/configuracion-trimestral"
                           className="text-blue-600 underline hover:text-blue-700"
                         >
-                          Configura Freq EF / Freq IT en Config Trimestral
+                          Crea Config Trimestral
                         </a>{" "}
-                        para que las empresas aparezcan aquí (al menos una de las dos).
+                        para este trimestre y las empresas aparecerán aquí.
                       </td>
                     </tr>
                   ) : empresasFiltradas.length === 0 ? (
@@ -579,46 +579,68 @@ export function FrecuenciasWizard() {
 
                         {/* EF editable */}
                         <td className="px-3 py-3 text-center">
-                          <input
-                            type="number"
-                            min={0}
-                            max={14}
-                            value={emp.talleres_ef_edit}
-                            onChange={(e) =>
-                              handleEdit(
-                                emp.empresa_id,
-                                "ef",
-                                parseInt(e.target.value) || 0,
-                              )
-                            }
-                            className={`w-14 rounded border px-2 py-1 text-center text-sm font-mono transition-colors focus:outline-none focus:ring-1 focus:ring-slate-400 ${
-                              emp.talleres_ef_edit !== emp.talleres_ef
-                                ? "border-blue-400 bg-blue-50 text-blue-700"
-                                : "border-slate-200 bg-white text-slate-700"
-                            }`}
-                          />
+                          <div className="inline-flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={14}
+                              value={emp.talleres_ef_edit}
+                              onChange={(e) =>
+                                handleEdit(
+                                  emp.empresa_id,
+                                  "ef",
+                                  parseInt(e.target.value) || 0,
+                                )
+                              }
+                              className={`w-14 rounded border px-2 py-1 text-center text-sm font-mono transition-colors focus:outline-none focus:ring-1 focus:ring-slate-400 ${
+                                emp.talleres_ef_edit !== emp.talleres_ef
+                                  ? "border-blue-400 bg-blue-50 text-blue-700"
+                                  : "border-slate-200 bg-white text-slate-700"
+                              }`}
+                            />
+                            {emp.sugerido_ef &&
+                              emp.talleres_ef_edit === emp.talleres_ef && (
+                                <span
+                                  className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-semibold uppercase text-amber-700"
+                                  title="Valor sugerido a partir del semáforo. La planificadora puede editarlo o dejarlo en 0."
+                                >
+                                  sug.
+                                </span>
+                              )}
+                          </div>
                         </td>
 
                         {/* IT editable */}
                         <td className="px-3 py-3 text-center">
-                          <input
-                            type="number"
-                            min={0}
-                            max={6}
-                            value={emp.talleres_it_edit}
-                            onChange={(e) =>
-                              handleEdit(
-                                emp.empresa_id,
-                                "it",
-                                parseInt(e.target.value) || 0,
-                              )
-                            }
-                            className={`w-14 rounded border px-2 py-1 text-center text-sm font-mono transition-colors focus:outline-none focus:ring-1 focus:ring-slate-400 ${
-                              emp.talleres_it_edit !== emp.talleres_it
-                                ? "border-blue-400 bg-blue-50 text-blue-700"
-                                : "border-slate-200 bg-white text-slate-700"
-                            }`}
-                          />
+                          <div className="inline-flex items-center gap-1">
+                            <input
+                              type="number"
+                              min={0}
+                              max={6}
+                              value={emp.talleres_it_edit}
+                              onChange={(e) =>
+                                handleEdit(
+                                  emp.empresa_id,
+                                  "it",
+                                  parseInt(e.target.value) || 0,
+                                )
+                              }
+                              className={`w-14 rounded border px-2 py-1 text-center text-sm font-mono transition-colors focus:outline-none focus:ring-1 focus:ring-slate-400 ${
+                                emp.talleres_it_edit !== emp.talleres_it
+                                  ? "border-blue-400 bg-blue-50 text-blue-700"
+                                  : "border-slate-200 bg-white text-slate-700"
+                              }`}
+                            />
+                            {emp.sugerido_it &&
+                              emp.talleres_it_edit === emp.talleres_it && (
+                                <span
+                                  className="rounded bg-amber-100 px-1 py-0.5 text-[9px] font-semibold uppercase text-amber-700"
+                                  title="Valor sugerido a partir del semáforo. La planificadora puede editarlo o dejarlo en 0."
+                                >
+                                  sug.
+                                </span>
+                              )}
+                          </div>
                         </td>
 
                         {/* Total */}

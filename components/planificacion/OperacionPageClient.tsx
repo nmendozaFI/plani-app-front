@@ -13,17 +13,21 @@ import {
   actionListarExtras,
   actionBorrarSlotExtra,
   actionListarDobles,
+  actionListarFestivos,
 } from "@/actions/calendario-actions";
 import { useSettings } from "@/hooks/use-settings";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
 import { exportarExcel, obtenerEmpresas, obtenerTalleres } from "@/lib/api";
+import { getWeekDateRange, getDayDateLabel } from "@/lib/fecha-trimestre";
 import { CrearExtraModal } from "./extras/CrearExtraModal";
+import { CalendarioMensualView } from "./CalendarioMensualView";
 import type { TallerOut } from "@/types/taller";
 import type {
   SlotCalendario,
   CalendarioGetResponse,
   CalendarioResumen,
   CambioDetalle,
+  Festivo,
   ImportarExcelResult,
   ImportarExcelBulkResult,
   EstadoSlot,
@@ -86,57 +90,16 @@ const ESTADO_CONFIG: Record<string, { bg: string; border: string; text: string; 
 // preference lives client-side rather than on appSettings.
 const TRIMESTRE_STORAGE_KEY = "operacion.trimestreSeleccionado";
 
-// ── Date helpers ─────────────────────────────────────────────
+// V26: persistencia per-reload de la vista seleccionada (semanal | mensual).
+const VISTA_STORAGE_KEY = "operacion.vista";
+type VistaOperacion = "semanal" | "mensual";
 
-function getWeekDateRange(trimestre: string, semana: number): string {
-  const [yearStr, qStr] = trimestre.split("-Q");
-  const year = parseInt(yearStr);
-  const quarter = parseInt(qStr);
+// V26: tiempo (ms) que dura el highlight visual del slot cuando la
+// planificadora vuelve desde la vista mensual a la lista.
+const SLOT_HIGHLIGHT_MS = 2500;
 
-  // Q1=Jan, Q2=Apr, Q3=Jul, Q4=Oct
-  const quarterStartMonth = (quarter - 1) * 3;
-  const quarterStart = new Date(year, quarterStartMonth, 1);
-
-  // Find first Monday of the quarter
-  const dayOfWeek = quarterStart.getDay();
-  const daysUntilMonday = dayOfWeek === 0 ? 1 : (dayOfWeek === 1 ? 0 : 8 - dayOfWeek);
-  const firstMonday = new Date(quarterStart);
-  firstMonday.setDate(quarterStart.getDate() + daysUntilMonday);
-
-  // Calculate week start (Monday)
-  const weekStart = new Date(firstMonday);
-  weekStart.setDate(firstMonday.getDate() + (semana - 1) * 7);
-
-  // Week end (Friday)
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 4);
-
-  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  return `${weekStart.getDate()} - ${weekEnd.getDate()} ${months[weekEnd.getMonth()]} ${year}`;
-}
-
-// V22: per-day "DD/MM" label next to the weekday header in Operación.
-// Mirrors getWeekDateRange's quarter→first-Monday math, then adds the
-// weekday offset (L=0..V=4). Pure local-Date math — no UTC parsing.
-const DIA_OFFSET: Record<string, number> = { L: 0, M: 1, X: 2, J: 3, V: 4 };
-
-function getDayDateLabel(trimestre: string, semana: number, dia: string): string {
-  const offset = DIA_OFFSET[dia];
-  if (offset === undefined) return "";
-  const [yearStr, qStr] = trimestre.split("-Q");
-  const year = parseInt(yearStr);
-  const quarter = parseInt(qStr);
-  const quarterStart = new Date(year, (quarter - 1) * 3, 1);
-  const dayOfWeek = quarterStart.getDay();
-  const daysUntilMonday = dayOfWeek === 0 ? 1 : (dayOfWeek === 1 ? 0 : 8 - dayOfWeek);
-  const firstMonday = new Date(quarterStart);
-  firstMonday.setDate(quarterStart.getDate() + daysUntilMonday);
-  const target = new Date(firstMonday);
-  target.setDate(firstMonday.getDate() + (semana - 1) * 7 + offset);
-  const dd = String(target.getDate()).padStart(2, "0");
-  const mm = String(target.getMonth() + 1).padStart(2, "0");
-  return `${dd}/${mm}`;
-}
+// V26: helpers de fecha extraídos a lib/fecha-trimestre.ts para que la vista
+// calendario mensual los reutilice sin duplicar la lógica del primer lunes.
 
 // ══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
@@ -199,6 +162,48 @@ export function OperacionPageClient() {
   const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [filtroEmpresa, setFiltroEmpresa] = useState<string>("");
 
+  // V26: toggle vista (semanal | mensual) + datos extra para la vista mensual.
+  // Persistimos en localStorage para alinear con el patrón existente de
+  // trimestre seleccionado (no usamos query params).
+  const [vista, setVista] = useState<VistaOperacion>("semanal");
+  const [festivos, setFestivos] = useState<Festivo[]>([]);
+  // Slot resaltado cuando se navega desde la vista mensual a la lista
+  // semanal (highlight transitorio de SLOT_HIGHLIGHT_MS).
+  const [slotResaltadoId, setSlotResaltadoId] = useState<number | null>(null);
+
+  // Hidratar vista de localStorage al montar.
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      const stored = window.localStorage.getItem(VISTA_STORAGE_KEY);
+      if (stored === "semanal" || stored === "mensual") {
+        setVista(stored);
+      }
+    } catch {
+      // localStorage no disponible — quedamos en default.
+    }
+  }, []);
+
+  // Persistir cambios de vista.
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined") return;
+      window.localStorage.setItem(VISTA_STORAGE_KEY, vista);
+    } catch {
+      // ignore
+    }
+  }, [vista]);
+
+  // Limpiar highlight tras SLOT_HIGHLIGHT_MS.
+  useEffect(() => {
+    if (slotResaltadoId === null) return;
+    const id = window.setTimeout(
+      () => setSlotResaltadoId(null),
+      SLOT_HIGHLIGHT_MS,
+    );
+    return () => window.clearTimeout(id);
+  }, [slotResaltadoId]);
+
   // Import Excel — legacy UPDATE flow (preview + apply via /importar-excel-file)
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -256,18 +261,23 @@ export function OperacionPageClient() {
     setLoading(true);
     setError(null);
     try {
-      const [calResult, resResult, empList, tallerList] = await Promise.all([
-        actionObtenerCalendario(trimestre),
-        actionObtenerResumen(trimestre),
-        obtenerEmpresas(),
-        obtenerTalleres(undefined, true), // V21 / F3b: catalog feeds CrearExtraModal Select
-      ]);
+      const [calResult, resResult, empList, tallerList, festResult] =
+        await Promise.all([
+          actionObtenerCalendario(trimestre),
+          actionObtenerResumen(trimestre),
+          obtenerEmpresas(),
+          obtenerTalleres(undefined, true), // V21 / F3b: catalog feeds CrearExtraModal Select
+          actionListarFestivos(trimestre),
+        ]);
       if (!calResult.ok) throw new Error(calResult.error);
       if (!resResult.ok) throw new Error(resResult.error);
       setCalendario(calResult.data);
       setResumen(resResult.data);
       setEmpresas(empList);
       setTalleres(tallerList);
+      // V26: festivos son supplementarios; si fallan dejamos vacío y
+      // la vista mensual simplemente no marca celdas.
+      setFestivos(festResult.ok ? festResult.data.festivos : []);
 
       // Only set week on initial load or if current week is invalid
       if (calResult.data.slots.length > 0) {
@@ -429,6 +439,51 @@ export function OperacionPageClient() {
     if (!calendario) return 0;
     return calendario.slots.filter(s => s.semana === semanaActual).length;
   }, [calendario, semanaActual]);
+
+  // V26: para la vista mensual, los filtros de Estado/Programa/Tipo
+  // dejan los slots filtrados en gris (opacos) pero no los esconden —
+  // mantiene el layout estable. La búsqueda por empresa/taller resalta
+  // los matches con borde naranja, no filtra.
+  const slotsVisiblesMensual = useMemo<Set<number> | null>(() => {
+    if (!calendario) return null;
+    const hayFiltroDuro =
+      filtroEstado !== "Todos" ||
+      filtroPrograma !== "Todos" ||
+      filtroTipo !== "Todos";
+    if (!hayFiltroDuro) return null;
+    const visibles = new Set<number>();
+    for (const s of calendario.slots) {
+      if (filtroEstado !== "Todos" && s.estado !== filtroEstado) continue;
+      if (filtroPrograma !== "Todos" && s.programa !== filtroPrograma) continue;
+      if (filtroTipo !== "Todos" && s.tipo_asignacion !== filtroTipo) continue;
+      visibles.add(s.id);
+    }
+    return visibles;
+  }, [calendario, filtroEstado, filtroPrograma, filtroTipo]);
+
+  const slotsHighlightedMensual = useMemo<Set<number>>(() => {
+    if (!calendario || !filtroEmpresa.trim()) return new Set();
+    const search = filtroEmpresa.toLowerCase();
+    const matches = new Set<number>();
+    for (const s of calendario.slots) {
+      if (
+        s.empresa_nombre?.toLowerCase().includes(search) ||
+        s.taller_nombre.toLowerCase().includes(search)
+      ) {
+        matches.add(s.id);
+      }
+    }
+    return matches;
+  }, [calendario, filtroEmpresa]);
+
+  // V26: handler invocado desde la vista mensual al clickear un mini-card.
+  // Cambia a vista semanal en la semana correcta y resalta el slot por
+  // SLOT_HIGHLIGHT_MS para que la planificadora lo encuentre fácil.
+  const irASlotEnLista = useCallback((slot: SlotCalendario) => {
+    setVista("semanal");
+    setSemanaActual(slot.semana);
+    setSlotResaltadoId(slot.id);
+  }, []);
 
   const hasNotesInWeek = useMemo(() => {
     return slotsSemanales.some(s => s.notas);
@@ -1064,6 +1119,37 @@ export function OperacionPageClient() {
         </div>
       )}
 
+      {/* V26: toggle vista semanal ↔ mensual */}
+      {calendario && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="font-medium text-slate-600">Vista:</span>
+          <div className="inline-flex rounded-md border border-slate-300 bg-white p-0.5">
+            <button
+              type="button"
+              onClick={() => setVista("semanal")}
+              className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
+                vista === "semanal"
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Lista por semana
+            </button>
+            <button
+              type="button"
+              onClick={() => setVista("mensual")}
+              className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
+                vista === "mensual"
+                  ? "bg-blue-600 text-white"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              Calendario mensual
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Filters & Bulk Actions Bar */}
       {calendario && (
         <div className="rounded-lg bg-slate-50 p-4 border border-slate-200 space-y-3">
@@ -1165,8 +1251,8 @@ export function OperacionPageClient() {
         </div>
       )}
 
-      {/* Slots Grid */}
-      {calendario && (
+      {/* Slots Grid — vista lista por semana (default V25 y anteriores) */}
+      {calendario && vista === "semanal" && (
         <div ref={gridRef} className="space-y-4" tabIndex={0}>
           {DIAS_ORDEN.map(dia => {
             const slotsDelDia = slotsSemanales.filter(s => s.dia === dia);
@@ -1194,6 +1280,7 @@ export function OperacionPageClient() {
                       isSelected={selectedSlots.has(slot.id)}
                       isUpdating={updatingSlot === slot.id}
                       showNotes={hasNotesInWeek}
+                      highlight={slot.id === slotResaltadoId}
                       onToggleSelect={() => toggleSlotSelection(slot.id)}
                       onUpdate={(updates) => handleUpdateSlot(slot.id, updates)}
                       onValidateAndAssign={(empresaId, empresaNombre) =>
@@ -1212,6 +1299,21 @@ export function OperacionPageClient() {
               No hay slots que coincidan con los filtros
             </div>
           )}
+        </div>
+      )}
+
+      {/* V26: vista calendario mensual. Click en mini-card navega a la
+          vista semanal con el slot resaltado (sin modal nuevo). */}
+      {calendario && vista === "mensual" && trimestre && (
+        <div className="rounded-lg bg-white p-4 border border-slate-200">
+          <CalendarioMensualView
+            trimestre={trimestre}
+            slots={calendario.slots}
+            festivos={festivos}
+            slotsVisibles={slotsVisiblesMensual}
+            slotsHighlighted={slotsHighlightedMensual}
+            onClickSlot={irASlotEnLista}
+          />
         </div>
       )}
 
@@ -1633,6 +1735,7 @@ function SlotRow({
   isSelected,
   isUpdating,
   showNotes,
+  highlight = false,
   onToggleSelect,
   onUpdate,
   onValidateAndAssign,
@@ -1643,6 +1746,9 @@ function SlotRow({
   isSelected: boolean;
   isUpdating: boolean;
   showNotes: boolean;
+  /** V26: highlight transitorio cuando la planificadora navegó desde la
+   *  vista mensual a este slot. Borde naranja + ring para identificarlo. */
+  highlight?: boolean;
   onToggleSelect: () => void;
   onUpdate: (updates: { estado?: EstadoSlot; confirmado?: boolean; empresa_id?: number | null; notas?: string | null }) => void;
   onValidateAndAssign: (empresaId: number, empresaNombre: string) => void;
@@ -1684,9 +1790,11 @@ function SlotRow({
 
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 border-l-4 transition-opacity ${config.bg} ${config.leftBorder} ${
+      className={`flex items-center gap-3 px-4 py-3 border-l-4 transition-all ${config.bg} ${config.leftBorder} ${
         isUpdating ? "opacity-50 pointer-events-none" : ""
-      } ${isCancelado ? "opacity-60" : ""}`}
+      } ${isCancelado ? "opacity-60" : ""} ${
+        highlight ? "ring-2 ring-orange-400 ring-offset-1" : ""
+      }`}
     >
       {/* Checkbox */}
       <Checkbox
