@@ -21,6 +21,7 @@ import { exportarExcel, obtenerEmpresas, obtenerTalleres } from "@/lib/api";
 import { getWeekDateRange, getDayDateLabel } from "@/lib/fecha-trimestre";
 import { CrearExtraModal } from "./extras/CrearExtraModal";
 import { CalendarioMensualView } from "./CalendarioMensualView";
+import { AssignmentModal } from "./AssignmentModal";
 import type { TallerOut } from "@/types/taller";
 import type {
   SlotCalendario,
@@ -1459,128 +1460,20 @@ export function OperacionPageClient() {
       )}
 
       {/* Unified Assignment Modal - handles warnings and/or motivo selection */}
-      {assignModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            {/* Header */}
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              {assignModal.type === "motivo_only"
-                ? "¿Por qué se cambia la empresa?"
-                : "Confirmar asignación"}
-            </h3>
-
-            {/* Description */}
-            <p className="text-sm text-slate-600 mb-4">
-              {assignModal.type === "motivo_only" ? (
-                <>Cambiar a <strong>{assignModal.empresaNombre}</strong>. Selecciona el motivo del cambio.</>
-              ) : (
-                <>Asignar <strong>{assignModal.empresaNombre}</strong> a este slot.</>
-              )}
-            </p>
-
-            {/* Warnings Section (shown for warning_only and warning_with_motivo) */}
-            {(assignModal.type === "warning_only" || assignModal.type === "warning_with_motivo") && (
-              <div className="space-y-3 mb-4">
-                {/* Hard constraints (red) */}
-                {assignModal.restriccionesVioladas.length > 0 && (
-                  <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-                    <h4 className="text-sm font-semibold text-red-800 mb-2">Restricciones duras</h4>
-                    <ul className="space-y-1.5">
-                      {assignModal.restriccionesVioladas.map((w, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-red-700">
-                          <span className="shrink-0">🔴</span>
-                          <span>{w}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {/* Soft constraints (yellow) */}
-                {assignModal.warnings.filter(w => !assignModal.restriccionesVioladas.includes(w)).length > 0 && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-                    <h4 className="text-sm font-semibold text-amber-800 mb-2">Preferencias no cumplidas</h4>
-                    <ul className="space-y-1.5">
-                      {assignModal.warnings
-                        .filter(w => !assignModal.restriccionesVioladas.includes(w))
-                        .map((w, i) => (
-                          <li key={i} className="flex items-start gap-2 text-sm text-amber-700">
-                            <span className="shrink-0">🟡</span>
-                            <span>{w}</span>
-                          </li>
-                        ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Motivo Selector (shown for motivo_only and warning_with_motivo) */}
-            {(assignModal.type === "motivo_only" || assignModal.type === "warning_with_motivo") && (
-              <div className="mb-6">
-                {assignModal.type === "warning_with_motivo" && (
-                  <p className="text-sm text-slate-600 mb-3">Selecciona el motivo del cambio:</p>
-                )}
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setSelectedMotivo("EMPRESA_CANCELO")}
-                    className={`w-full flex items-center gap-3 p-3 border-2 rounded-lg transition-colors text-left ${
-                      selectedMotivo === "EMPRESA_CANCELO"
-                        ? "border-red-400 bg-red-50"
-                        : "border-slate-200 hover:border-red-300 hover:bg-red-50"
-                    }`}
-                  >
-                    <span className="text-xl">🏢</span>
-                    <div>
-                      <div className="font-medium text-slate-900">La empresa canceló</div>
-                      <div className="text-xs text-slate-500">Afecta la fiabilidad de la empresa original</div>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => setSelectedMotivo("DECISION_PLANIFICADOR")}
-                    className={`w-full flex items-center gap-3 p-3 border-2 rounded-lg transition-colors text-left ${
-                      selectedMotivo === "DECISION_PLANIFICADOR"
-                        ? "border-blue-400 bg-blue-50"
-                        : "border-slate-200 hover:border-blue-300 hover:bg-blue-50"
-                    }`}
-                  >
-                    <span className="text-xl">📋</span>
-                    <div>
-                      <div className="font-medium text-slate-900">Decisión del planificador</div>
-                      <div className="text-xs text-slate-500">No afecta la fiabilidad de la empresa original</div>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => { setAssignModal(null); setSelectedMotivo(null); }}
-                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleConfirmAssignment}
-                disabled={
-                  (assignModal.type === "motivo_only" || assignModal.type === "warning_with_motivo") &&
-                  !selectedMotivo
-                }
-                className={`px-4 py-2 text-sm text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                  assignModal.warnings.length > 0
-                    ? assignModal.restriccionesVioladas.length > 0
-                      ? "bg-red-500 hover:bg-red-600"
-                      : "bg-amber-500 hover:bg-amber-600"
-                    : "bg-blue-500 hover:bg-blue-600"
-                }`}
-              >
-                {assignModal.warnings.length > 0 ? "Asignar de todos modos" : "Confirmar cambio"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AssignmentModal
+        isOpen={assignModal !== null}
+        type={assignModal?.type ?? "warning_only"}
+        empresaNombre={assignModal?.empresaNombre ?? ""}
+        warnings={assignModal?.warnings ?? []}
+        restriccionesVioladas={assignModal?.restriccionesVioladas ?? []}
+        selectedMotivo={selectedMotivo}
+        onSelectMotivo={setSelectedMotivo}
+        onConfirm={handleConfirmAssignment}
+        onCancel={() => {
+          setAssignModal(null);
+          setSelectedMotivo(null);
+        }}
+      />
 
       {/* Cancel Slot Modal (separate from reassignment) */}
       {cancelModal && (
