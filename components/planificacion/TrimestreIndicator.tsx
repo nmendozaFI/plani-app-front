@@ -1,7 +1,10 @@
+
+
 "use client";
 
 import { useState } from "react";
 import { useSettings } from "@/hooks/use-settings";
+import type { AppSettingsUpdate } from "@/types/settings";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -32,6 +35,24 @@ function getQuarterOptions(activo: string): string[] {
   return options;
 }
 
+function getPrevQuarter(current: string): string {
+  const [year, q] = current.split("-Q");
+  const qNum = parseInt(q);
+  if (qNum === 1) return `${parseInt(year) - 1}-Q4`;
+  return `${year}-Q${qNum - 1}`;
+}
+
+// Ventana de opciones para el activo: 2 anteriores + actual + 4 siguientes
+function getActivoOptions(current: string): string[] {
+  const opts: string[] = [];
+  let c = current;
+  for (let i = 0; i < 2; i++) { c = getPrevQuarter(c); opts.unshift(c); }
+  opts.push(current);
+  c = current;
+  for (let i = 0; i < 4; i++) { c = getNextQuarter(c); opts.push(c); }
+  return opts;
+}
+
 // ══════════════════════════════════════════════════════════════
 // COMPONENT
 // ══════════════════════════════════════════════════════════════
@@ -41,6 +62,8 @@ export function TrimestreIndicator() {
   const [editing, setEditing] = useState(false);
   const [selectedValue, setSelectedValue] = useState<string>("");
   const [saving, setSaving] = useState(false);
+  const [editingActivo, setEditingActivo] = useState(false);
+  const [selectedActivo, setSelectedActivo] = useState("");
 
   if (loading) {
     return (
@@ -85,6 +108,27 @@ export function TrimestreIndicator() {
   const handleCancel = () => {
     setEditing(false);
   };
+
+  const handleStartEditActivo = () => {
+    setSelectedActivo(settings.trimestre_activo);
+    setEditingActivo(true);
+  };
+
+  const handleSaveActivo = async () => {
+    setSaving(true);
+    const payload: AppSettingsUpdate = { trimestre_activo: selectedActivo };
+    if (selectedActivo === settings.trimestre_siguiente) payload.trimestre_siguiente = "";
+    const result = await update(payload);
+    setSaving(false);
+    if (result.ok) {
+      toast.success(`Trimestre activo: ${selectedActivo}`);
+      setEditingActivo(false);
+    } else {
+      toast.error(result.error || "Error al guardar");
+    }
+  };
+
+  const handleCancelActivo = () => setEditingActivo(false);
 
   // ── Editing mode ───────────────────────────────────────────
 
@@ -145,9 +189,47 @@ export function TrimestreIndicator() {
         <div className="text-[10px] font-medium uppercase tracking-wider text-emerald-600">
           Activo
         </div>
-        <div className="text-lg font-bold text-emerald-800">
-          {settings.trimestre_activo}
-        </div>
+        {editingActivo ? (
+          <div className="mt-1 flex items-center gap-2">
+            <Select value={selectedActivo} onValueChange={setSelectedActivo}>
+              <SelectTrigger className="w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {getActivoOptions(settings.trimestre_activo).map((q) => (
+                  <SelectItem key={q} value={q}>
+                    {q}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button size="sm" onClick={handleSaveActivo} disabled={saving}>
+              {saving ? "..." : "Guardar"}
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCancelActivo}
+              disabled={saving}
+            >
+              Cancelar
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="text-lg font-bold text-emerald-800">
+              {settings.trimestre_activo}
+            </div>
+            <button
+              onClick={handleStartEditActivo}
+              disabled={saving}
+              className="p-1 rounded hover:bg-emerald-100 text-emerald-400 hover:text-emerald-700 transition-colors"
+              title="Editar trimestre activo"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Next Quarter OR Configure button */}
@@ -164,7 +246,7 @@ export function TrimestreIndicator() {
           <div className="flex flex-col gap-0.5">
             <button
               onClick={handleStartEdit}
-              disabled={saving}
+              disabled={saving || editingActivo}
               className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
               title="Editar trimestre siguiente"
             >
@@ -172,7 +254,7 @@ export function TrimestreIndicator() {
             </button>
             <button
               onClick={handleClear}
-              disabled={saving}
+              disabled={saving || editingActivo}
               className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
               title="Eliminar trimestre siguiente"
             >
@@ -185,6 +267,7 @@ export function TrimestreIndicator() {
           variant="outline"
           size="sm"
           onClick={handleStartEdit}
+          disabled={saving || editingActivo}
           className="gap-1.5"
         >
           <Plus className="h-4 w-4" />
