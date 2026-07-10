@@ -1,3 +1,5 @@
+
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -14,6 +16,7 @@ import {
   type CerrarTrimestreResult,
 } from "@/lib/api";
 import { useSettings } from "@/hooks/use-settings";
+import { actionPromoverTrimestre } from "@/actions/settings-actions";
 
 // ── Estado badge ────────────────────────────────────────────
 
@@ -248,7 +251,7 @@ function ResultPanel({
 // ══════════════════════════════════════════════════════════════
 
 export default function ImportacionWizard() {
-  const { settings, loading: loadingSettings } = useSettings();
+  const { settings, loading: loadingSettings, refresh } = useSettings();
 
   const [trimestre, setTrimestre] = useState<string | null>(null);
   const [estado, setEstado] = useState<EstadoImportacion | null>(null);
@@ -275,6 +278,11 @@ export default function ImportacionWizard() {
   const [autoCerrarPreview, setAutoCerrarPreview] = useState<CerrarTrimestreResult | null>(null);
   const [autoCerrarResult, setAutoCerrarResult] = useState<CerrarTrimestreResult | null>(null);
   const [errorAutoCerrar, setErrorAutoCerrar] = useState<string | null>(null);
+
+  // Promover trimestre
+  const [loadingPromover, setLoadingPromover] = useState(false);
+  const [errorPromover, setErrorPromover] = useState<string | null>(null);
+  const [confirmandoPromover, setConfirmandoPromover] = useState(false);
 
   // Set trimestre when settings load
   useEffect(() => {
@@ -378,6 +386,22 @@ export default function ImportacionWizard() {
       setErrorAutoCerrar(e.message);
     } finally {
       setLoadingAutoCerrar(false);
+    }
+  };
+
+  // ── Promover trimestre ────────────────────────────────────
+  const handlePromover = async () => {
+    setLoadingPromover(true);
+    setErrorPromover(null);
+    const result = await actionPromoverTrimestre();
+    setLoadingPromover(false);
+    setConfirmandoPromover(false);
+    if (result.ok) {
+      await refresh(); // refresca settings.trimestre_activo en la UI
+      const nuevoActivo = result.data.settings.trimestre_activo;
+      setTrimestreHist(getTrimestreAnterior(nuevoActivo));
+    } else {
+      setErrorPromover(result.error);
     }
   };
 
@@ -561,6 +585,45 @@ export default function ImportacionWizard() {
             <p className="text-sm text-slate-500">
               Copia el estado actual de la planificacion al historico del trimestre.
             </p>
+          </div>
+
+          {/* Paso previo: promover trimestre activo */}
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 mb-4">
+            <h4 className="text-sm font-semibold text-amber-900">Promover trimestre activo</h4>
+            <p className="mt-1 text-xs text-amber-700">
+              Activo actual: <b>{settings?.trimestre_activo}</b>
+              {settings?.trimestre_siguiente
+                ? <> → pasará a <b>{settings.trimestre_siguiente}</b> (el “siguiente” quedará vacío).</>
+                : <> · No hay “siguiente” configurado. Configúralo primero en el Dashboard.</>}
+            </p>
+            <p className="mt-1 text-xs text-amber-700">
+              Úsalo cuando ya operas el trimestre siguiente y necesitas cerrar el actual:
+              al promover, “Trimestre a cerrar” pasará a ser el que hoy es activo.
+            </p>
+            {errorPromover && <p className="mt-2 text-xs text-red-600">{errorPromover}</p>}
+            {!confirmandoPromover ? (
+              <button
+                onClick={() => setConfirmandoPromover(true)}
+                disabled={!settings?.trimestre_siguiente || loadingPromover}
+                className="mt-3 rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                Promover trimestre
+              </button>
+            ) : (
+              <div className="mt-3 flex items-center gap-2">
+                <span className="text-xs text-amber-900">
+                  ¿Confirmas promover {settings?.trimestre_activo} → {settings?.trimestre_siguiente}?
+                </span>
+                <button onClick={handlePromover} disabled={loadingPromover}
+                  className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50">
+                  {loadingPromover ? "Promoviendo..." : "Sí, promover"}
+                </button>
+                <button onClick={() => setConfirmandoPromover(false)} disabled={loadingPromover}
+                  className="rounded-lg border border-amber-300 px-3 py-1.5 text-sm text-amber-800 hover:bg-amber-100">
+                  Cancelar
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
