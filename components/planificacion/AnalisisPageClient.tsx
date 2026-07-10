@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { actionObtenerAnalisis, actionRecalcularScores } from "@/actions/calendario-actions";
+import { actionObtenerAnalisis, actionObtenerCalendario, actionRecalcularScores } from "@/actions/calendario-actions";
+import { actionObtenerTrimestresHistorico } from "@/actions/historico-actions";
 import { useSettings } from "@/hooks/use-settings";
+import { getTrimestreAnterior } from "@/utils/trimestres";
 import type {
   AnalisisResponse,
   EmpresaAnalisis,
@@ -75,8 +77,11 @@ export function AnalisisPageClient() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sinDatos, setSinDatos] = useState(false);
   const [analisis, setAnalisis] = useState<AnalisisResponse | null>(null);
   const [recalculando, setRecalculando] = useState(false);
+  const [exportandoDetalle, setExportandoDetalle] = useState(false);
+  const [trimestresCerrados, setTrimestresCerrados] = useState<string[]>([]);
 
   // Filters & sorting
   const [filtroEmpresa, setFiltroEmpresa] = useState("");
@@ -89,26 +94,45 @@ export function AnalisisPageClient() {
   // Expandable sections
   const [showCambios, setShowCambios] = useState(false);
 
-  // Available trimestres (active + closed from historico)
+  // Available trimestres for the selector, sin duplicados y en orden:
+  // anterior (default) → activo → siguiente → cerrados.
+  // Prioridad de etiqueta: (anterior) > (cerrado); el primero que gana el
+  // value fija la etiqueta.
   const trimestres = useMemo(() => {
-    const list: string[] = [];
-    if (settings?.trimestre_activo) list.push(settings.trimestre_activo);
-    if (
-      settings?.trimestre_siguiente &&
-      settings.trimestre_siguiente !== settings.trimestre_activo
-    ) {
-      list.push(settings.trimestre_siguiente);
+    if (!settings?.trimestre_activo) return [];
+    const anterior = getTrimestreAnterior(settings.trimestre_activo);
+    const opciones: { value: string; label: string }[] = [];
+    const seen = new Set<string>();
+    const add = (value: string | null | undefined, label: string) => {
+      if (!value || seen.has(value)) return;
+      seen.add(value);
+      opciones.push({ value, label });
+    };
+    add(anterior, `${anterior} (anterior)`);
+    add(settings.trimestre_activo, settings.trimestre_activo);
+    add(settings.trimestre_siguiente, settings.trimestre_siguiente || "");
+    for (const t of trimestresCerrados) {
+      add(t, `${t} (cerrado)`);
     }
-    // In the future, could add closed trimestres from historico API
-    return list;
-  }, [settings]);
+    return opciones;
+  }, [settings, trimestresCerrados]);
 
-  // Set default trimestre
+  // Set default trimestre: el ANTERIOR al activo (lo recién operado)
   useEffect(() => {
     if (!selectedTrimestre && settings?.trimestre_activo) {
-      setSelectedTrimestre(settings.trimestre_activo);
+      setSelectedTrimestre(getTrimestreAnterior(settings.trimestre_activo));
     }
   }, [settings, selectedTrimestre]);
+
+  // Load closed trimestres from historico (para el selector)
+  useEffect(() => {
+    (async () => {
+      const result = await actionObtenerTrimestresHistorico();
+      if (result.ok) {
+        setTrimestresCerrados(result.data.trimestres);
+      }
+    })();
+  }, []);
 
   // ── Load data ──────────────────────────────────────────────
 
@@ -116,9 +140,19 @@ export function AnalisisPageClient() {
     if (!selectedTrimestre) return;
     setLoading(true);
     setError(null);
+    setSinDatos(false);
     try {
       const result = await actionObtenerAnalisis(selectedTrimestre);
-      if (!result.ok) throw new Error(result.error);
+      if (!result.ok) {
+        // 404: el trimestre no tiene datos de planificación (p.ej. cerrado
+        // y sin filas en planificacion). Mensaje claro en vez de error genérico.
+        if (/no hay datos/i.test(result.error)) {
+          setAnalisis(null);
+          setSinDatos(true);
+          return;
+        }
+        throw new Error(result.error);
+      }
       setAnalisis(result.data);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Error al cargar analisis";
@@ -225,6 +259,81 @@ export function AnalisisPageClient() {
     toast.success("CSV exportado");
   };
 
+  // ── Export detalle slot a slot (CSV) ───────────────────────
+  // Escapado robusto (duplica comillas internas) — solo para este export.
+  const csvCell = (v: string | number | null | undefined): string => {
+    const s = v == null ? "" : String(v);
+    return `"${s.replace(/"/g, '""')}"`;
+  };
+
+  const exportarDetalleCSV = async () => {
+    if (!selectedTrimestre) return;
+    setExportandoDetalle(true);
+    try {
+      const result = await actionObtenerCalendario(selectedTrimestre);
+      if (!result.ok) {
+        toast.error(result.error || "No se pudo cargar el detalle");
+        return;
+      }
+      const slots = result.data.slots;
+
+      const traducirMotivo = (m: string | null): string => {
+        if (m === "EMPRESA_CANCELO") return "Empresa canceló";
+        if (m === "DECISION_PLANIFICADOR") return "Decisión planificador";
+        return "";
+      };
+
+      const headers = [
+        "Semana", "Dia", "Horario", "Turno", "Ciudad", "Programa", "Taller",
+        "Empresa_Planificada", "Empresa_Real", "Cambio", "Estado",
+        "Motivo_Cambio", "Confirmado", "Notas",
+      ];
+
+      const rows = slots.map((s) => {
+        const planificada = s.empresa_nombre_original ?? "";
+        const real = s.empresa_nombre ?? "";
+        const huboCambio =
+          s.empresa_id_original != null &&
+          s.empresa_id != null &&
+          s.empresa_id_original !== s.empresa_id;
+        return [
+          s.semana,
+          s.dia,
+          s.horario,
+          s.turno,
+          s.ciudad ?? "",
+          s.programa,
+          s.taller_nombre,
+          planificada,
+          real,
+          huboCambio ? "SI" : "NO",
+          s.estado,
+          traducirMotivo(s.motivo_cambio),
+          s.confirmado ? "Sí" : "No",
+          s.notas ?? "",
+        ];
+      });
+
+      const csvContent = [
+        headers.map(csvCell).join(","),
+        ...rows.map((r) => r.map(csvCell).join(",")),
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `analisis_detalle_${selectedTrimestre}.csv`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Detalle CSV exportado");
+    } catch (e: any) {
+      toast.error(e?.message || "Error al exportar detalle");
+    } finally {
+      setExportandoDetalle(false);
+    }
+  };
+
   // ── Recalcular Scores ──────────────────────────────────────
 
   const handleRecalcularScores = async () => {
@@ -290,8 +399,8 @@ export function AnalisisPageClient() {
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-100"
           >
             {trimestres.map((t) => (
-              <option key={t} value={t}>
-                {t}
+              <option key={t.value} value={t.value}>
+                {t.label}
               </option>
             ))}
           </select>
@@ -315,6 +424,16 @@ export function AnalisisPageClient() {
             <Download className="h-4 w-4" />
             Exportar CSV
           </button>
+
+          {/* Export detalle slot a slot */}
+          <button
+            onClick={exportarDetalleCSV}
+            disabled={exportandoDetalle}
+            className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Download className="h-4 w-4" />
+            {exportandoDetalle ? "Exportando..." : "Exportar detalle (CSV)"}
+          </button>
         </div>
       </div>
 
@@ -334,6 +453,19 @@ export function AnalisisPageClient() {
           >
             Reintentar
           </button>
+        </div>
+      )}
+
+      {sinDatos && !loading && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-6 text-center">
+          <AlertTriangle className="mx-auto h-8 w-8 text-amber-500" />
+          <h3 className="mt-2 font-medium text-amber-800">
+            Sin datos de planificación
+          </h3>
+          <p className="mt-1 text-sm text-amber-600">
+            Este trimestre no tiene datos de planificación; consúltalo en
+            Históricos.
+          </p>
         </div>
       )}
 
