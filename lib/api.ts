@@ -203,11 +203,12 @@ export async function calcularFrecuencias(
 
 export async function confirmarFrecuencias(
   trimestre: string,
-  empresas: ConfirmarEmpresa[]
+  empresas: ConfirmarEmpresa[],
+  force: boolean = false, // V31 Capa 0a: reemplazar frecuencias existentes
 ): Promise<ConfirmarOutput> {
   return apiFetch<ConfirmarOutput>("/api/frecuencias/confirmar", {
     method: "POST",
-    body: JSON.stringify({ trimestre, empresas }),
+    body: JSON.stringify({ trimestre, empresas, force }),
   });
 }
 
@@ -220,11 +221,14 @@ export async function obtenerFrecuencias(trimestre: string) {
 // ── Calendario (Fase 2) ──────────────────────────────────────
 
 export async function generarCalendario(
-  trimestre: string
+  trimestre: string,
+  continuar: boolean = false,
+  force: boolean = false, // V31 Capa 0a: saltar el soft-block (regenerar sobre PLANIFICADO)
 ): Promise<CalendarioOutput> {
   return apiFetch<CalendarioOutput>("/api/calendario/generar", {
     method: "POST",
-    body: JSON.stringify({ trimestre }),
+    // V30 Capa 3b: tramos de 90s; `continuar` siembra con la solución previa.
+    body: JSON.stringify({ trimestre, continuar, timeout_seconds: 90, force }),
   });
 }
 

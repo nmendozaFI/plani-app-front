@@ -1,6 +1,6 @@
 "use server";
 
-import { calcularFrecuencias, confirmarFrecuencias } from "@/lib/api";
+import { calcularFrecuencias, confirmarFrecuencias, obtenerFrecuencias } from "@/lib/api";
 import type {
   FrecuenciaOutput,
   ConfirmarOutput,
@@ -21,12 +21,27 @@ export async function actionCalcularFrecuencias(
   }
 }
 
+// V31 Capa 0a: lee las frecuencias YA persistidas (tabla frecuencia) para el
+// diff del diálogo de confirmación (antes → después).
+export async function actionObtenerFrecuencias(
+  trimestre: string,
+): Promise<ActionResult<Awaited<ReturnType<typeof obtenerFrecuencias>>>> {
+  try {
+    const data = await obtenerFrecuencias(trimestre);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al obtener frecuencias";
+    return { ok: false, error: msg };
+  }
+}
+
 export async function actionConfirmarFrecuencias(
   trimestre: string,
-  empresas: ConfirmarEmpresa[]
+  empresas: ConfirmarEmpresa[],
+  force: boolean = false, // V31 Capa 0a
 ): Promise<ActionResult<ConfirmarOutput>> {
   try {
-    const data = await confirmarFrecuencias(trimestre, empresas);
+    const data = await confirmarFrecuencias(trimestre, empresas, force);
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al confirmar frecuencias";

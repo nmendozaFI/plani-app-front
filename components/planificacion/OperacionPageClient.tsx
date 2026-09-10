@@ -1444,6 +1444,7 @@ export function OperacionPageClient() {
         <BulkImportModal
           trimestre={trimestre || ""}
           importing={bulkImporting}
+          resumen={resumen}
           onClose={() => setShowBulkImportModal(false)}
           onConfirm={handleBulkImport}
         />
@@ -2186,11 +2187,13 @@ function ImportExcelModal({
 function BulkImportModal({
   trimestre,
   importing,
+  resumen,
   onClose,
   onConfirm,
 }: {
   trimestre: string;
   importing: boolean;
+  resumen: CalendarioResumen | null; // V31 Capa 0a: recuentos de lo que se reemplaza
   onClose: () => void;
   onConfirm: (file: File) => void;
 }) {
@@ -2288,6 +2291,13 @@ function BulkImportModal({
               <div className="text-slate-500 mt-0.5">
                 Se borrarán todos los slots actuales de <span className="font-mono font-semibold">{trimestre || "—"}</span>
               </div>
+              {/* V31 Capa 0a: recuentos de lo que se reemplaza */}
+              {resumen && resumen.total_slots > 0 && (
+                <div className="text-slate-600 mt-1">
+                  Vas a reemplazar los <span className="font-semibold">{resumen.total_slots}</span> slots de{" "}
+                  {trimestre} ({resumen.confirmados} confirmados, {resumen.cancelados} cancelados).
+                </div>
+              )}
             </div>
           </label>
 

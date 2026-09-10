@@ -42,6 +42,31 @@ export interface SlotCalendario {
   sugerencias?: SugerenciaContingencia[] | null;
 }
 
+// V30 Capa 4: diagnóstico de demanda no colocada. Reconcilia las dos cifras:
+//   total_vacantes = total_no_colocado + slots_sin_demanda
+export type CausaNoColocado =
+  | "sin_slots_posibles"   // día/taller/festivo bloquean todo su programa
+  | "capacidad_global"     // demanda total > slots totales
+  | "competencia_slots";   // perdió el hueco (otra empresa / dispersión / 1-por-semana)
+
+export interface DiagnosticoEmpresa {
+  empresa_id: number;
+  empresa_nombre: string;
+  programa: string; // "EF" | "IT"
+  no_colocados: number;
+  causa: CausaNoColocado | string;
+}
+
+export interface DiagnosticoCalendario {
+  total_demanda: number;
+  total_colocado: number;
+  total_no_colocado: number;   // Σ por_empresa.no_colocados
+  total_slots_reales: number;
+  slots_sin_demanda: number;   // total_slots_reales − total_demanda (>0: capacidad sobrante)
+  total_vacantes: number;      // = total_no_colocado + slots_sin_demanda
+  por_empresa: DiagnosticoEmpresa[];
+}
+
 export interface CalendarioOutput {
   trimestre: string;
   status: string;
@@ -53,6 +78,7 @@ export interface CalendarioOutput {
   inviolables_pct: number;
   preferentes_pct: number;
   warnings: string[];
+  diagnostico?: DiagnosticoCalendario | null;  // V30 Capa 4
 }
 
 // V26: festivos del trimestre. Endpoint dedicado para la vista calendario

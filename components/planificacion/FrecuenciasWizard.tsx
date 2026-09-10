@@ -5,7 +5,10 @@ import { getTrimestreAnterior } from "@/utils/trimestres";
 import {
   actionCalcularFrecuencias,
   actionConfirmarFrecuencias,
+  actionObtenerFrecuencias,
 } from "@/actions/frecuencias-actions";
+import { actionObtenerResumen } from "@/actions/calendario-actions";
+import { actionObtenerTrimestresHistorico } from "@/actions/historico-actions";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
 import type {
   FrecuenciaOutput,
@@ -16,6 +19,16 @@ import { SemaforoBadge } from "./SemaforoBadge";
 import { PrioridadBadge } from "./PrioridadBadge";
 import { WarningsPanel } from "./WarningsPanel";
 import { RecortesPanel } from "./RecortesPanel";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+
+// V31 Capa 0a: cambio antes→después para el diálogo de confirmación.
+interface CambioFrecuencia {
+  nombre: string;
+  ef_antes: number; ef_desp: number;
+  it_antes: number; it_desp: number;
+}
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -46,6 +59,13 @@ export function FrecuenciasWizard() {
   const [confirmacion, setConfirmacion] = useState<ConfirmarOutput | null>(
     null,
   );
+
+  // V31 Capa 0a: diálogo de confirmación de reemplazo de frecuencias existentes.
+  const [confirmData, setConfirmData] = useState<{
+    cambios: CambioFrecuencia[];
+    total_reemplazadas: number;
+    hay_calendario: boolean;
+  } | null>(null);
 
   // Filtros (visuales — no afectan totales)
   const [searchQuery, setSearchQuery] = useState("");
@@ -133,8 +153,10 @@ export function FrecuenciasWizard() {
 
   // ── Paso 3: Confirmar ───────────────────────────────────────
 
-  const handleConfirmar = useCallback(async () => {
+  // V31 Capa 0a: envío real (con force tras confirmación).
+  const doConfirmar = useCallback(async (force: boolean) => {
     if (!trimestre) return;
+    setConfirmData(null);
     setLoading(true);
     setError(null);
     try {
@@ -143,9 +165,8 @@ export function FrecuenciasWizard() {
         talleres_ef: e.talleres_ef_edit,
         talleres_it: e.talleres_it_edit,
       }));
-      const result = await actionConfirmarFrecuencias(trimestre, empresas);
+      const result = await actionConfirmarFrecuencias(trimestre, empresas, force);
       if (!result.ok) throw new Error(result.error);
-
       setConfirmacion(result.data);
       setPaso("confirmado");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -155,6 +176,60 @@ export function FrecuenciasWizard() {
       setLoading(false);
     }
   }, [trimestre, empresasEdit]);
+
+  const handleConfirmar = useCallback(async () => {
+    if (!trimestre || loading) return;
+    setLoading(true);
+    setError(null);
+    let hard: string | null = null;
+    let go = false;
+    try {
+      const [resumen, cerrados, frecActual] = await Promise.all([
+        actionObtenerResumen(trimestre),
+        actionObtenerTrimestresHistorico(),
+        actionObtenerFrecuencias(trimestre),
+      ]);
+      const cerrado = cerrados.ok && !!cerrados.data?.trimestres?.includes(trimestre);
+      const r = resumen.ok ? resumen.data : null;
+      if (cerrado || (r && (r.confirmados > 0 || r.cancelados > 0))) {
+        hard = `${trimestre} ya está en operación: sus frecuencias no se pueden reemplazar.`;
+      } else {
+        // Diff contra la tabla `frecuencia` real (no contra la propuesta de /calcular).
+        const filas = (frecActual.ok ? (frecActual.data?.frecuencias ?? []) : []) as Array<{
+          empresaId: number; talleresEF?: number | null; talleresIT?: number | null;
+        }>;
+        const prev = new Map<number, { ef: number; it: number }>(
+          filas.map((f) => [f.empresaId, { ef: f.talleresEF ?? 0, it: f.talleresIT ?? 0 }] as [number, { ef: number; it: number }]),
+        );
+        const cambios: CambioFrecuencia[] = [];
+        for (const e of empresasEdit) {
+          const cur = prev.get(e.empresa_id) ?? { ef: 0, it: 0 };
+          if (cur.ef !== e.talleres_ef_edit || cur.it !== e.talleres_it_edit) {
+            cambios.push({
+              nombre: e.nombre,
+              ef_antes: cur.ef, ef_desp: e.talleres_ef_edit,
+              it_antes: cur.it, it_desp: e.talleres_it_edit,
+            });
+          }
+        }
+        if (prev.size > 0) {
+          setConfirmData({
+            cambios,
+            total_reemplazadas: prev.size,
+            hay_calendario: !!(r && r.total_slots > 0),
+          });
+        } else {
+          go = true; // primera vez, sin filas previas → directo
+        }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) { hard = e.message; }
+    finally { setLoading(false); }
+
+    if (hard) setError(hard);
+    else if (go) doConfirmar(false);
+    // si se abrió el modal, se espera confirmación
+  }, [trimestre, loading, empresasEdit, doConfirmar]);
 
   // ── Reset ───────────────────────────────────────────────────
 
@@ -173,6 +248,16 @@ export function FrecuenciasWizard() {
 
   return (
     <div className="space-y-6">
+      {/* V31 Capa 0a: confirmación de reemplazo de frecuencias existentes */}
+      {confirmData && trimestre && (
+        <ConfirmarFrecuenciasModal
+          trimestre={trimestre}
+          data={confirmData}
+          onCancel={() => setConfirmData(null)}
+          onConfirm={() => doConfirmar(true)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -931,5 +1016,66 @@ function StatCard({
         )}
       </div>
     </div>
+  );
+}
+
+// V31 Capa 0a: confirma el reemplazo de frecuencias existentes. El bloqueo DURO
+// (trimestre en operación/cerrado) NO llega aquí — se corta antes con error.
+function ConfirmarFrecuenciasModal({
+  trimestre, data, onCancel, onConfirm,
+}: {
+  trimestre: string;
+  data: { cambios: CambioFrecuencia[]; total_reemplazadas: number; hay_calendario: boolean };
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onCancel(); }}>
+      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Reemplazar frecuencias de {trimestre}</DialogTitle>
+          <DialogDescription>
+            {trimestre} ya tiene {data.total_reemplazadas} frecuencias confirmadas.
+            Confirmar las reemplaza por completo
+            {data.cambios.length > 0
+              ? ` (${data.cambios.length} empresa${data.cambios.length !== 1 ? "s" : ""} cambia${data.cambios.length !== 1 ? "n" : ""}).`
+              : " (sin cambios de valores)."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {data.hay_calendario && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Esto no cambia el calendario ya generado; para aplicarlo habría que regenerar.
+          </div>
+        )}
+
+        {data.cambios.length > 0 && (
+          <div className="overflow-y-auto flex-1 -mx-1 px-1 space-y-1">
+            {data.cambios.map((c) => (
+              <div key={c.nombre}
+                className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-1.5 text-xs">
+                <span className="truncate font-medium text-slate-700">{c.nombre}</span>
+                <span className="shrink-0 tabular-nums text-slate-500">
+                  EF {c.ef_antes}→<span className="font-semibold text-slate-800">{c.ef_desp}</span>
+                  {"  ·  "}
+                  IT {c.it_antes}→<span className="font-semibold text-slate-800">{c.it_desp}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <DialogFooter>
+          <button onClick={onCancel}
+            className="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">
+            Cancelar
+          </button>
+          <button onClick={onConfirm}
+            className="px-4 py-2 text-sm font-medium bg-slate-900 text-white rounded-lg hover:bg-slate-800">
+            Reemplazar frecuencias
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

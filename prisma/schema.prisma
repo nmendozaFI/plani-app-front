@@ -188,6 +188,11 @@ model Restriccion {
   valor       String
   tallerId    Int?
   descripcion String?
+  // V30 Capa 6: acota la restricción a un programa. NULL = ambos (compat con
+  // restricciones existentes). 'EF' / 'IT' = solo aplica a los slots de ese
+  // programa en el pre-filtro del solver. Arregla la raíz del INFEASIBLE de EY
+  // (nota "EF:" que se aplicaba también a sus talleres IT).
+  programa    String?
   createdAt   DateTime        @default(now())
   empresa     Empresa         @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   taller      Taller?         @relation(fields: [tallerId], references: [id])

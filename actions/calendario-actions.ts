@@ -54,10 +54,12 @@ import type { ActionResult } from "@/types/actions";
 import type { CerrarTrimestreResult } from "@/types/config-trimestral";
 
 export async function actionGenerarCalendario(
-  trimestre: string
+  trimestre: string,
+  continuar: boolean = false,
+  force: boolean = false, // V31 Capa 0a
 ): Promise<ActionResult<CalendarioOutput>> {
   try {
-    const data = await generarCalendario(trimestre);
+    const data = await generarCalendario(trimestre, continuar, force);
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al generar calendario";

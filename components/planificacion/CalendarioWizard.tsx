@@ -5,11 +5,17 @@ import { useState, useCallback, useMemo } from "react";
 import {
   actionGenerarCalendario,
   actionObtenerCalendario,
+  actionObtenerResumen,
 } from "@/actions/calendario-actions";
+import { actionObtenerTrimestresHistorico } from "@/actions/historico-actions";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
 import type { CalendarioOutput, SlotCalendario } from "@/lib/api";
 import { apiFetchBlob } from "@/lib/api-client";
 import { WarningsPanel } from "./WarningsPanel";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 // ── Constants ────────────────────────────────────────────────
 
@@ -51,6 +57,13 @@ function isVacante(slot: SlotCalendario): boolean {
   return slot.empresa_id === 0 || slot.empresa_id === null || slot.estado === "VACANTE";
 }
 
+/** V30 Capa 5: etiqueta legible de la causa de demanda no colocada (diagnostico). */
+const CAUSA_LABEL: Record<string, string> = {
+  sin_slots_posibles: "Sin días/talleres compatibles",
+  capacidad_global: "Capacidad total insuficiente",
+  competencia_slots: "Sin hueco libre (compite con otras)",
+};
+
 // ── Types ────────────────────────────────────────────────────
 
 type Vista = "semanal" | "lista" | "empresa";
@@ -79,16 +92,57 @@ export function CalendarioWizard() {
   const [filtroVacante, setFiltroVacante] = useState<FiltroVacante>("todas");
   const [semanaSeleccionada, setSemanaSeleccionada] = useState<number | null>(null);
 
-  const handleGenerar = useCallback(async () => {
+  // V31 Capa 0a: modal de confirmación para regenerar sobre un calendario existente.
+  const [regenInfo, setRegenInfo] = useState<{ total: number; planificados: number; vacantes: number } | null>(null);
+
+  const doGenerar = useCallback(async (force: boolean, continuar: boolean) => {
     if (!trimestre) return;
+    setRegenInfo(null);
     setLoading(true); setError(null);
     try {
-      const result = await actionGenerarCalendario(trimestre);
+      const result = await actionGenerarCalendario(trimestre, continuar, force);
       if (!result.ok) throw new Error(result.error);
       setCalendario(result.data); setPaso("resultado");
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   }, [trimestre]);
+
+  const handleGenerar = useCallback(async (continuar: boolean = false) => {
+    if (!trimestre || loading) return;  // bloquea doble clic
+    // "Seguir optimizando" (continuar) regenera sobre el calendario recién
+    // mostrado → consentido; viaja con force. El backend sigue bloqueando duro
+    // si el trimestre está en operación/cerrado.
+    if (continuar) return doGenerar(true, true);
+
+    // Generación nueva → pre-chequeo (recuentos de endpoints existentes).
+    setLoading(true); setError(null);
+    let hard: string | null = null;
+    let go = false;
+    try {
+      const [resumen, cerrados] = await Promise.all([
+        actionObtenerResumen(trimestre),
+        actionObtenerTrimestresHistorico(),
+      ]);
+      const cerrado = cerrados.ok && !!cerrados.data?.trimestres?.includes(trimestre);
+      const r = resumen.ok ? resumen.data : null;
+      if (cerrado || (r && (r.confirmados > 0 || r.cancelados > 0))) {
+        hard =
+          `${trimestre} ya está en operación` +
+          (r ? ` (${r.confirmados} confirmados, ${r.cancelados} cancelados)` : "") +
+          (cerrado ? ", trimestre cerrado" : "") +
+          ". Generar borraría el calendario. Para cambiarlo usá Operación.";
+      } else if (r && r.total_slots > 0) {
+        setRegenInfo({ total: r.total_slots, planificados: r.total_slots - r.vacantes, vacantes: r.vacantes });
+      } else {
+        go = true;
+      }
+    } catch (e: any) { hard = e.message; }
+    finally { setLoading(false); }
+
+    if (hard) setError(hard);
+    else if (go) doGenerar(false, false);
+    // si se abrió el modal (regenInfo), se espera a la confirmación del usuario
+  }, [trimestre, loading, doGenerar]);
 
   const handleCargar = useCallback(async () => {
     if (!trimestre) return;
@@ -188,16 +242,35 @@ export function CalendarioWizard() {
 
   return (
     <div className="space-y-6">
+      {/* V31 Capa 0a: confirmación de regeneración sobre calendario existente */}
+      {regenInfo && trimestre && (
+        <RegenerarConfirmModal
+          trimestre={trimestre}
+          info={regenInfo}
+          onCancel={() => setRegenInfo(null)}
+          onConfirm={() => doGenerar(true, false)}
+        />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Fase 2 — Calendario</h1>
           <p className="text-sm text-slate-500 mt-0.5">20 talleres/semana · 14 EF + 6 IT · 13 semanas</p>
         </div>
-        {paso !== "config" && (
-          <button onClick={() => { setPaso("config"); setCalendario(null); setError(null); setFiltroVacante("todas"); setSemanaSeleccionada(null); }}
-            className="text-sm text-slate-500 hover:text-slate-700 underline underline-offset-2">← Volver</button>
-        )}
+        <div className="flex items-center gap-3">
+          {/* V30 Capa 3b: relanza el solver sembrado con la solución actual (tramo +90s). */}
+          {paso === "resultado" && stats && stats.totalVacantes > 0 && (
+            <button onClick={() => handleGenerar(true)} disabled={loading}
+              className="inline-flex items-center gap-2 rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed">
+              {loading ? <><Spinner />Optimizando... (hasta 90s)</> : `${stats.totalVacantes} vacantes · seguir optimizando`}
+            </button>
+          )}
+          {paso !== "config" && (
+            <button onClick={() => { setPaso("config"); setCalendario(null); setError(null); setFiltroVacante("todas"); setSemanaSeleccionada(null); }}
+              className="text-sm text-slate-500 hover:text-slate-700 underline underline-offset-2">← Volver</button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -255,9 +328,9 @@ export function CalendarioWizard() {
               </div>
               <p className="mt-3 text-xs text-slate-400">Requiere frecuencias confirmadas (Fase 1). Cada semana genera 20 slots fijos.</p>
               <div className="mt-5 flex gap-3">
-                <button onClick={handleGenerar} disabled={loading || !tieneFrequencias}
+                <button onClick={() => handleGenerar(false)} disabled={loading || !tieneFrequencias}
                   className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed">
-                  {loading ? <><Spinner />Generando...</> : "Generar calendario"}
+                  {loading ? <><Spinner />Generando... (hasta 90s)</> : "Generar calendario"}
                 </button>
                 <button onClick={handleCargar} disabled={loading}
                   className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50">
@@ -340,6 +413,63 @@ export function CalendarioWizard() {
               </div>
             </div>
           )}
+
+          {/* ── Diagnóstico de vacantes (V30 Capa 5) ──────────────
+              Reconcilia el contador de vacantes con la demanda no colocada:
+              vacantes = sin_colocar + slots_sin_demanda. Así la pantalla no se
+              contradice. Solo aparece tras Generar (no en "Cargar existente"). */}
+          {calendario.diagnostico && calendario.diagnostico.total_vacantes > 0 && (() => {
+            const d = calendario.diagnostico!;
+            return (
+              <div className="rounded-xl border border-amber-200 bg-white p-4">
+                <div className="mb-2 text-sm font-semibold text-slate-800">Diagnóstico de vacantes</div>
+                {/* Reconciliación: la suma cuadra con el contador de arriba */}
+                <div className="mb-3 flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
+                  <span className="rounded-md bg-amber-100 px-2 py-0.5 font-semibold text-amber-800">
+                    {d.total_vacantes} vacantes
+                  </span>
+                  <span className="text-slate-400">=</span>
+                  <span className="rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
+                    {d.total_no_colocado} sin colocar
+                  </span>
+                  {d.slots_sin_demanda > 0 && (
+                    <>
+                      <span className="text-slate-400">+</span>
+                      <span className="rounded-md bg-slate-100 px-2 py-0.5 font-medium text-slate-700">
+                        {d.slots_sin_demanda} slot{d.slots_sin_demanda !== 1 ? "s" : ""} sin demanda
+                      </span>
+                    </>
+                  )}
+                  {d.slots_sin_demanda < 0 && (
+                    <span className="text-slate-400">(calendario lleno · faltan {-d.slots_sin_demanda} slots)</span>
+                  )}
+                </div>
+                {/* Detalle por empresa de la demanda que no cupo */}
+                {d.por_empresa.length > 0 ? (
+                  <div className="space-y-1">
+                    {d.por_empresa.map((e) => (
+                      <div key={`${e.empresa_id}-${e.programa}`}
+                        className="flex items-center justify-between gap-2 rounded-lg border border-slate-100 bg-slate-50/60 px-3 py-1.5 text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="truncate font-medium text-slate-700">{e.empresa_nombre}</span>
+                          <span className="shrink-0 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">{e.programa}</span>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          <span className="font-semibold text-amber-700">{e.no_colocados} sin colocar</span>
+                          <span className="text-slate-400">·</span>
+                          <span className="text-slate-500">{CAUSA_LABEL[e.causa] ?? e.causa}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-500">
+                    Toda la demanda se colocó; las vacantes son slots libres sin demanda (capacidad sobrante).
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ── Monthly breakdown ─────────────────────────────── */}
           <div className="flex gap-3">
@@ -897,5 +1027,62 @@ function Spinner() {
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
     </svg>
+  );
+}
+
+// V31 Capa 0a: confirma la regeneración (borrado + nuevo) cuando el trimestre
+// ya tiene slots planificados. Clon del patrón "teclea el trimestre" de
+// BulkImportModal (Operación). El bloqueo DURO (en operación/cerrado) NO llega
+// aquí — se corta antes con un mensaje de error.
+function RegenerarConfirmModal({
+  trimestre, info, onCancel, onConfirm,
+}: {
+  trimestre: string;
+  info: { total: number; planificados: number; vacantes: number };
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const [txt, setTxt] = useState("");
+  const canSubmit = txt.trim() === trimestre;
+  return (
+    <Dialog open onOpenChange={(o) => { if (!o) onCancel(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Regenerar calendario de {trimestre}</DialogTitle>
+          <DialogDescription>
+            {trimestre} tiene {info.total} slots ({info.planificados} planificados, {info.vacantes} vacantes).
+            Generar los borrará y creará un calendario nuevo.
+          </DialogDescription>
+        </DialogHeader>
+        <div>
+          <label htmlFor="regen-confirm" className="block text-xs font-medium text-slate-600 mb-1">
+            Para confirmar, escribe el código del trimestre (<span className="font-mono">{trimestre}</span>)
+          </label>
+          <Input
+            id="regen-confirm"
+            value={txt}
+            onChange={(e) => setTxt(e.target.value)}
+            placeholder={trimestre}
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </div>
+        <DialogFooter>
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm font-medium text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={!canSubmit}
+            className="px-4 py-2 text-sm font-medium bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Borrar y regenerar
+          </button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
