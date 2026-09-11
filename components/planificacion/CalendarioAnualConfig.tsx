@@ -10,6 +10,7 @@ import {
 } from "@/actions/calendario-anual-actions";
 import type { SemanaConfigOut, SemanaDetalleOut } from "@/types/taller";
 import { Badge } from "@/components/ui/badge";
+import { FestivosEditor } from "@/components/planificacion/FestivosEditor";
 
 // ── Constants ────────────────────────────────────────────────
 
@@ -407,6 +408,9 @@ export function CalendarioAnualConfig() {
           {error}
         </div>
       )}
+
+      {/* V32 · Festivos y cierres del año */}
+      <FestivosEditor anio={anio} />
 
       {/* Loading */}
       {loading && !semanas.length && (

@@ -516,6 +516,12 @@ export default function ImportacionWizard() {
       {/* Tab: Empresas */}
       {tab === "empresas" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
+          {/* V31 Capa 7: deprecar el import maestro a favor del flujo unificado */}
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
+            Para configurar el trimestre (frecuencias, días, EP, reglas…) usá{" "}
+            <a href="/planificacion/configuracion" className="font-medium underline">Configuración del trimestre</a>:
+            un solo archivo actualiza todas las tablas relacionadas. Este import maestro queda como respaldo.
+          </div>
           <div>
             <h2 className="font-semibold text-slate-800 mb-1">
               Excel Maestro de Empresas

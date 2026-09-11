@@ -9,6 +9,9 @@ import {
   crearExtraSlot,
   eliminarExtraSlot,
   obtenerResumenTrimestre,
+  listarFestivos,
+  agregarFestivo,
+  eliminarFestivo,
 } from "@/lib/api";
 import type {
   SemanaConfigOut,
@@ -18,6 +21,8 @@ import type {
   SemanaExtraSlotCreate,
   CalendarioAnualResumen,
   BatchUpdateResult,
+  FestivoOut,
+  FestivoInput,
 } from "@/types/taller";
 import type { ActionResult } from "@/types/actions";
 
@@ -118,6 +123,45 @@ export async function actionObtenerResumenTrimestre(
 ): Promise<ActionResult<CalendarioAnualResumen & { talleres_ef_total: number; talleres_it_total: number }>> {
   try {
     const data = await obtenerResumenTrimestre(anio, quarter);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error desconocido";
+    return { ok: false, error: msg };
+  }
+}
+
+// ── V32 · Festivos ────────────────────────────────────────────
+
+export async function actionListarFestivos(
+  anio: number
+): Promise<ActionResult<FestivoOut[]>> {
+  try {
+    const data = await listarFestivos(anio);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error desconocido";
+    return { ok: false, error: msg };
+  }
+}
+
+export async function actionAgregarFestivo(
+  anio: number,
+  data: FestivoInput
+): Promise<ActionResult<FestivoOut>> {
+  try {
+    const result = await agregarFestivo(anio, data);
+    return { ok: true, data: result };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error desconocido";
+    return { ok: false, error: msg };
+  }
+}
+
+export async function actionEliminarFestivo(
+  festivoId: number
+): Promise<ActionResult<{ ok: boolean }>> {
+  try {
+    const data = await eliminarFestivo(festivoId);
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error desconocido";

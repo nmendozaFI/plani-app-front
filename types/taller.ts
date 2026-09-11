@@ -105,3 +105,18 @@ export interface BatchUpdateResult {
   updated: number;
   message: string;
 }
+
+// V32 — editor de festivos (espeja calendario_anual.py FestivoOut/FestivoInput)
+export interface FestivoOut {
+  id: number;
+  fecha: string; // YYYY-MM-DD
+  dia: string; // L | M | X | J | V
+  trimestre: string; // 2026-Q4
+  semana: number; // relativa 1-13
+  motivo: string | null;
+}
+
+export interface FestivoInput {
+  fecha: string; // YYYY-MM-DD
+  motivo?: string | null;
+}

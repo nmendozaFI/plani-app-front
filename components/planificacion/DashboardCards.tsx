@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart, Calendar, CalendarCheck, TrendingUp } from "lucide-react";
+import { BarChart, Calendar, CalendarCheck, TrendingUp, FileSpreadsheet } from "lucide-react";
 import { useSettings } from "@/hooks/use-settings";
 
 export function DashboardCards() {
@@ -16,7 +16,32 @@ export function DashboardCards() {
     : "Cargando...";
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      {/* Configuración del trimestre (V31) */}
+      <Link
+        href="/planificacion/configuracion"
+        className="group rounded-xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
+            <FileSpreadsheet />
+          </div>
+          <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600">
+            Paso 0
+          </span>
+        </div>
+        <h2 className="mt-4 text-lg font-semibold text-slate-900">
+          Configuración
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Descarga la plantilla del trimestre, editala y subila. Actualiza
+          frecuencias, config y reglas de una vez.
+        </p>
+        <div className="mt-4 text-xs font-medium text-slate-400">
+          Un archivo → todas las tablas
+        </div>
+      </Link>
+
       {/* Fase 1 */}
       <Link
         href="/planificacion/frecuencias"

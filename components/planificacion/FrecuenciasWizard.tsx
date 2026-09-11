@@ -258,6 +258,14 @@ export function FrecuenciasWizard() {
         />
       )}
 
+      {/* V31 Capa 6/7: apuntar al flujo unificado */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-xs text-blue-800">
+        💡 Fase 1 calcula una <b>sugerencia</b>. El número final del trimestre se fija subiendo la
+        plantilla en{" "}
+        <a href="/planificacion/configuracion" className="font-medium underline">Configuración del trimestre</a>,
+        que actualiza frecuencias, config y reglas de una vez.
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

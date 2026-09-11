@@ -14,6 +14,8 @@ import type {
   SemanaExtraSlotCreate,
   CalendarioAnualResumen,
   BatchUpdateResult,
+  FestivoOut,
+  FestivoInput,
 } from "@/types/taller";
 
 // ── Re-export types from canonical source ────────────────────
@@ -908,9 +910,67 @@ export async function eliminarExtraSlot(extraId: number): Promise<{ ok: boolean 
   });
 }
 
+// V32 — editor de festivos (dueño único de la tabla festivo)
+export async function listarFestivos(anio: number): Promise<FestivoOut[]> {
+  return apiFetch<FestivoOut[]>(`/api/talleres/calendario-anual/${anio}/festivos`);
+}
+
+export async function agregarFestivo(
+  anio: number,
+  data: FestivoInput,
+): Promise<FestivoOut> {
+  return apiFetch<FestivoOut>(`/api/talleres/calendario-anual/${anio}/festivos`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function eliminarFestivo(festivoId: number): Promise<{ ok: boolean }> {
+  return apiFetch<{ ok: boolean }>(`/api/talleres/calendario-anual/festivos/${festivoId}`, {
+    method: "DELETE",
+  });
+}
+
 export async function obtenerResumenTrimestre(
   anio: number,
   quarter: number
 ): Promise<CalendarioAnualResumen & { talleres_ef_total: number; talleres_it_total: number }> {
   return apiFetch(`/api/talleres/calendario-anual/${anio}/trimestre/${quarter}/resumen`);
+}
+
+// ── V31 Capa 5: import unificado de configuración del trimestre ──
+
+export async function descargarPlantillaConfig(trimestre: string): Promise<Blob> {
+  return apiFetchBlob(`/api/config-trimestral/${trimestre}/plantilla`);
+}
+
+export async function importarConfigTrimestre(
+  trimestre: string,
+  file: File,
+  dryRun: boolean,
+): Promise<import("@/types/config-import").PlanConfigResponse> {
+  const fd = new FormData();
+  fd.append("file", file);
+  return apiUpload<import("@/types/config-import").PlanConfigResponse>(
+    `/api/config-trimestral/${trimestre}/importar?dry_run=${dryRun}`,
+    fd,
+  );
+}
+
+// V32 — lista de trimestres con estado (para el selector de Configuración).
+export async function listarTrimestresEstado(): Promise<
+  import("@/types/config-import").TrimestresListResponse
+> {
+  return apiFetch<import("@/types/config-import").TrimestresListResponse>(
+    `/api/settings/trimestres`,
+  );
+}
+
+// V32 — config a simple vista (misma tabla que el Excel, solo lectura).
+export async function obtenerConfigVista(
+  trimestre: string,
+): Promise<import("@/types/config-import").ConfigVistaResponse> {
+  return apiFetch<import("@/types/config-import").ConfigVistaResponse>(
+    `/api/config-trimestral/${trimestre}/config-json`,
+  );
 }

@@ -395,6 +395,13 @@ export default function ConfigTrimestralPage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
+      {/* V31 Capa 6: avisar que Frecuencias EF/IT se fijan en el flujo unificado */}
+      <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-2.5 text-xs text-blue-800">
+        Ojo: las Frecuencias EF/IT que se aplican al solver se fijan en{" "}
+        <a href="/planificacion/configuracion" className="font-medium underline">Configuración del trimestre</a>{" "}
+        (escribe la tabla que lee el solver <b>y</b> esta CT a la vez). Editarlas solo aquí puede desincronizar.
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
