@@ -769,25 +769,16 @@ export default function ConfigTrimestralPage() {
                         </div>
                       </td>
                       <td className="p-3 text-center">
-                        <Select
-                          value={(getValue(config, "turno_preferido") as string) || "-"}
-                          onValueChange={(v) =>
-                            handleFieldChange(
-                              config.empresa_id,
-                              "turno_preferido",
-                              v === "-" ? null : v
-                            )
-                          }
+                        {/* V32: el Turno vive en empresa.turnoPreferido (lo lee el
+                            solver). Aquí queda de SOLO LECTURA para no escribir el
+                            campo muerto CT.turnoPreferido. Se edita en «Configuración
+                            del trimestre» o en «Empresas». */}
+                        <span
+                          className="text-sm text-slate-400"
+                          title="El turno se configura en «Configuración del trimestre» o en «Empresas»"
                         >
-                          <SelectTrigger className="h-8 w-16">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="-">-</SelectItem>
-                            <SelectItem value="M">M</SelectItem>
-                            <SelectItem value="T">T</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          {(getValue(config, "turno_preferido") as string) || "—"}
+                        </span>
                       </td>
                       <td className="p-3 text-center">
                         <Input

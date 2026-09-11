@@ -6,6 +6,7 @@ import {
   descargarPlantillaConfig,
   importarConfigTrimestre,
   listarTrimestresEstado,
+  inicializarConfigTrimestral,
 } from "@/lib/api";
 import type {
   PlanConfigResponse,
@@ -47,13 +48,45 @@ export function ConfiguracionTrimestrePage() {
   const cerrado = trimestreInfo?.estado === "cerrado";
   const enOperacion = trimestreInfo?.estado === "en_operacion";
 
+  // Inicializar/clonar la CT de un trimestre nuevo (no sobrescribe la existente).
+  const [origen, setOrigen] = useState<string>("");
+  const [initializing, setInitializing] = useState(false);
+  const [initMsg, setInitMsg] = useState<string | null>(null);
+  const [vistaKey, setVistaKey] = useState(0);
+
   const cambiarTrimestre = useCallback((t: string) => {
     // Cambiar de trimestre invalida el plan/archivo (era de otro trimestre).
     setTrimestre(t);
     setPlan(null);
     setFile(null);
     setError(null);
+    setInitMsg(null);
+    setOrigen(trimestreAnterior(t) ?? "");
   }, []);
+
+  // Preseleccionar el trimestre anterior como origen cuando cambian los datos.
+  useEffect(() => {
+    if (trimestre) setOrigen((cur) => cur || (trimestreAnterior(trimestre) ?? ""));
+  }, [trimestre]);
+
+  const handleInicializar = useCallback(async () => {
+    if (!trimestre || initializing) return;
+    setInitializing(true);
+    setInitMsg(null);
+    setError(null);
+    try {
+      const res = await inicializarConfigTrimestral(trimestre, origen || undefined);
+      setInitMsg(
+        `Inicializado: ${res.clonadas} clonada(s) desde ${origen || "(default)"}, ` +
+          `${res.nuevas} nueva(s). Total CT: ${res.total_configs}.`,
+      );
+      setVistaKey((k) => k + 1); // refresca la vista de config
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Error al inicializar");
+    } finally {
+      setInitializing(false);
+    }
+  }, [trimestre, origen, initializing]);
 
   const totalCambios = plan
     ? plan.por_empresa.reduce((s, e) => s + e.cambios.length, 0)
@@ -180,8 +213,46 @@ export function ConfiguracionTrimestrePage() {
         </div>
       )}
 
+      {/* Inicializar / clonar CT (trimestre nuevo) */}
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="text-sm font-semibold text-slate-800">¿Trimestre nuevo? Inicializar configuración</div>
+        <p className="mt-1 text-xs text-slate-500">
+          Crea la configuración trimestral clonándola de otro trimestre (o vacía). No sobrescribe la
+          que ya exista: solo agrega las empresas que falten.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <label htmlFor="origen-sel" className="text-xs font-medium text-slate-500">Clonar desde</label>
+          <select
+            id="origen-sel"
+            value={trimestres.some((t) => t.trimestre === origen) ? origen : ""}
+            onChange={(e) => setOrigen(e.target.value)}
+            disabled={initializing}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-mono disabled:opacity-50"
+          >
+            <option value="">(crear vacío)</option>
+            {trimestres
+              .filter((t) => t.trimestre !== trimestre)
+              .map((t) => (
+                <option key={t.trimestre} value={t.trimestre}>{t.trimestre}</option>
+              ))}
+          </select>
+          <button
+            onClick={handleInicializar}
+            disabled={!trimestre || initializing}
+            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          >
+            {initializing ? "Inicializando…" : "Inicializar"}
+          </button>
+        </div>
+        {initMsg && (
+          <div className="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+            {initMsg}
+          </div>
+        )}
+      </div>
+
       {/* Config a simple vista (solo lectura) */}
-      {trimestre && <ConfigVistaTabla key={trimestre} trimestre={trimestre} />}
+      {trimestre && <ConfigVistaTabla key={`${trimestre}:${vistaKey}`} trimestre={trimestre} />}
 
       {/* 4 acciones */}
       <div className="grid gap-3 sm:grid-cols-2">
@@ -292,6 +363,18 @@ export function ConfiguracionTrimestrePage() {
       )}
     </div>
   );
+}
+
+function trimestreAnterior(t: string): string | null {
+  const m = t.match(/^(\d{4})-Q([1-4])$/);
+  if (!m) return null;
+  let year = Number(m[1]);
+  let q = Number(m[2]) - 1;
+  if (q < 1) {
+    q = 4;
+    year -= 1;
+  }
+  return `${year}-Q${q}`;
 }
 
 function EstadoBadge({ estado }: { estado: TrimestreEstado["estado"] }) {
