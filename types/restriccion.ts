@@ -12,6 +12,10 @@ export type RestriccionClave =
   | "franja_horaria"   // V16
   | "franja_por_dia";  // V16
 
+// V32: programa acota solo_dia/solo_taller. "EF" | "IT" (nunca null para esas
+// claves); null para las demás. En el form el usuario elige EF/IT/Ambos.
+export type RestriccionPrograma = "EF" | "IT";
+
 export interface Restriccion {
   id: number;
   empresa_id: number;
@@ -21,6 +25,7 @@ export interface Restriccion {
   valor: string;
   taller_id: number | null;
   taller_nombre_ref: string | null;
+  programa: RestriccionPrograma | null;
   descripcion: string | null;
 }
 
@@ -29,6 +34,7 @@ export interface RestriccionInput {
   clave: RestriccionClave;
   valor: string;
   taller_id?: number | null;
+  programa?: RestriccionPrograma | null;
   descripcion?: string;
 }
 

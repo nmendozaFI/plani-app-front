@@ -97,6 +97,8 @@ interface FormState {
   tipo: "HARD" | "SOFT";
   valor: string;
   taller_id: number | null;
+  // V32: programa para solo_dia/solo_taller. "AMBOS" crea dos reglas (EF+IT).
+  programa: "EF" | "IT" | "AMBOS";
   // V16 — derived sub-fields used while composing valor for franja keys
   franja: string;       // canonical "HH:MM-HH:MM"
   dia: string;          // single L/M/X/J/V
@@ -108,10 +110,14 @@ const FORM_VACIO: FormState = {
   tipo: "HARD",
   valor: "",
   taller_id: null,
+  programa: "AMBOS",
   franja: "",
   dia: "",
   descripcion: "",
 };
+
+// V32: claves que el solver acota por programa.
+const CLAVES_CON_PROGRAMA = new Set(["solo_dia", "solo_taller"]);
 
 function RestriccionForm({
   initial,
@@ -119,12 +125,14 @@ function RestriccionForm({
   onCancel,
   loading,
   talleres,
+  permiteAmbos = true,
 }: {
   initial: FormState;
   onSubmit: (f: FormState) => void;
   onCancel: () => void;
   loading: boolean;
   talleres: { id: number; nombre: string; programa: string }[];
+  permiteAmbos?: boolean;
 }) {
   const [form, setForm] = useState<FormState>(initial);
 
@@ -333,6 +341,32 @@ function RestriccionForm({
         {renderValorInput()}
       </div>
 
+      {/* V32 — Programa (solo solo_dia / solo_taller) */}
+      {CLAVES_CON_PROGRAMA.has(form.clave) && (
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium">Programa</label>
+          <div className="flex gap-3">
+            {(permiteAmbos ? (["EF", "IT", "AMBOS"] as const) : (["EF", "IT"] as const)).map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => set("programa", p)}
+                className={`flex-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                  form.programa === p
+                    ? "border-slate-800 bg-slate-800 text-white"
+                    : "border-input bg-background text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {p === "AMBOS" ? "EF + IT" : p}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            A qué programa aplica la regla. «EF + IT» crea dos reglas (una por programa).
+          </p>
+        </div>
+      )}
+
       {/* Tipo HARD / SOFT */}
       <div className="space-y-1.5">
         <label className="text-sm font-medium">Prioridad</label>
@@ -433,6 +467,7 @@ export function RestriccionesCrud({
       tipo: r.tipo,
       valor: r.valor,
       taller_id: r.taller_id,
+      programa: r.programa ?? "EF",
       franja,
       dia,
       descripcion: r.descripcion ?? "",
@@ -441,32 +476,49 @@ export function RestriccionesCrud({
 
   function handleCrear(form: FormState) {
     startTransition(async () => {
-      const input: RestriccionInput = {
-        tipo: form.tipo,
-        clave: form.clave as RestriccionInput["clave"],
-        valor: form.valor,
-        taller_id: form.clave === "solo_taller" ? form.taller_id : null,
-        descripcion: form.descripcion || undefined,
-      };
-      const res = await crearRestriccion(empresaId, input);
-      if (!res.ok) {
-        toast.error(res.error);
-        return;
+      const conProg = CLAVES_CON_PROGRAMA.has(form.clave);
+      // "AMBOS" → dos reglas (EF + IT). EF/IT → una. Sin programa para el resto.
+      const programas: (RestriccionInput["programa"])[] = !conProg
+        ? [undefined]
+        : form.programa === "AMBOS"
+          ? ["EF", "IT"]
+          : [form.programa];
+
+      const creadas: Restriccion[] = [];
+      for (const programa of programas) {
+        const input: RestriccionInput = {
+          tipo: form.tipo,
+          clave: form.clave as RestriccionInput["clave"],
+          valor: form.valor,
+          taller_id: form.clave === "solo_taller" ? form.taller_id : null,
+          programa,
+          descripcion: form.descripcion || undefined,
+        };
+        const res = await crearRestriccion(empresaId, input);
+        if (!res.ok) {
+          toast.error(res.error);
+          if (creadas.length) setRestricciones((prev) => [...prev, ...creadas]);
+          return;
+        }
+        creadas.push(res.data);
       }
-      setRestricciones((prev) => [...prev, res.data]);
+      setRestricciones((prev) => [...prev, ...creadas]);
       setModo("lista");
-      toast.success("Restricción añadida");
+      toast.success(creadas.length > 1 ? "Reglas añadidas (EF + IT)" : "Restricción añadida");
     });
   }
 
   function handleEditar(form: FormState) {
     if (!editando) return;
     startTransition(async () => {
+      const conProg = CLAVES_CON_PROGRAMA.has(form.clave);
       const input: RestriccionInput = {
         tipo: form.tipo,
         clave: form.clave as RestriccionInput["clave"],
         valor: form.valor,
         taller_id: form.clave === "solo_taller" ? form.taller_id : null,
+        // En edición no hay "AMBOS" (es una fila): EF o IT.
+        programa: conProg ? (form.programa === "IT" ? "IT" : "EF") : undefined,
         descripcion: form.descripcion || undefined,
       };
       const res = await editarRestriccion(editando.id, input);
@@ -530,6 +582,11 @@ export function RestriccionesCrud({
                   <span className="text-sm font-medium">
                     {CLAVE_LABEL[r.clave] ?? r.clave}
                   </span>
+                  {r.programa && (
+                    <span className="inline-flex items-center rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                      {r.programa}
+                    </span>
+                  )}
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Valor:{" "}
@@ -649,6 +706,7 @@ export function RestriccionesCrud({
             onCancel={() => { setModo("lista"); setEditando(null); }}
             loading={isPending}
             talleres={talleres}
+            permiteAmbos={false}
           />
         )}
       </div>
