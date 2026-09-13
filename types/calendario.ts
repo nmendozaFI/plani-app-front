@@ -209,6 +209,8 @@ export interface ImportarExcelBulkResult {
   extras_detalle: FilaExtraInsertada[];
   empresa_no_encontrada: number;
   taller_no_encontrado: number;
+  empresas_no_encontradas?: string[];
+  talleres_no_encontrados?: string[];
   errores: number;
   warnings: string[];
   dry_run: boolean;

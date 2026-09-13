@@ -7,7 +7,6 @@ import {
   actionActualizarSlot,
   actionActualizarSlotsBatch,
   actionObtenerResumen,
-  actionImportarExcelCalendario,
   actionImportarExcelCalendarioBulk,
   actionValidarAsignacion,
   actionListarExtras,
@@ -31,9 +30,7 @@ import type {
   SlotCalendario,
   CalendarioGetResponse,
   CalendarioResumen,
-  CambioDetalle,
   Festivo,
-  ImportarExcelResult,
   ImportarExcelBulkResult,
   EstadoSlot,
   ListaExtrasResponse,
@@ -209,11 +206,6 @@ export function OperacionPageClient() {
     return () => window.clearTimeout(id);
   }, [slotResaltadoId]);
 
-  // Import Excel — legacy UPDATE flow (preview + apply via /importar-excel-file)
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<ImportarExcelResult | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Import Excel — V19 bulk INSERT flow (always wipes trimestre first)
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
@@ -705,41 +697,14 @@ export function OperacionPageClient() {
     }
   }, [trimestre]);
 
-  const handleImportFile = useCallback(async (file: File) => {
-    if (!trimestre) return;
-    setImporting(true);
-    setImportResult(null);
-    try {
-      // First do a dry run to preview changes
-      const result = await actionImportarExcelCalendario(trimestre, file, true);
-      if (!result.ok) throw new Error(result.error);
-      setImportResult(result.data);
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Error al procesar Excel";
-      toast.error(msg);
-      setShowImportModal(false);
-    } finally {
-      setImporting(false);
-    }
+  // V32: validación previa (dry-run) — no escribe nada. wipe_first=true evita el
+  // 409 por filas existentes; dry_run=true hace que el backend NO borre ni inserte.
+  const handleBulkPreview = useCallback(async (file: File): Promise<ImportarExcelBulkResult> => {
+    if (!trimestre) throw new Error("Sin trimestre");
+    const result = await actionImportarExcelCalendarioBulk(trimestre, file, true, true);
+    if (!result.ok) throw new Error(result.error);
+    return result.data;
   }, [trimestre]);
-
-  const handleConfirmImport = useCallback(async (file: File) => {
-    if (!trimestre) return;
-    setImporting(true);
-    try {
-      const result = await actionImportarExcelCalendario(trimestre, file, false);
-      if (!result.ok) throw new Error(result.error);
-      toast.success(`${result.data.actualizados} slots actualizados`);
-      setShowImportModal(false);
-      setImportResult(null);
-      await cargarDatos(true);  // Preserve selected week
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Error al importar";
-      toast.error(msg);
-    } finally {
-      setImporting(false);
-    }
-  }, [trimestre, cargarDatos]);
 
   // V19 bulk INSERT path. Always wipeFirst=true here — the modal forces it.
   const handleBulkImport = useCallback(async (file: File) => {
@@ -850,14 +815,6 @@ export function OperacionPageClient() {
           >
             📦 Cargar calendario completo
           </button>
-          <button
-            onClick={() => setShowImportModal(true)}
-            disabled={!trimestre}
-            className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
-            title="Ajustes durante el trimestre — actualiza empresa, estado o confirmación de slots existentes."
-          >
-            ✏️ Actualizar slots
-          </button>
           {/* Always-visible entry point to the CrearExtraModal. When the trimestre has 0
               EXTRAs the amber panel is hidden, so this button is the only way to
               create the first one. When EXTRAs exist there is also a button inside
@@ -879,19 +836,6 @@ export function OperacionPageClient() {
           </button>
         </div>
       </div>
-
-      {/* Hidden file input for import */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".xlsx,.xls"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleImportFile(file);
-          e.target.value = "";
-        }}
-      />
 
       {/* Error */}
       {error && (
@@ -1425,27 +1369,15 @@ export function OperacionPageClient() {
         </div>
       )}
 
-      {/* Import Excel Modals — mounted only while open so internal state
-          (selectedFile, confirmText) resets cleanly between opens. */}
-      {showImportModal && (
-        <ImportExcelModal
-          importing={importing}
-          importResult={importResult}
-          fileInputRef={fileInputRef}
-          onClose={() => {
-            setShowImportModal(false);
-            setImportResult(null);
-          }}
-          onConfirm={handleConfirmImport}
-        />
-      )}
-
+      {/* Modal mounted only while open, para que su estado interno
+          (selectedFile, confirmText, preview) se resetee entre aperturas. */}
       {showBulkImportModal && (
         <BulkImportModal
           trimestre={trimestre || ""}
           importing={bulkImporting}
           resumen={resumen}
           onClose={() => setShowBulkImportModal(false)}
+          onPreview={handleBulkPreview}
           onConfirm={handleBulkImport}
         />
       )}
@@ -1468,6 +1400,35 @@ export function OperacionPageClient() {
               {bulkImportResult.errores > 0 && `, ${bulkImportResult.errores} errores`}
               {bulkImportResult.wipe_first && " · trimestre previamente vaciado"}
             </p>
+            {/* Empresas inexistentes — aviso ROJO accionable. El importador nunca
+                crea empresas: la analista debe crearlas en su CRUD y re-subir. */}
+            {(bulkImportResult.empresas_no_encontradas?.length ?? 0) > 0 && (
+              <div className="mt-2 rounded-md border border-red-300 bg-red-50 p-3">
+                <p className="text-xs font-semibold text-red-800">
+                  Estas empresas no existen en la base de datos ({bulkImportResult.empresas_no_encontradas!.length}):
+                </p>
+                <p className="mt-1 text-xs font-medium text-red-700">
+                  {bulkImportResult.empresas_no_encontradas!.join(", ")}
+                </p>
+                <p className="mt-1.5 text-xs text-red-600">
+                  Creá cada empresa en <span className="font-semibold">Empresas</span> y volvé a subir el archivo.
+                  Las filas con estas empresas fueron rechazadas.
+                </p>
+              </div>
+            )}
+            {(bulkImportResult.talleres_no_encontrados?.length ?? 0) > 0 && (
+              <div className="mt-2 rounded-md border border-red-300 bg-red-50 p-3">
+                <p className="text-xs font-semibold text-red-800">
+                  Estos talleres no existen ({bulkImportResult.talleres_no_encontrados!.length}):
+                </p>
+                <p className="mt-1 text-xs font-medium text-red-700">
+                  {bulkImportResult.talleres_no_encontrados!.join(", ")}
+                </p>
+                <p className="mt-1.5 text-xs text-red-600">
+                  Revisá el nombre en <span className="font-semibold">Talleres</span> (debe coincidir y ser del programa correcto).
+                </p>
+              </div>
+            )}
             {bulkImportResult.warnings.length > 0 && (
               <details className="mt-2">
                 <summary className="text-xs text-amber-700 cursor-pointer">
@@ -1994,188 +1955,6 @@ function SlotRow({
   );
 }
 
-// ── Import Excel Modal Component (legacy UPDATE flow) ────────
-//
-// Uses /importar-excel-file: dry-runs first to preview row-level diffs
-// (empresa / estado / confirmado), then applies on confirm.
-//
-// V21 / Deuda 4: shared-slot disambiguation now happens server-side via
-// "Empresa Original" (col G) primary match + fallback to col F. The previous
-// "Limitación conocida" callout was removed when that landed.
-
-function ImportExcelModal({
-  importing,
-  importResult,
-  fileInputRef,
-  onClose,
-  onConfirm,
-}: {
-  importing: boolean;
-  importResult: ImportarExcelResult | null;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  onClose: () => void;
-  onConfirm: (file: File) => void;
-}) {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
-      setSelectedFile(file);
-    }
-  };
-
-  // Manually trigger the dry-run via the hidden file input that the parent
-  // owns. Click handler on "Previsualizar cambios" calls this.
-  const triggerDryRun = useCallback(() => {
-    if (!selectedFile) return;
-    const input = fileInputRef.current;
-    if (!input) return;
-    const dt = new DataTransfer();
-    dt.items.add(selectedFile);
-    input.files = dt.files;
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  }, [selectedFile, fileInputRef]);
-
-  return (
-    <Dialog open onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>Actualizar slots desde Excel</DialogTitle>
-          <DialogDescription>
-            Sube un Excel para actualizar empresa, estado o confirmación de slots existentes. Útil para ajustes durante el trimestre.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="overflow-y-auto flex-1 -mx-1 px-1">
-          {!importResult && !importing && (
-            <div
-              className="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors cursor-pointer"
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById("import-file-input")?.click()}
-            >
-              <input
-                id="import-file-input"
-                type="file"
-                accept=".xlsx,.xls"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-              <div className="text-4xl mb-3">📥</div>
-              <p className="text-sm font-medium text-slate-700 mb-1">
-                Arrastra el Excel aqui o haz click para seleccionar
-              </p>
-              <p className="text-xs text-slate-500">
-                Solo archivos .xlsx o .xls exportados desde el sistema
-              </p>
-            </div>
-          )}
-
-          {importing && (
-            <div className="flex flex-col items-center py-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent mb-4" />
-              <p className="text-sm text-slate-600">Analizando Excel...</p>
-            </div>
-          )}
-
-          {importResult && (
-            <div className="space-y-4">
-              {/* Summary stats */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-center">
-                  <div className="text-xl font-bold text-slate-800">{importResult.total_procesados}</div>
-                  <div className="text-[10px] uppercase text-slate-500">Filas</div>
-                </div>
-                <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-center">
-                  <div className="text-xl font-bold text-blue-700">{importResult.actualizados || importResult.empresas_cambiadas.length}</div>
-                  <div className="text-[10px] uppercase text-blue-600">Cambios</div>
-                </div>
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-center">
-                  <div className="text-xl font-bold text-amber-700">{importResult.errores}</div>
-                  <div className="text-[10px] uppercase text-amber-600">Errores</div>
-                </div>
-              </div>
-
-              {/* All changes detail (estado, confirmado, empresa) */}
-              {importResult.cambios_detalle && importResult.cambios_detalle.length > 0 && (
-                <CambiosDetallePanel cambios={importResult.cambios_detalle} />
-              )}
-
-              {/* Warnings */}
-              {importResult.warnings.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold text-amber-700 mb-2">
-                    Advertencias ({importResult.warnings.length})
-                  </h4>
-                  <div className="max-h-32 overflow-y-auto rounded-lg border border-amber-200 bg-amber-50 p-3">
-                    <ul className="text-xs text-amber-800 space-y-1">
-                      {importResult.warnings.slice(0, 10).map((w, i) => (
-                        <li key={i}>• {w}</li>
-                      ))}
-                      {importResult.warnings.length > 10 && (
-                        <li className="text-amber-600">... y {importResult.warnings.length - 10} más</li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {/* No changes message — only show when actualizados is truly 0 */}
-              {importResult.actualizados === 0 && importResult.errores === 0 && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-center">
-                  <div className="text-2xl mb-2">✓</div>
-                  <p className="text-sm text-slate-600">
-                    No hay cambios para aplicar. El calendario ya esta actualizado.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        <DialogFooter>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
-          >
-            Cancelar
-          </button>
-          {!importResult ? (
-            <button
-              type="button"
-              disabled={!selectedFile || importing}
-              onClick={triggerDryRun}
-              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {importing ? "Analizando..." : "Previsualizar cambios"}
-            </button>
-          ) : (
-            <button
-              onClick={() => selectedFile && onConfirm(selectedFile)}
-              disabled={importing || !selectedFile || importResult.actualizados === 0}
-              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {importing
-                ? "Aplicando..."
-                : importResult.actualizados > 0
-                  ? `Aplicar ${importResult.actualizados} cambios`
-                  : "Aplicar cambios"}
-            </button>
-          )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 // ── Bulk INSERT modal (V19) ──────────────────────────────────
 //
@@ -2189,20 +1968,33 @@ function BulkImportModal({
   importing,
   resumen,
   onClose,
+  onPreview,
   onConfirm,
 }: {
   trimestre: string;
   importing: boolean;
   resumen: CalendarioResumen | null; // V31 Capa 0a: recuentos de lo que se reemplaza
   onClose: () => void;
+  onPreview: (file: File) => Promise<ImportarExcelBulkResult>;
   onConfirm: (file: File) => void;
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [confirmText, setConfirmText] = useState("");
+  // V32: validación previa (dry-run). No se aplica nada hasta que la revisión
+  // salga sin bloqueos (empresas/talleres inexistentes o errores de fila).
+  const [preview, setPreview] = useState<ImportarExcelBulkResult | null>(null);
+  const [checking, setChecking] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  const resetPreview = () => {
+    setPreview(null);
+    setPreviewError(null);
+    setConfirmText("");
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setSelectedFile(file);
+    if (file) { setSelectedFile(file); resetPreview(); }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -2210,8 +2002,30 @@ function BulkImportModal({
     const file = e.dataTransfer.files?.[0];
     if (file && (file.name.endsWith(".xlsx") || file.name.endsWith(".xls"))) {
       setSelectedFile(file);
+      resetPreview();
     }
   };
+
+  const handleRevisar = async () => {
+    if (!selectedFile) return;
+    setChecking(true);
+    setPreviewError(null);
+    try {
+      const r = await onPreview(selectedFile);
+      setPreview(r);
+    } catch (e: unknown) {
+      setPreviewError(e instanceof Error ? e.message : "Error al revisar el archivo");
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const blockers = preview
+    ? (preview.empresas_no_encontradas?.length ?? 0) +
+      (preview.talleres_no_encontrados?.length ?? 0) +
+      (preview.errores ?? 0)
+    : 0;
+  const previewClean = !!preview && blockers === 0;
 
   const handleAttemptedClose = useCallback(() => {
     if (selectedFile && !importing) {
@@ -2221,7 +2035,8 @@ function BulkImportModal({
     onClose();
   }, [selectedFile, importing, onClose]);
 
-  const canSubmit =
+  const canApply =
+    previewClean &&
     !!selectedFile &&
     !importing &&
     !!trimestre &&
@@ -2248,7 +2063,8 @@ function BulkImportModal({
         <DialogHeader>
           <DialogTitle>Cargar calendario completo</DialogTitle>
           <DialogDescription>
-            Sube un Excel con el calendario completo del trimestre. Se borrarán todos los slots actuales antes de insertar los nuevos.
+            Subí el Excel del trimestre. Primero <b>Revisar</b> (no escribe nada);
+            si la revisión sale sin errores, <b>Aplicar</b> reemplaza todos los slots.
           </DialogDescription>
         </DialogHeader>
 
@@ -2283,39 +2099,116 @@ function BulkImportModal({
             )}
           </div>
 
-          {/* Wipe-first checkbox: visual reinforcement, always checked + disabled */}
-          <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 cursor-not-allowed">
-            <Checkbox checked disabled className="mt-0.5" />
-            <div className="text-xs">
-              <div className="font-medium text-slate-700">Borrar trimestre antes de cargar</div>
-              <div className="text-slate-500 mt-0.5">
-                Se borrarán todos los slots actuales de <span className="font-mono font-semibold">{trimestre || "—"}</span>
+          {/* Error al ejecutar la revisión (red de red) */}
+          {previewError && (
+            <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+              {previewError}
+            </div>
+          )}
+
+          {/* ── Resultado de la revisión (dry-run) ── */}
+          {preview && (
+            <div className="space-y-2">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+                <span className="font-semibold text-slate-800">{preview.total_procesados}</span> filas revisadas ·{" "}
+                <span className="font-semibold text-slate-800">{preview.insertados + preview.vacantes}</span> slots se cargarían
+                {preview.extras_insertados > 0 && <> · {preview.extras_insertados} extra(s)</>}
               </div>
-              {/* V31 Capa 0a: recuentos de lo que se reemplaza */}
-              {resumen && resumen.total_slots > 0 && (
-                <div className="text-slate-600 mt-1">
-                  Vas a reemplazar los <span className="font-semibold">{resumen.total_slots}</span> slots de{" "}
-                  {trimestre} ({resumen.confirmados} confirmados, {resumen.cancelados} cancelados).
+
+              {(preview.empresas_no_encontradas?.length ?? 0) > 0 && (
+                <div className="rounded-md border border-red-300 bg-red-50 p-3">
+                  <p className="text-xs font-semibold text-red-800">
+                    Empresas que no existen en la base de datos ({preview.empresas_no_encontradas!.length}):
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-red-700">
+                    {preview.empresas_no_encontradas!.join(", ")}
+                  </p>
+                  <p className="mt-1.5 text-xs text-red-600">
+                    Creá cada empresa en <span className="font-semibold">Empresas</span> y volvé a revisar.
+                  </p>
+                </div>
+              )}
+
+              {(preview.talleres_no_encontrados?.length ?? 0) > 0 && (
+                <div className="rounded-md border border-red-300 bg-red-50 p-3">
+                  <p className="text-xs font-semibold text-red-800">
+                    Talleres que no existen ({preview.talleres_no_encontrados!.length}):
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-red-700">
+                    {preview.talleres_no_encontrados!.join(", ")}
+                  </p>
+                  <p className="mt-1.5 text-xs text-red-600">
+                    Revisá el nombre en <span className="font-semibold">Talleres</span> (debe coincidir y ser del programa correcto).
+                  </p>
+                </div>
+              )}
+
+              {preview.errores > 0 && (
+                <div className="rounded-md border border-red-300 bg-red-50 p-3 text-xs text-red-700">
+                  <span className="font-semibold">{preview.errores}</span> fila(s) con errores. Mirá los avisos de abajo.
+                </div>
+              )}
+
+              {preview.warnings.length > 0 && (
+                <details>
+                  <summary className="text-xs text-amber-700 cursor-pointer">
+                    Ver {preview.warnings.length} aviso(s) por fila
+                  </summary>
+                  <ul className="mt-1 text-xs text-amber-700 pl-4 list-disc max-h-40 overflow-y-auto">
+                    {preview.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                  </ul>
+                </details>
+              )}
+
+              {/* Semáforo del estado de la revisión */}
+              {blockers > 0 ? (
+                <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm font-medium text-red-800">
+                  Bloqueado: corregí el archivo y volvé a revisarlo. No se aplicará nada hasta que la revisión salga sin errores.
+                </div>
+              ) : (
+                <div className="rounded-lg border border-emerald-300 bg-emerald-50 p-3 text-sm font-medium text-emerald-800">
+                  Revisión OK, sin errores. Confirmá abajo para aplicar (reemplaza el trimestre).
                 </div>
               )}
             </div>
-          </label>
+          )}
 
-          {/* Trimestre confirmation text input */}
-          <div>
-            <label htmlFor="bulk-confirm-trimestre" className="block text-xs font-medium text-slate-600 mb-1">
-              Para confirmar, escribe el código del trimestre (<span className="font-mono">{trimestre || "—"}</span>)
-            </label>
-            <Input
-              id="bulk-confirm-trimestre"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder={trimestre || ""}
-              autoComplete="off"
-              spellCheck={false}
-              disabled={importing || !trimestre}
-            />
-          </div>
+          {/* Recordatorio de borrado + confirmación — solo si la revisión está limpia */}
+          {previewClean && (
+            <>
+              <label className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 cursor-not-allowed">
+                <Checkbox checked disabled className="mt-0.5" />
+                <div className="text-xs">
+                  <div className="font-medium text-slate-700">Borrar trimestre antes de cargar</div>
+                  <div className="text-slate-500 mt-0.5">
+                    Se borrarán todos los slots actuales de <span className="font-mono font-semibold">{trimestre || "—"}</span>
+                  </div>
+                  {/* V31 Capa 0a: recuentos de lo que se reemplaza */}
+                  {resumen && resumen.total_slots > 0 && (
+                    <div className="text-slate-600 mt-1">
+                      Vas a reemplazar los <span className="font-semibold">{resumen.total_slots}</span> slots de{" "}
+                      {trimestre} ({resumen.confirmados} confirmados, {resumen.cancelados} cancelados).
+                    </div>
+                  )}
+                </div>
+              </label>
+
+              <div>
+                <label htmlFor="bulk-confirm-trimestre" className="block text-xs font-medium text-slate-600 mb-1">
+                  Para confirmar, escribe el código del trimestre (<span className="font-mono">{trimestre || "—"}</span>)
+                </label>
+                <Input
+                  id="bulk-confirm-trimestre"
+                  value={confirmText}
+                  onChange={(e) => setConfirmText(e.target.value)}
+                  placeholder={trimestre || ""}
+                  autoComplete="off"
+                  spellCheck={false}
+                  disabled={importing || !trimestre}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <DialogFooter>
@@ -2326,69 +2219,26 @@ function BulkImportModal({
           >
             Cancelar
           </button>
-          <button
-            onClick={() => selectedFile && onConfirm(selectedFile)}
-            disabled={!canSubmit}
-            className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {importing ? "Cargando..." : "Cargar"}
-          </button>
+          {previewClean ? (
+            <button
+              onClick={() => selectedFile && onConfirm(selectedFile)}
+              disabled={!canApply}
+              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {importing ? "Aplicando..." : "Aplicar"}
+            </button>
+          ) : (
+            <button
+              onClick={handleRevisar}
+              disabled={!selectedFile || checking || importing}
+              className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {checking ? "Revisando..." : (preview ? "Revisar de nuevo" : "Revisar")}
+            </button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-// ── Preview panel for legacy update modal ────────────────────
-//
-// Shows the first 20 cambios_detalle by default with a "Ver más" affordance.
-
-const CAMBIOS_INICIALES = 20;
-
-function CambiosDetallePanel({ cambios }: { cambios: CambioDetalle[] }) {
-  const [expanded, setExpanded] = useState(false);
-  const visibles = expanded ? cambios : cambios.slice(0, CAMBIOS_INICIALES);
-  const restantes = cambios.length - visibles.length;
-
-  return (
-    <div>
-      <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-100 px-1 text-[10px] text-blue-700">
-          {cambios.length}
-        </span>
-        Cambios detectados
-      </h4>
-      <div className="max-h-48 overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
-        {visibles.map((cd, i) => (
-          <div key={i} className="px-3 py-2 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-slate-700">
-                S{cd.semana} {cd.dia} — {cd.taller_nombre}
-              </span>
-              <Badge variant="outline" className="text-[9px]">
-                {cd.campo}
-              </Badge>
-            </div>
-            <div className="mt-1 flex items-center gap-2 text-slate-500">
-              {cd.empresa_nombre && (
-                <span className="text-slate-400 mr-1">{cd.empresa_nombre}:</span>
-              )}
-              <span className="text-red-600 line-through">{cd.valor_anterior}</span>
-              <span>→</span>
-              <span className="text-green-600 font-medium">{cd.valor_nuevo}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      {restantes > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="mt-1 text-xs text-blue-600 hover:text-blue-800 underline underline-offset-2"
-        >
-          Ver más ({restantes} cambios restantes)
-        </button>
-      )}
-    </div>
-  );
-}

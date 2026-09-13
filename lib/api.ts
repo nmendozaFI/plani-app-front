@@ -527,8 +527,13 @@ export async function importarEmpresas(
 ): Promise<ImportEmpresasResult> {
   const formData = new FormData();
   formData.append("file", file);
-  formData.append("trimestre", trimestre);
+  formData.append("trimestre", trimestre); // V32: ignorado por el backend (compat)
   return apiUpload<ImportEmpresasResult>("/api/importar/empresas", formData);
+}
+
+// V32 — plantilla del maestro de empresas (8 columnas, prellenada con lo actual).
+export async function descargarPlantillaEmpresas(): Promise<Blob> {
+  return apiFetchBlob("/api/importar/empresas/plantilla");
 }
 
 export async function importarHistorico(

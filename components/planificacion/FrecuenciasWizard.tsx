@@ -607,7 +607,7 @@ export function FrecuenciasWizard() {
                       >
                         Sin empresas con configuración trimestral.{" "}
                         <a
-                          href="/configuracion-trimestral"
+                          href="/planificacion/configuracion"
                           className="text-blue-600 underline hover:text-blue-700"
                         >
                           Crea Config Trimestral

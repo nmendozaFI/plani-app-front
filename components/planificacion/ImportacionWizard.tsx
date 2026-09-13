@@ -7,6 +7,7 @@ import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { getTrimestreAnterior } from "@/utils/trimestres";
 import {
   importarEmpresas,
+  descargarPlantillaEmpresas,
   importarHistorico,
   obtenerEstadoImportacion,
   cerrarTrimestre,
@@ -339,6 +340,28 @@ export default function ImportacionWizard() {
     }
   };
 
+  // ── Descargar plantilla del maestro de empresas ───────────
+  const [descargandoPlantilla, setDescargandoPlantilla] = useState(false);
+  const handleDescargarPlantilla = async () => {
+    setDescargandoPlantilla(true);
+    setErrorEmpresas(null);
+    try {
+      const blob = await descargarPlantillaEmpresas();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "maestro_empresas.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e: any) {
+      setErrorEmpresas(e.message);
+    } finally {
+      setDescargandoPlantilla(false);
+    }
+  };
+
   // ── Importar histórico ────────────────────────────────────
   const handleImportarHistorico = async () => {
     if (!fileHistorico || !trimestreHist) return;
@@ -430,10 +453,10 @@ export default function ImportacionWizard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
-            Importación de datos
+            Empresas y cierre
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Carga masiva de empresas y cierre de calendarios trimestrales
+            Maestro de empresas (alta/actualización) y cierre de calendarios trimestrales
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -516,22 +539,38 @@ export default function ImportacionWizard() {
       {/* Tab: Empresas */}
       {tab === "empresas" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-5">
-          {/* V31 Capa 7: deprecar el import maestro a favor del flujo unificado */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
-            Para configurar el trimestre (frecuencias, días, EP, reglas…) usá{" "}
-            <a href="/planificacion/configuracion" className="font-medium underline">Configuración del trimestre</a>:
-            un solo archivo actualiza todas las tablas relacionadas. Este import maestro queda como respaldo.
+          {/* V32: el maestro solo da de alta/actualiza la ENTIDAD empresa.
+              Lo per-trimestre vive en el Paso 0. */}
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-slate-600">
+            Este maestro da de alta y actualiza <b>empresas</b> (identidad, estructura y ciudades).
+            La configuración del trimestre (frecuencias, días, EP, turno, extras, reglas…) se hace en{" "}
+            <a href="/planificacion/configuracion" className="font-medium underline">Configuración del trimestre</a> (Paso 0).
           </div>
           <div>
             <h2 className="font-semibold text-slate-800 mb-1">
-              Excel Maestro de Empresas
+              Maestro de Empresas
             </h2>
             <p className="text-sm text-slate-500">
-              Sube el Excel con la hoja &quot;Empresas&quot;. El sistema hace upsert
-              (crea nuevas o actualiza existentes por nombre, case-insensitive).
-              También carga ciudades, empresa-ciudad y configTrimestral.
+              Descargá la plantilla (viene con las empresas actuales), editá la hoja
+              &quot;Empresas&quot; y subila. El sistema hace upsert por nombre
+              (case-insensitive) y sincroniza sus ciudades. <b>Nunca crea nada por
+              accidente ni borra empresas.</b>
+            </p>
+            <p className="mt-2 text-xs text-slate-400">
+              Columnas: Nombre · Ciudades · Activa · Es nueva · Es contratante ·
+              Puede ser EP · Puede ser doble · Notas.
             </p>
           </div>
+
+          <button
+            onClick={handleDescargarPlantilla}
+            disabled={descargandoPlantilla}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white
+                       px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50
+                       disabled:opacity-50"
+          >
+            {descargandoPlantilla ? "Descargando…" : "⬇ Descargar plantilla"}
+          </button>
 
           <FileDropZone
             onFile={setFileEmpresas}
@@ -567,7 +606,7 @@ export default function ImportacionWizard() {
               )}
             </button>
             <p className="text-xs text-slate-400">
-              Trimestre: <span className="font-medium text-slate-600">{trimestre}</span>
+              Afecta a la ficha de empresa (global), no a un trimestre concreto.
             </p>
           </div>
 

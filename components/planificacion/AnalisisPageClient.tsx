@@ -495,7 +495,7 @@ export function AnalisisPageClient() {
               color="amber"
             />
             <SummaryCard
-              title="Cancelados"
+              title="No dictados"
               value={analisis.resumen.cancelados}
               icon={<XCircle className="h-5 w-5" />}
               color="red"

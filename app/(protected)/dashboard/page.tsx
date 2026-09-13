@@ -1,4 +1,4 @@
-import { BanIcon, Building, History, ImportIcon, School, Settings2 } from "lucide-react";
+import { BanIcon, Building, History, ImportIcon, School } from "lucide-react";
 import Link from "next/link";
 import { TrimestreIndicator } from "@/components/planificacion/TrimestreIndicator";
 import { DashboardCards } from "@/components/planificacion/DashboardCards";
@@ -47,17 +47,17 @@ export default async function DashboardPage() {
                 <ImportIcon className="h-4 w-4" />
               </div>
               <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600">
-                Importar datos
+                Datos base
               </span>
             </div>
             <h2 className="mt-3 text-sm font-semibold text-slate-900">
-              Importación
+              Empresas y cierre
             </h2>
             <p className="mt-1 text-xs text-slate-500">
-              Importa datos de empresas y historial para generar el calendario.
+              Alta y actualización de empresas (plantilla) y cierre de trimestres al histórico.
             </p>
             <div className="mt-3 text-xs font-medium text-slate-400 group-hover:text-slate-600">
-              Puedes editar luego los datos importados
+              La config del trimestre va en el Paso 0
             </div>
           </Link>
 
@@ -129,30 +129,6 @@ export default async function DashboardPage() {
             </p>
             <div className="mt-3 text-xs font-medium text-slate-400 group-hover:text-slate-600">
               Puedes editar luego las empresas.
-            </div>
-          </Link>
-
-          {/* Config Trimestral */}
-          <Link
-            href="/configuracion-trimestral"
-            className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 group-hover:bg-slate-900 group-hover:text-white transition-colors">
-                <Settings2 className="h-4 w-4" />
-              </div>
-              <span className="text-xs font-medium text-slate-400 group-hover:text-slate-600">
-                Config
-              </span>
-            </div>
-            <h2 className="mt-3 text-sm font-semibold text-slate-900">
-              Config Trimestral
-            </h2>
-            <p className="mt-1 text-xs text-slate-500">
-              Preferencias de empresas: dias, turnos, frecuencia solicitada.
-            </p>
-            <div className="mt-3 text-xs font-medium text-slate-400 group-hover:text-slate-600">
-              Edita antes de calcular frecuencias
             </div>
           </Link>
         </div>

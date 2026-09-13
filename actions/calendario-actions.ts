@@ -217,10 +217,11 @@ export async function actionImportarExcelCalendario(
 export async function actionImportarExcelCalendarioBulk(
   trimestre: string,
   file: File,
-  wipeFirst: boolean = false
+  wipeFirst: boolean = false,
+  dryRun: boolean = false
 ): Promise<ActionResult<ImportarExcelBulkResult>> {
   try {
-    const data = await importarExcelCalendarioBulk(trimestre, file, wipeFirst, false);
+    const data = await importarExcelCalendarioBulk(trimestre, file, wipeFirst, dryRun);
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al importar Excel (bulk)";
