@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   descargarPlantillaConfig,
   importarConfigTrimestre,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 
 export function ConfiguracionTrimestrePage() {
+  const router = useRouter();
   const [trimestres, setTrimestres] = useState<TrimestreEstado[]>([]);
   const [trimestre, setTrimestre] = useState<string | null>(null);
   const [loadingTrimestres, setLoadingTrimestres] = useState(true);
@@ -124,9 +126,20 @@ export function ConfiguracionTrimestrePage() {
     try {
       const res = await importarConfigTrimestre(trimestre, file, false);
       setPlan(res);
+      // Tras aplicar, refrescar TODO lo que depende del estado nuevo:
+      //  - la tabla "Configuración actual" (solo lectura) → se remonta por su key;
+      //  - el estado/lista de trimestres (el badge puede cambiar);
+      //  - router.refresh() por si algún RSC de la ruta cachea.
+      // Antes solo se remontaba la tabla y a veces se quedaba con el estado previo
+      // hasta recargar la página a mano.
+      setVistaKey((k) => k + 1);
+      listarTrimestresEstado()
+        .then((r) => setTrimestres(r.trimestres))
+        .catch(() => {});
+      router.refresh();
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
-  }, [trimestre, file, loading]);
+  }, [trimestre, file, loading, router]);
 
   if (!loadingTrimestres && !trimestre) {
     return (

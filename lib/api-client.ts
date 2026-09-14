@@ -36,6 +36,10 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const url = `${getApiBase()}${path}`;
   const res = await fetch(url, {
+    // Datos siempre frescos: sin esto el navegador podía servir una respuesta
+    // GET cacheada (p.ej. config-json tras Aplicar) y la vista se quedaba con
+    // el estado viejo hasta recargar la página a mano.
+    cache: "no-store",
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -88,7 +92,7 @@ export async function apiFetchBlob(
   options?: RequestInit
 ): Promise<Blob> {
   const url = `${getApiBase()}${path}`;
-  const res = await fetch(url, options);
+  const res = await fetch(url, { cache: "no-store", ...options });
   if (!res.ok) throw new Error("Error al descargar archivo");
   return res.blob();
 }
