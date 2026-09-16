@@ -1947,6 +1947,7 @@ export const RestriccionScalarFieldEnum = {
   valor: 'valor',
   tallerId: 'tallerId',
   descripcion: 'descripcion',
+  programa: 'programa',
   createdAt: 'createdAt'
 } as const
 
@@ -1959,6 +1960,8 @@ export const ConfigTrimestralScalarFieldEnum = {
   trimestre: 'trimestre',
   tipoParticipacion: 'tipoParticipacion',
   escuelaPropia: 'escuelaPropia',
+  semanaEP: 'semanaEP',
+  esDoble: 'esDoble',
   permiteExtras: 'permiteExtras',
   frecuenciaSolicitada: 'frecuenciaSolicitada',
   frecuenciaEF: 'frecuenciaEF',

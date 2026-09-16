@@ -6,11 +6,13 @@ import { toast } from "sonner";
 
 import { useSettings } from "@/hooks/use-settings";
 import { obtenerTalleres } from "@/lib/api";
+import { semanaRelativaAISO } from "@/lib/fecha-trimestre";
 import {
   actionListarDobles,
   actionCrearDoble,
   actionEditarDoble,
   actionBorrarDoble,
+  actionMoverSemanaDoble,
 } from "@/actions/calendario-actions";
 import { actionListarEmpresasDoble } from "@/actions/config-trimestral-actions";
 import type {
@@ -124,6 +126,10 @@ export function DoblePageClient() {
   const [confirmDelete, setConfirmDelete] = useState<SlotDobleResponse | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
+  // V35: mover toda la capa DOBLE de una empresa a otra semana.
+  const [moverTarget, setMoverTarget] = useState<Record<number, number>>({});
+  const [movingId, setMovingId] = useState<number | null>(null);
+
   // ── Data loaders ─────────────────────────────────────────────
   const cargarEmpresasDoble = useCallback(async () => {
     if (!trimestre) return;
@@ -161,6 +167,34 @@ export function DoblePageClient() {
       setTalleres([]);
     }
   }, []);
+
+  // V35: mueve toda la capa DOBLE de una empresa a la semana destino.
+  const handleMover = useCallback(
+    async (empresaId: number, destino: number) => {
+      if (!trimestre) return;
+      setMovingId(empresaId);
+      const result = await actionMoverSemanaDoble(trimestre, empresaId, destino);
+      setMovingId(null);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
+      const { movidos, warnings } = result.data;
+      toast.success(
+        `Movidos ${movidos} taller${movidos === 1 ? "" : "es"} DOBLE a S${destino}` +
+          ` (ISO ${semanaRelativaAISO(trimestre, destino)})` +
+          (warnings.length ? ` — ⚠ ${warnings.join(" ")}` : "")
+      );
+      setMoverTarget(prev => {
+        const next = { ...prev };
+        delete next[empresaId];
+        return next;
+      });
+      await Promise.all([cargarDobles(), cargarEmpresasDoble()]);
+      setSemana(destino); // llevar la vista a la nueva semana
+    },
+    [trimestre, cargarDobles, cargarEmpresasDoble],
+  );
 
   useEffect(() => {
     if (trimestre) {
@@ -411,6 +445,7 @@ export function DoblePageClient() {
                   <span className={`font-bold ${isActive ? "text-yellow-900" : "text-slate-600"}`}>
                     S{sem}
                   </span>
+                  {trimestre && <span className="text-[8px] leading-none text-slate-400">ISO {semanaRelativaAISO(trimestre, sem)}</span>}
                 </button>
               );
             })}
@@ -454,17 +489,49 @@ export function DoblePageClient() {
                 <CardTitle className="text-base">{emp.nombre}</CardTitle>
                 <Badge variant="outline" className="text-[10px]">{emp.tipo}</Badge>
                 <span className="text-xs text-slate-500">
-                  S{semana} · {items.length} taller{items.length === 1 ? "" : "es"}
+                  S{semana}{trimestre && ` · ISO ${semanaRelativaAISO(trimestre, semana)}`} · {items.length} taller{items.length === 1 ? "" : "es"}
                 </span>
               </div>
-              <Button size="sm" onClick={() => openCreate(emp.id)} disabled={!trimestre}>
-                + Añadir taller
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* V35: mover toda la capa DOBLE de esta empresa a otra semana. */}
+                {items.length > 0 && (
+                  <div className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1">
+                    <span className="text-[11px] text-slate-500">Mover a</span>
+                    <select
+                      className="rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs"
+                      value={moverTarget[emp.id] ?? ""}
+                      onChange={e =>
+                        setMoverTarget(prev => ({ ...prev, [emp.id]: Number(e.target.value) }))
+                      }
+                      disabled={movingId === emp.id}
+                    >
+                      <option value="" disabled>semana…</option>
+                      {SEMANAS.filter(w => w !== semana).map(w => (
+                        <option key={w} value={w}>
+                          S{w}{trimestre ? ` · ISO ${semanaRelativaAISO(trimestre, w)}` : ""}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-6 px-2 text-xs"
+                      disabled={!trimestre || !moverTarget[emp.id] || movingId === emp.id}
+                      onClick={() => handleMover(emp.id, moverTarget[emp.id])}
+                    >
+                      {movingId === emp.id ? "Moviendo…" : "Mover"}
+                    </Button>
+                  </div>
+                )}
+                <Button size="sm" onClick={() => openCreate(emp.id)} disabled={!trimestre}>
+                  + Añadir taller
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="pt-0">
               {items.length === 0 ? (
                 <p className="text-xs text-slate-400 py-2">
-                  Sin talleres DOBLE en S{semana}.
+                  Sin talleres DOBLE en S{semana}{trimestre && ` (ISO ${semanaRelativaAISO(trimestre, semana)})`}.
                 </p>
               ) : (
                 <table className="w-full text-xs">

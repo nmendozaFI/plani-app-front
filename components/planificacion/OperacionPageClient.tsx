@@ -17,7 +17,7 @@ import {
 import { useSettings } from "@/hooks/use-settings";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
 import { exportarExcel, obtenerEmpresasFull, obtenerTalleres } from "@/lib/api";
-import { getWeekDateRange, getDayDateLabel } from "@/lib/fecha-trimestre";
+import { getWeekDateRange, getDayDateLabel, semanaRelativaAISO } from "@/lib/fecha-trimestre";
 import { CrearExtraModal } from "./extras/CrearExtraModal";
 import { CalendarioMensualView } from "./CalendarioMensualView";
 import { AssignmentModal } from "./AssignmentModal";
@@ -955,7 +955,9 @@ export function OperacionPageClient() {
               {extrasPorSemana.map(({ semana, items }) => (
                 <div key={semana}>
                   <div className="text-xs font-semibold text-amber-900 mb-1.5">
-                    Semana {semana} <span className="text-amber-600 font-normal">({items.length})</span>
+                    Semana {semana}
+                    {trimestre && <span className="text-amber-600 font-normal"> · ISO {semanaRelativaAISO(trimestre, semana)}</span>}
+                    <span className="text-amber-600 font-normal"> ({items.length})</span>
                   </div>
                   <div className="space-y-1">
                     {items.map(ex => (
@@ -1033,7 +1035,8 @@ export function OperacionPageClient() {
               const hasCancel = stats.cancelados > 0;
               const dobleCount = doblesCountPorSemana.get(sem) ?? 0;
               const dateRange = trimestre ? getWeekDateRange(trimestre, sem) : "";
-              const titleParts = [dateRange];
+              const iso = trimestre ? semanaRelativaAISO(trimestre, sem) : null;
+              const titleParts = [iso ? `ISO ${iso}` : "", dateRange];
               if (stats.vacantes > 0) titleParts.push(`${stats.vacantes} vacantes`);
               if (dobleCount > 0) titleParts.push(`${dobleCount} DOBLE`);
               const title = titleParts.filter(Boolean).join(" — ");
@@ -1073,6 +1076,10 @@ export function OperacionPageClient() {
                   <span className={`font-bold ${isActive ? "text-blue-700" : stats.vacantes > 0 ? "text-amber-800" : "text-slate-600"}`}>
                     S{sem}
                   </span>
+                  {/* V35: nº ISO debajo (misma que "Semana EP" del Excel). Solo display. */}
+                  {iso !== null && (
+                    <span className="text-[9px] leading-none text-slate-400">ISO {iso}</span>
+                  )}
 
                   {/* Vacancy badge */}
                   {stats.vacantes > 0 && (

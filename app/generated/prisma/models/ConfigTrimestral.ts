@@ -29,6 +29,7 @@ export type AggregateConfigTrimestral = {
 export type ConfigTrimestralAvgAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  semanaEP: number | null
   frecuenciaSolicitada: number | null
   frecuenciaEF: number | null
   frecuenciaIT: number | null
@@ -38,6 +39,7 @@ export type ConfigTrimestralAvgAggregateOutputType = {
 export type ConfigTrimestralSumAggregateOutputType = {
   id: number | null
   empresaId: number | null
+  semanaEP: number | null
   frecuenciaSolicitada: number | null
   frecuenciaEF: number | null
   frecuenciaIT: number | null
@@ -50,6 +52,8 @@ export type ConfigTrimestralMinAggregateOutputType = {
   trimestre: string | null
   tipoParticipacion: $Enums.Programa | null
   escuelaPropia: boolean | null
+  semanaEP: number | null
+  esDoble: boolean | null
   permiteExtras: boolean | null
   frecuenciaSolicitada: number | null
   frecuenciaEF: number | null
@@ -69,6 +73,8 @@ export type ConfigTrimestralMaxAggregateOutputType = {
   trimestre: string | null
   tipoParticipacion: $Enums.Programa | null
   escuelaPropia: boolean | null
+  semanaEP: number | null
+  esDoble: boolean | null
   permiteExtras: boolean | null
   frecuenciaSolicitada: number | null
   frecuenciaEF: number | null
@@ -88,6 +94,8 @@ export type ConfigTrimestralCountAggregateOutputType = {
   trimestre: number
   tipoParticipacion: number
   escuelaPropia: number
+  semanaEP: number
+  esDoble: number
   permiteExtras: number
   frecuenciaSolicitada: number
   frecuenciaEF: number
@@ -106,6 +114,7 @@ export type ConfigTrimestralCountAggregateOutputType = {
 export type ConfigTrimestralAvgAggregateInputType = {
   id?: true
   empresaId?: true
+  semanaEP?: true
   frecuenciaSolicitada?: true
   frecuenciaEF?: true
   frecuenciaIT?: true
@@ -115,6 +124,7 @@ export type ConfigTrimestralAvgAggregateInputType = {
 export type ConfigTrimestralSumAggregateInputType = {
   id?: true
   empresaId?: true
+  semanaEP?: true
   frecuenciaSolicitada?: true
   frecuenciaEF?: true
   frecuenciaIT?: true
@@ -127,6 +137,8 @@ export type ConfigTrimestralMinAggregateInputType = {
   trimestre?: true
   tipoParticipacion?: true
   escuelaPropia?: true
+  semanaEP?: true
+  esDoble?: true
   permiteExtras?: true
   frecuenciaSolicitada?: true
   frecuenciaEF?: true
@@ -146,6 +158,8 @@ export type ConfigTrimestralMaxAggregateInputType = {
   trimestre?: true
   tipoParticipacion?: true
   escuelaPropia?: true
+  semanaEP?: true
+  esDoble?: true
   permiteExtras?: true
   frecuenciaSolicitada?: true
   frecuenciaEF?: true
@@ -165,6 +179,8 @@ export type ConfigTrimestralCountAggregateInputType = {
   trimestre?: true
   tipoParticipacion?: true
   escuelaPropia?: true
+  semanaEP?: true
+  esDoble?: true
   permiteExtras?: true
   frecuenciaSolicitada?: true
   frecuenciaEF?: true
@@ -271,6 +287,8 @@ export type ConfigTrimestralGroupByOutputType = {
   trimestre: string
   tipoParticipacion: $Enums.Programa
   escuelaPropia: boolean
+  semanaEP: number | null
+  esDoble: boolean
   permiteExtras: boolean
   frecuenciaSolicitada: number | null
   frecuenciaEF: number | null
@@ -313,6 +331,8 @@ export type ConfigTrimestralWhereInput = {
   trimestre?: Prisma.StringFilter<"ConfigTrimestral"> | string
   tipoParticipacion?: Prisma.EnumProgramaFilter<"ConfigTrimestral"> | $Enums.Programa
   escuelaPropia?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
+  semanaEP?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
+  esDoble?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
   permiteExtras?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
   frecuenciaSolicitada?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
   frecuenciaEF?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
@@ -334,6 +354,8 @@ export type ConfigTrimestralOrderByWithRelationInput = {
   trimestre?: Prisma.SortOrder
   tipoParticipacion?: Prisma.SortOrder
   escuelaPropia?: Prisma.SortOrder
+  semanaEP?: Prisma.SortOrderInput | Prisma.SortOrder
+  esDoble?: Prisma.SortOrder
   permiteExtras?: Prisma.SortOrder
   frecuenciaSolicitada?: Prisma.SortOrderInput | Prisma.SortOrder
   frecuenciaEF?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -359,6 +381,8 @@ export type ConfigTrimestralWhereUniqueInput = Prisma.AtLeast<{
   trimestre?: Prisma.StringFilter<"ConfigTrimestral"> | string
   tipoParticipacion?: Prisma.EnumProgramaFilter<"ConfigTrimestral"> | $Enums.Programa
   escuelaPropia?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
+  semanaEP?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
+  esDoble?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
   permiteExtras?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
   frecuenciaSolicitada?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
   frecuenciaEF?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
@@ -380,6 +404,8 @@ export type ConfigTrimestralOrderByWithAggregationInput = {
   trimestre?: Prisma.SortOrder
   tipoParticipacion?: Prisma.SortOrder
   escuelaPropia?: Prisma.SortOrder
+  semanaEP?: Prisma.SortOrderInput | Prisma.SortOrder
+  esDoble?: Prisma.SortOrder
   permiteExtras?: Prisma.SortOrder
   frecuenciaSolicitada?: Prisma.SortOrderInput | Prisma.SortOrder
   frecuenciaEF?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -407,6 +433,8 @@ export type ConfigTrimestralScalarWhereWithAggregatesInput = {
   trimestre?: Prisma.StringWithAggregatesFilter<"ConfigTrimestral"> | string
   tipoParticipacion?: Prisma.EnumProgramaWithAggregatesFilter<"ConfigTrimestral"> | $Enums.Programa
   escuelaPropia?: Prisma.BoolWithAggregatesFilter<"ConfigTrimestral"> | boolean
+  semanaEP?: Prisma.IntNullableWithAggregatesFilter<"ConfigTrimestral"> | number | null
+  esDoble?: Prisma.BoolWithAggregatesFilter<"ConfigTrimestral"> | boolean
   permiteExtras?: Prisma.BoolWithAggregatesFilter<"ConfigTrimestral"> | boolean
   frecuenciaSolicitada?: Prisma.IntNullableWithAggregatesFilter<"ConfigTrimestral"> | number | null
   frecuenciaEF?: Prisma.IntNullableWithAggregatesFilter<"ConfigTrimestral"> | number | null
@@ -424,6 +452,8 @@ export type ConfigTrimestralCreateInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -445,6 +475,8 @@ export type ConfigTrimestralUncheckedCreateInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -463,6 +495,8 @@ export type ConfigTrimestralUpdateInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -484,6 +518,8 @@ export type ConfigTrimestralUncheckedUpdateInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -504,6 +540,8 @@ export type ConfigTrimestralCreateManyInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -521,6 +559,8 @@ export type ConfigTrimestralUpdateManyMutationInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -540,6 +580,8 @@ export type ConfigTrimestralUncheckedUpdateManyInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -574,6 +616,8 @@ export type ConfigTrimestralCountOrderByAggregateInput = {
   trimestre?: Prisma.SortOrder
   tipoParticipacion?: Prisma.SortOrder
   escuelaPropia?: Prisma.SortOrder
+  semanaEP?: Prisma.SortOrder
+  esDoble?: Prisma.SortOrder
   permiteExtras?: Prisma.SortOrder
   frecuenciaSolicitada?: Prisma.SortOrder
   frecuenciaEF?: Prisma.SortOrder
@@ -590,6 +634,7 @@ export type ConfigTrimestralCountOrderByAggregateInput = {
 export type ConfigTrimestralAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  semanaEP?: Prisma.SortOrder
   frecuenciaSolicitada?: Prisma.SortOrder
   frecuenciaEF?: Prisma.SortOrder
   frecuenciaIT?: Prisma.SortOrder
@@ -602,6 +647,8 @@ export type ConfigTrimestralMaxOrderByAggregateInput = {
   trimestre?: Prisma.SortOrder
   tipoParticipacion?: Prisma.SortOrder
   escuelaPropia?: Prisma.SortOrder
+  semanaEP?: Prisma.SortOrder
+  esDoble?: Prisma.SortOrder
   permiteExtras?: Prisma.SortOrder
   frecuenciaSolicitada?: Prisma.SortOrder
   frecuenciaEF?: Prisma.SortOrder
@@ -621,6 +668,8 @@ export type ConfigTrimestralMinOrderByAggregateInput = {
   trimestre?: Prisma.SortOrder
   tipoParticipacion?: Prisma.SortOrder
   escuelaPropia?: Prisma.SortOrder
+  semanaEP?: Prisma.SortOrder
+  esDoble?: Prisma.SortOrder
   permiteExtras?: Prisma.SortOrder
   frecuenciaSolicitada?: Prisma.SortOrder
   frecuenciaEF?: Prisma.SortOrder
@@ -637,6 +686,7 @@ export type ConfigTrimestralMinOrderByAggregateInput = {
 export type ConfigTrimestralSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   empresaId?: Prisma.SortOrder
+  semanaEP?: Prisma.SortOrder
   frecuenciaSolicitada?: Prisma.SortOrder
   frecuenciaEF?: Prisma.SortOrder
   frecuenciaIT?: Prisma.SortOrder
@@ -708,6 +758,8 @@ export type ConfigTrimestralCreateWithoutEmpresaInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -727,6 +779,8 @@ export type ConfigTrimestralUncheckedCreateWithoutEmpresaInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -776,6 +830,8 @@ export type ConfigTrimestralScalarWhereInput = {
   trimestre?: Prisma.StringFilter<"ConfigTrimestral"> | string
   tipoParticipacion?: Prisma.EnumProgramaFilter<"ConfigTrimestral"> | $Enums.Programa
   escuelaPropia?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
+  semanaEP?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
+  esDoble?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
   permiteExtras?: Prisma.BoolFilter<"ConfigTrimestral"> | boolean
   frecuenciaSolicitada?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
   frecuenciaEF?: Prisma.IntNullableFilter<"ConfigTrimestral"> | number | null
@@ -793,6 +849,8 @@ export type ConfigTrimestralCreateWithoutFrecuenciasInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -813,6 +871,8 @@ export type ConfigTrimestralUncheckedCreateWithoutFrecuenciasInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -846,6 +906,8 @@ export type ConfigTrimestralUpdateWithoutFrecuenciasInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -866,6 +928,8 @@ export type ConfigTrimestralUncheckedUpdateWithoutFrecuenciasInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -884,6 +948,8 @@ export type ConfigTrimestralCreateManyEmpresaInput = {
   trimestre: string
   tipoParticipacion?: $Enums.Programa
   escuelaPropia?: boolean
+  semanaEP?: number | null
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: number | null
   frecuenciaEF?: number | null
@@ -901,6 +967,8 @@ export type ConfigTrimestralUpdateWithoutEmpresaInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -920,6 +988,8 @@ export type ConfigTrimestralUncheckedUpdateWithoutEmpresaInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -939,6 +1009,8 @@ export type ConfigTrimestralUncheckedUpdateManyWithoutEmpresaInput = {
   trimestre?: Prisma.StringFieldUpdateOperationsInput | string
   tipoParticipacion?: Prisma.EnumProgramaFieldUpdateOperationsInput | $Enums.Programa
   escuelaPropia?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  semanaEP?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  esDoble?: Prisma.BoolFieldUpdateOperationsInput | boolean
   permiteExtras?: Prisma.BoolFieldUpdateOperationsInput | boolean
   frecuenciaSolicitada?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   frecuenciaEF?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -989,6 +1061,8 @@ export type ConfigTrimestralSelect<ExtArgs extends runtime.Types.Extensions.Inte
   trimestre?: boolean
   tipoParticipacion?: boolean
   escuelaPropia?: boolean
+  semanaEP?: boolean
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: boolean
   frecuenciaEF?: boolean
@@ -1011,6 +1085,8 @@ export type ConfigTrimestralSelectCreateManyAndReturn<ExtArgs extends runtime.Ty
   trimestre?: boolean
   tipoParticipacion?: boolean
   escuelaPropia?: boolean
+  semanaEP?: boolean
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: boolean
   frecuenciaEF?: boolean
@@ -1031,6 +1107,8 @@ export type ConfigTrimestralSelectUpdateManyAndReturn<ExtArgs extends runtime.Ty
   trimestre?: boolean
   tipoParticipacion?: boolean
   escuelaPropia?: boolean
+  semanaEP?: boolean
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: boolean
   frecuenciaEF?: boolean
@@ -1051,6 +1129,8 @@ export type ConfigTrimestralSelectScalar = {
   trimestre?: boolean
   tipoParticipacion?: boolean
   escuelaPropia?: boolean
+  semanaEP?: boolean
+  esDoble?: boolean
   permiteExtras?: boolean
   frecuenciaSolicitada?: boolean
   frecuenciaEF?: boolean
@@ -1064,7 +1144,7 @@ export type ConfigTrimestralSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ConfigTrimestralOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "trimestre" | "tipoParticipacion" | "escuelaPropia" | "permiteExtras" | "frecuenciaSolicitada" | "frecuenciaEF" | "frecuenciaIT" | "disponibilidadDias" | "turnoPreferido" | "voluntariosDisponibles" | "preferenciasTaller" | "notas" | "createdAt" | "updatedAt", ExtArgs["result"]["configTrimestral"]>
+export type ConfigTrimestralOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "trimestre" | "tipoParticipacion" | "escuelaPropia" | "semanaEP" | "esDoble" | "permiteExtras" | "frecuenciaSolicitada" | "frecuenciaEF" | "frecuenciaIT" | "disponibilidadDias" | "turnoPreferido" | "voluntariosDisponibles" | "preferenciasTaller" | "notas" | "createdAt" | "updatedAt", ExtArgs["result"]["configTrimestral"]>
 export type ConfigTrimestralInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   frecuencias?: boolean | Prisma.ConfigTrimestral$frecuenciasArgs<ExtArgs>
@@ -1089,6 +1169,8 @@ export type $ConfigTrimestralPayload<ExtArgs extends runtime.Types.Extensions.In
     trimestre: string
     tipoParticipacion: $Enums.Programa
     escuelaPropia: boolean
+    semanaEP: number | null
+    esDoble: boolean
     permiteExtras: boolean
     frecuenciaSolicitada: number | null
     frecuenciaEF: number | null
@@ -1530,6 +1612,8 @@ export interface ConfigTrimestralFieldRefs {
   readonly trimestre: Prisma.FieldRef<"ConfigTrimestral", 'String'>
   readonly tipoParticipacion: Prisma.FieldRef<"ConfigTrimestral", 'Programa'>
   readonly escuelaPropia: Prisma.FieldRef<"ConfigTrimestral", 'Boolean'>
+  readonly semanaEP: Prisma.FieldRef<"ConfigTrimestral", 'Int'>
+  readonly esDoble: Prisma.FieldRef<"ConfigTrimestral", 'Boolean'>
   readonly permiteExtras: Prisma.FieldRef<"ConfigTrimestral", 'Boolean'>
   readonly frecuenciaSolicitada: Prisma.FieldRef<"ConfigTrimestral", 'Int'>
   readonly frecuenciaEF: Prisma.FieldRef<"ConfigTrimestral", 'Int'>

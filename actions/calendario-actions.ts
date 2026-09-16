@@ -19,6 +19,8 @@ import {
   crearSlotExtra,
   editarSlotExtra,
   crearSlotDoble,
+  moverSemanaDoble,
+  type MoverSemanaDobleResult,
   listarDobles,
   editarSlotDoble,
   borrarSlotDoble,
@@ -329,6 +331,22 @@ export async function actionEditarDoble(
     return { ok: true, data };
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Error al editar slot DOBLE";
+    return { ok: false, error: msg };
+  }
+}
+
+// V35 — Mueve toda la capa DOBLE de una empresa a otra semana (relativa 1..13)
+// y sincroniza semanaEP. Devuelve resumen + avisos.
+export async function actionMoverSemanaDoble(
+  trimestre: string,
+  empresaId: number,
+  semanaDestino: number
+): Promise<ActionResult<MoverSemanaDobleResult>> {
+  try {
+    const data = await moverSemanaDoble(trimestre, empresaId, semanaDestino);
+    return { ok: true, data };
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Error al mover la semana DOBLE";
     return { ok: false, error: msg };
   }
 }

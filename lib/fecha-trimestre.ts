@@ -25,6 +25,22 @@ function parseTrimestre(trimestre: string): { year: number; quarter: number } {
   return { year: parseInt(yearStr), quarter: parseInt(qStr) };
 }
 
+/**
+ * V35 — nº de semana ISO a partir de la semana RELATIVA (1..13) del trimestre.
+ * Usa la MISMA fórmula que el backend (config import `iso_a_relativa`, solver y
+ * la columna "Semana EP" del Excel): ISO = (Q-1)*13 + relativa.
+ * Q4 → S1=40 … S13=52; S7=46. Es SOLO display: el almacenamiento sigue relativo.
+ */
+export function semanaRelativaAISO(trimestre: string, semanaRelativa: number): number {
+  const { quarter } = parseTrimestre(trimestre);
+  return (quarter - 1) * 13 + semanaRelativa;
+}
+
+/** V35 — etiqueta corta "S7 · 46" (relativa · ISO) para selector y cabeceras. */
+export function semanaLabelISO(trimestre: string, semanaRelativa: number): string {
+  return `S${semanaRelativa} · ${semanaRelativaAISO(trimestre, semanaRelativa)}`;
+}
+
 function getFirstMondayOfQuarter(year: number, quarter: number): Date {
   // Q1=Jan, Q2=Apr, Q3=Jul, Q4=Oct
   const quarterStartMonth = (quarter - 1) * 3;

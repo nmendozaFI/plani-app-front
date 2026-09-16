@@ -11,6 +11,7 @@ import { actionObtenerTrimestresHistorico } from "@/actions/historico-actions";
 import { usePlanningStatus } from "@/hooks/use-planning-status";
 import type { CalendarioOutput, SlotCalendario } from "@/lib/api";
 import { apiFetchBlob } from "@/lib/api-client";
+import { semanaRelativaAISO } from "@/lib/fecha-trimestre";
 import { WarningsPanel } from "./WarningsPanel";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -402,6 +403,7 @@ export function CalendarioWizard() {
                       }`}
                     >
                       <span className={`font-bold ${vac > 0 ? "text-amber-800" : "text-slate-500"}`}>S{sem}</span>
+                      {trimestre && <span className="text-[8px] leading-none text-slate-400">ISO {semanaRelativaAISO(trimestre, sem)}</span>}
                       {vac > 0 && (
                         <span className="mt-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[8px] font-bold text-white">
                           {vac}
@@ -532,7 +534,7 @@ export function CalendarioWizard() {
                   onClick={() => setSemanaSeleccionada(null)}
                   className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600 hover:bg-slate-100"
                 >
-                  Semana {semanaSeleccionada}
+                  Semana {semanaSeleccionada}{trimestre && ` · ISO ${semanaRelativaAISO(trimestre, semanaSeleccionada)}`}
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
                   </svg>
@@ -568,7 +570,9 @@ export function CalendarioWizard() {
                         vacantesEnSemana > 0 ? "border-amber-100 bg-amber-50/60" : "border-slate-100 bg-slate-50/80"
                       }`}>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-600">Semana {sem}</span>
+                          <span className="text-xs font-bold text-slate-600">
+                            Semana {sem}{trimestre && <span className="font-normal text-slate-400"> · ISO {semanaRelativaAISO(trimestre, sem)}</span>}
+                          </span>
                           <span className="text-[10px] text-slate-400">{slotsOfWeek.length} talleres</span>
                         </div>
                         {vacantesEnSemana > 0 && (

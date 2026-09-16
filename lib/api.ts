@@ -489,6 +489,32 @@ export async function editarSlotDoble(
   );
 }
 
+// V35 — POST /api/planificacion/{trimestre}/mover-semana-doble
+// Mueve TODA la capa DOBLE de una empresa a otra semana (relativa 1..13) y
+// sincroniza configTrimestral.semanaEP. Devuelve resumen + avisos.
+export interface MoverSemanaDobleResult {
+  empresa_id: number;
+  empresa_nombre: string;
+  movidos: number;
+  semanas_origen: number[];
+  semana_destino: number;
+  semana_iso: number | null;
+  warnings: string[];
+}
+export async function moverSemanaDoble(
+  trimestre: string,
+  empresaId: number,
+  semanaDestino: number
+): Promise<MoverSemanaDobleResult> {
+  return apiFetch<MoverSemanaDobleResult>(
+    `/api/planificacion/${trimestre}/mover-semana-doble`,
+    {
+      method: "POST",
+      body: JSON.stringify({ empresa_id: empresaId, semana_destino: semanaDestino }),
+    }
+  );
+}
+
 // DELETE /api/planificacion/{slotId}/doble
 // Guarded to tipoAsignacion='DOBLE' (400 otherwise; 404 if id unknown).
 export async function borrarSlotDoble(slotId: number): Promise<void> {

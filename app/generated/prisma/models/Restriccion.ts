@@ -46,6 +46,7 @@ export type RestriccionMinAggregateOutputType = {
   valor: string | null
   tallerId: number | null
   descripcion: string | null
+  programa: string | null
   createdAt: Date | null
 }
 
@@ -57,6 +58,7 @@ export type RestriccionMaxAggregateOutputType = {
   valor: string | null
   tallerId: number | null
   descripcion: string | null
+  programa: string | null
   createdAt: Date | null
 }
 
@@ -68,6 +70,7 @@ export type RestriccionCountAggregateOutputType = {
   valor: number
   tallerId: number
   descripcion: number
+  programa: number
   createdAt: number
   _all: number
 }
@@ -93,6 +96,7 @@ export type RestriccionMinAggregateInputType = {
   valor?: true
   tallerId?: true
   descripcion?: true
+  programa?: true
   createdAt?: true
 }
 
@@ -104,6 +108,7 @@ export type RestriccionMaxAggregateInputType = {
   valor?: true
   tallerId?: true
   descripcion?: true
+  programa?: true
   createdAt?: true
 }
 
@@ -115,6 +120,7 @@ export type RestriccionCountAggregateInputType = {
   valor?: true
   tallerId?: true
   descripcion?: true
+  programa?: true
   createdAt?: true
   _all?: true
 }
@@ -213,6 +219,7 @@ export type RestriccionGroupByOutputType = {
   valor: string
   tallerId: number | null
   descripcion: string | null
+  programa: string | null
   createdAt: Date
   _count: RestriccionCountAggregateOutputType | null
   _avg: RestriccionAvgAggregateOutputType | null
@@ -247,6 +254,7 @@ export type RestriccionWhereInput = {
   valor?: Prisma.StringFilter<"Restriccion"> | string
   tallerId?: Prisma.IntNullableFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableFilter<"Restriccion"> | string | null
+  programa?: Prisma.StringNullableFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restriccion"> | Date | string
   empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
   taller?: Prisma.XOR<Prisma.TallerNullableScalarRelationFilter, Prisma.TallerWhereInput> | null
@@ -260,6 +268,7 @@ export type RestriccionOrderByWithRelationInput = {
   valor?: Prisma.SortOrder
   tallerId?: Prisma.SortOrderInput | Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
+  programa?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   empresa?: Prisma.EmpresaOrderByWithRelationInput
   taller?: Prisma.TallerOrderByWithRelationInput
@@ -276,6 +285,7 @@ export type RestriccionWhereUniqueInput = Prisma.AtLeast<{
   valor?: Prisma.StringFilter<"Restriccion"> | string
   tallerId?: Prisma.IntNullableFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableFilter<"Restriccion"> | string | null
+  programa?: Prisma.StringNullableFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restriccion"> | Date | string
   empresa?: Prisma.XOR<Prisma.EmpresaScalarRelationFilter, Prisma.EmpresaWhereInput>
   taller?: Prisma.XOR<Prisma.TallerNullableScalarRelationFilter, Prisma.TallerWhereInput> | null
@@ -289,6 +299,7 @@ export type RestriccionOrderByWithAggregationInput = {
   valor?: Prisma.SortOrder
   tallerId?: Prisma.SortOrderInput | Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
+  programa?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.RestriccionCountOrderByAggregateInput
   _avg?: Prisma.RestriccionAvgOrderByAggregateInput
@@ -308,6 +319,7 @@ export type RestriccionScalarWhereWithAggregatesInput = {
   valor?: Prisma.StringWithAggregatesFilter<"Restriccion"> | string
   tallerId?: Prisma.IntNullableWithAggregatesFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableWithAggregatesFilter<"Restriccion"> | string | null
+  programa?: Prisma.StringNullableWithAggregatesFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Restriccion"> | Date | string
 }
 
@@ -316,6 +328,7 @@ export type RestriccionCreateInput = {
   clave: string
   valor: string
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
   empresa: Prisma.EmpresaCreateNestedOneWithoutRestriccionesInput
   taller?: Prisma.TallerCreateNestedOneWithoutRestriccionesInput
@@ -329,6 +342,7 @@ export type RestriccionUncheckedCreateInput = {
   valor: string
   tallerId?: number | null
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
 }
 
@@ -337,6 +351,7 @@ export type RestriccionUpdateInput = {
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   empresa?: Prisma.EmpresaUpdateOneRequiredWithoutRestriccionesNestedInput
   taller?: Prisma.TallerUpdateOneWithoutRestriccionesNestedInput
@@ -350,6 +365,7 @@ export type RestriccionUncheckedUpdateInput = {
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -361,6 +377,7 @@ export type RestriccionCreateManyInput = {
   valor: string
   tallerId?: number | null
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
 }
 
@@ -369,6 +386,7 @@ export type RestriccionUpdateManyMutationInput = {
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -380,6 +398,7 @@ export type RestriccionUncheckedUpdateManyInput = {
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -401,6 +420,7 @@ export type RestriccionCountOrderByAggregateInput = {
   valor?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
+  programa?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -418,6 +438,7 @@ export type RestriccionMaxOrderByAggregateInput = {
   valor?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
+  programa?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -429,6 +450,7 @@ export type RestriccionMinOrderByAggregateInput = {
   valor?: Prisma.SortOrder
   tallerId?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
+  programa?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -539,6 +561,7 @@ export type RestriccionCreateWithoutEmpresaInput = {
   clave: string
   valor: string
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
   taller?: Prisma.TallerCreateNestedOneWithoutRestriccionesInput
 }
@@ -550,6 +573,7 @@ export type RestriccionUncheckedCreateWithoutEmpresaInput = {
   valor: string
   tallerId?: number | null
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
 }
 
@@ -590,6 +614,7 @@ export type RestriccionScalarWhereInput = {
   valor?: Prisma.StringFilter<"Restriccion"> | string
   tallerId?: Prisma.IntNullableFilter<"Restriccion"> | number | null
   descripcion?: Prisma.StringNullableFilter<"Restriccion"> | string | null
+  programa?: Prisma.StringNullableFilter<"Restriccion"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Restriccion"> | Date | string
 }
 
@@ -598,6 +623,7 @@ export type RestriccionCreateWithoutTallerInput = {
   clave: string
   valor: string
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
   empresa: Prisma.EmpresaCreateNestedOneWithoutRestriccionesInput
 }
@@ -609,6 +635,7 @@ export type RestriccionUncheckedCreateWithoutTallerInput = {
   clave: string
   valor: string
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
 }
 
@@ -645,6 +672,7 @@ export type RestriccionCreateManyEmpresaInput = {
   valor: string
   tallerId?: number | null
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
 }
 
@@ -653,6 +681,7 @@ export type RestriccionUpdateWithoutEmpresaInput = {
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   taller?: Prisma.TallerUpdateOneWithoutRestriccionesNestedInput
 }
@@ -664,6 +693,7 @@ export type RestriccionUncheckedUpdateWithoutEmpresaInput = {
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -674,6 +704,7 @@ export type RestriccionUncheckedUpdateManyWithoutEmpresaInput = {
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   tallerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -684,6 +715,7 @@ export type RestriccionCreateManyTallerInput = {
   clave: string
   valor: string
   descripcion?: string | null
+  programa?: string | null
   createdAt?: Date | string
 }
 
@@ -692,6 +724,7 @@ export type RestriccionUpdateWithoutTallerInput = {
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   empresa?: Prisma.EmpresaUpdateOneRequiredWithoutRestriccionesNestedInput
 }
@@ -703,6 +736,7 @@ export type RestriccionUncheckedUpdateWithoutTallerInput = {
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -713,6 +747,7 @@ export type RestriccionUncheckedUpdateManyWithoutTallerInput = {
   clave?: Prisma.StringFieldUpdateOperationsInput | string
   valor?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  programa?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -726,6 +761,7 @@ export type RestriccionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   valor?: boolean
   tallerId?: boolean
   descripcion?: boolean
+  programa?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
@@ -739,6 +775,7 @@ export type RestriccionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   valor?: boolean
   tallerId?: boolean
   descripcion?: boolean
+  programa?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
@@ -752,6 +789,7 @@ export type RestriccionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   valor?: boolean
   tallerId?: boolean
   descripcion?: boolean
+  programa?: boolean
   createdAt?: boolean
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
@@ -765,10 +803,11 @@ export type RestriccionSelectScalar = {
   valor?: boolean
   tallerId?: boolean
   descripcion?: boolean
+  programa?: boolean
   createdAt?: boolean
 }
 
-export type RestriccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "tipo" | "clave" | "valor" | "tallerId" | "descripcion" | "createdAt", ExtArgs["result"]["restriccion"]>
+export type RestriccionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "empresaId" | "tipo" | "clave" | "valor" | "tallerId" | "descripcion" | "programa" | "createdAt", ExtArgs["result"]["restriccion"]>
 export type RestriccionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   empresa?: boolean | Prisma.EmpresaDefaultArgs<ExtArgs>
   taller?: boolean | Prisma.Restriccion$tallerArgs<ExtArgs>
@@ -796,6 +835,7 @@ export type $RestriccionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     valor: string
     tallerId: number | null
     descripcion: string | null
+    programa: string | null
     createdAt: Date
   }, ExtArgs["result"]["restriccion"]>
   composites: {}
@@ -1229,6 +1269,7 @@ export interface RestriccionFieldRefs {
   readonly valor: Prisma.FieldRef<"Restriccion", 'String'>
   readonly tallerId: Prisma.FieldRef<"Restriccion", 'Int'>
   readonly descripcion: Prisma.FieldRef<"Restriccion", 'String'>
+  readonly programa: Prisma.FieldRef<"Restriccion", 'String'>
   readonly createdAt: Prisma.FieldRef<"Restriccion", 'DateTime'>
 }
     

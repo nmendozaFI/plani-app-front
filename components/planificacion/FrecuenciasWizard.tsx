@@ -127,12 +127,19 @@ export function FrecuenciasWizard() {
 
   const totalEfEdit = empresasEdit.reduce((s, e) => s + e.talleres_ef_edit, 0);
   const totalItEdit = empresasEdit.reduce((s, e) => s + e.talleres_it_edit, 0);
+  // V35: las empresas DOBLE (escuela doblada) se APILAN sobre el titular → su
+  // EF/IT NO consume capacidad base. El tope y el bloqueo de "Confirmar" se
+  // calculan sobre el total BASE (sin doble). Las doble se muestran aparte.
+  const totalEfBase = empresasEdit.reduce((s, e) => s + (e.es_doble ? 0 : e.talleres_ef_edit), 0);
+  const totalItBase = empresasEdit.reduce((s, e) => s + (e.es_doble ? 0 : e.talleres_it_edit), 0);
+  const totalEfDoble = totalEfEdit - totalEfBase;
+  const totalItDoble = totalItEdit - totalItBase;
   const hayModificaciones = empresasEdit.some((e) => e.modificado);
   // Comparar contra los totales del TRIMESTRE (max_ef × semanas_disponibles)
   const maxEfTrimestre = propuesta?.max_ef_trimestre ?? propuesta?.max_ef ?? 14;
   const maxItTrimestre = propuesta?.max_it_trimestre ?? propuesta?.max_it ?? 6;
   const totalesOk =
-    totalEfEdit <= maxEfTrimestre && totalItEdit <= maxItTrimestre;
+    totalEfBase <= maxEfTrimestre && totalItBase <= maxItTrimestre;
 
   // ── Filtrado visual (no toca totales) ───────────────────────
 
@@ -466,28 +473,37 @@ export function FrecuenciasWizard() {
       {/* ── PASO 2: Revisión ─────────────────────────────────── */}
       {paso === "revision" && propuesta && (
         <>
-          {/* Resumen */}
+          {/* Resumen — capacidad base (sin las doble, que se apilan) */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <StatCard
-              label="Total EF"
-              value={totalEfEdit}
+              label="EF base"
+              value={totalEfBase}
               max={maxEfTrimestre}
-              ok={totalEfEdit <= maxEfTrimestre}
+              ok={totalEfBase <= maxEfTrimestre}
             />
             <StatCard
-              label="Total IT"
-              value={totalItEdit}
+              label="IT base"
+              value={totalItBase}
               max={maxItTrimestre}
-              ok={totalItEdit <= maxItTrimestre}
+              ok={totalItBase <= maxItTrimestre}
             />
             <StatCard
-              label="Total"
-              value={totalEfEdit + totalItEdit}
+              label="Total base"
+              value={totalEfBase + totalItBase}
               max={maxEfTrimestre + maxItTrimestre}
               ok={totalesOk}
             />
             <StatCard label="Status" value={propuesta.status} isStatus />
           </div>
+
+          {/* V35: aclaración de la capa doblada (apilada, no ocupa slots base). */}
+          {(totalEfDoble > 0 || totalItDoble > 0) && (
+            <p className="text-xs text-slate-500">
+              + <span className="font-semibold text-yellow-700">{totalEfDoble} EF · {totalItDoble} IT doblados</span>{" "}
+              (escuela doblada — se apilan sobre el titular, <b>no</b> ocupan slots base).
+              Pedido total: {totalEfEdit} EF · {totalItEdit} IT.
+            </p>
+          )}
 
           {/* Warnings */}
           <WarningsPanel warnings={propuesta.warnings} />
@@ -793,25 +809,29 @@ export function FrecuenciasWizard() {
                     >
                       Totales
                     </td>
+                    {/* V35: Totales BASE (sin doble) vs capacidad; el pedido con
+                        doble se muestra entre paréntesis cuando difiere. */}
                     <td className="px-3 py-3 text-center">
                       <span
-                        className={`font-mono text-sm font-bold ${totalEfEdit === maxEfTrimestre ? "text-emerald-600" : "text-red-600"}`}
+                        className={`font-mono text-sm font-bold ${totalEfBase <= maxEfTrimestre ? "text-emerald-600" : "text-red-600"}`}
                       >
-                        {totalEfEdit}/{maxEfTrimestre}
+                        {totalEfBase}/{maxEfTrimestre}
+                        {totalEfDoble > 0 && <span className="text-yellow-700"> (+{totalEfDoble})</span>}
                       </span>
                     </td>
                     <td className="px-3 py-3 text-center">
                       <span
-                        className={`font-mono text-sm font-bold ${totalItEdit === maxItTrimestre ? "text-emerald-600" : "text-red-600"}`}
+                        className={`font-mono text-sm font-bold ${totalItBase <= maxItTrimestre ? "text-emerald-600" : "text-red-600"}`}
                       >
-                        {totalItEdit}/{maxItTrimestre}
+                        {totalItBase}/{maxItTrimestre}
+                        {totalItDoble > 0 && <span className="text-yellow-700"> (+{totalItDoble})</span>}
                       </span>
                     </td>
                     <td className="px-3 py-3 text-center">
                       <span
                         className={`font-mono text-sm font-bold ${totalesOk ? "text-emerald-600" : "text-red-600"}`}
                       >
-                        {totalEfEdit + totalItEdit}/
+                        {totalEfBase + totalItBase}/
                         {maxEfTrimestre + maxItTrimestre}
                       </span>
                     </td>

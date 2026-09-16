@@ -17,6 +17,8 @@ export interface FrecuenciaEmpresa {
   es_nueva: boolean;
   es_comodin: boolean;
   prioridad_reduccion: string;
+  // V35: escuela doblada — su EF/IT se apila y NO cuenta para la capacidad base.
+  es_doble?: boolean;
   ciudades_activas: string[];
   restricciones: RestriccionInline[];
   // V26: campo sugerido por el backend cuando CT.frecuenciaEF / frecuenciaIT
